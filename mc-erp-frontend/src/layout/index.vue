@@ -1,0 +1,187 @@
+<template>
+  <el-container class="app-wrapper">
+    <!-- Sidebar -->
+    <el-aside width="210px" class="sidebar-container">
+      <div class="logo">
+        <el-icon :size="24" color="#fff"><OfficeBuilding /></el-icon>
+        <span class="logo-text">MC ERP System</span>
+      </div>
+      <el-scrollbar>
+        <el-menu
+          :default-active="$route.path"
+          background-color="#304156"
+          text-color="#bfcbd9"
+          active-text-color="#409EFF"
+          router
+        >
+          <el-menu-item index="/sales-orders">
+            <el-icon><Document /></el-icon>
+            <template #title>销售订单</template>
+          </el-menu-item>
+          <el-menu-item index="/purchase-orders">
+            <el-icon><ShoppingCart /></el-icon>
+            <template #title>采购订单</template>
+          </el-menu-item>
+          <el-menu-item index="/products">
+            <el-icon><Goods /></el-icon>
+            <template #title>产品管理(PIM)</template>
+          </el-menu-item>
+          <el-menu-item index="/customers">
+            <el-icon><User /></el-icon>
+            <template #title>客户管理(CRM)</template>
+          </el-menu-item>
+          <el-menu-item index="/suppliers">
+            <el-icon><Van /></el-icon>
+            <template #title>供应商管理</template>
+          </el-menu-item>
+          <el-menu-item index="/wms">
+            <el-icon><Box /></el-icon>
+            <template #title>仓储管理(WMS)</template>
+          </el-menu-item>
+          <el-menu-item index="/documents">
+            <el-icon><DocumentCopy /></el-icon>
+            <template #title>报关单证</template>
+          </el-menu-item>
+          <el-menu-item index="/finance">
+            <el-icon><Money /></el-icon>
+            <template #title>财务收据</template>
+          </el-menu-item>
+          <el-sub-menu index="/system">
+            <template #title>
+              <el-icon><Setting /></el-icon>
+              <span>系统管理</span>
+            </template>
+            <el-menu-item index="/system/user">
+              <el-icon><User /></el-icon>
+              <template #title>用户管理</template>
+            </el-menu-item>
+            <el-menu-item index="/system/role">
+              <el-icon><UserFilled /></el-icon>
+              <template #title>角色管理</template>
+            </el-menu-item>
+            <el-menu-item index="/system/menu">
+              <el-icon><Menu /></el-icon>
+              <template #title>菜单管理</template>
+            </el-menu-item>
+          </el-sub-menu>
+        </el-menu>
+      </el-scrollbar>
+    </el-aside>
+
+    <!-- Main Container -->
+    <el-container class="main-container">
+      <!-- Navbar -->
+      <el-header class="navbar">
+        <div class="breadcrumb-container">
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ $route.meta.title }}</el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+        <div class="right-menu">
+          <el-dropdown trigger="click">
+            <span class="avatar-wrapper">
+              管理员 <el-icon><CaretBottom /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item divided>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </el-header>
+
+      <!-- App Main -->
+      <el-main class="app-main">
+        <router-view v-slot="{ Component }">
+          <transition name="fade-transform" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </el-main>
+    </el-container>
+  </el-container>
+</template>
+
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+const $route = useRoute()
+</script>
+
+<style scoped>
+.app-wrapper {
+  height: 100vh;
+  width: 100%;
+}
+.sidebar-container {
+  background-color: #304156;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.logo {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2b3643;
+}
+.logo-text {
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  margin-left: 10px;
+}
+.el-menu {
+  border-right: none;
+}
+.navbar {
+  height: 50px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.breadcrumb-container {
+  float: left;
+}
+.right-menu {
+  float: right;
+  display: flex;
+  align-items: center;
+}
+.avatar-wrapper {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+.app-main {
+  min-height: calc(100vh - 50px);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #f0f2f5;
+  padding: 20px;
+}
+
+/* transition */
+.fade-transform-leave-active,
+.fade-transform-enter-active {
+  transition: all .3s;
+}
+.fade-transform-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.fade-transform-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+</style>
