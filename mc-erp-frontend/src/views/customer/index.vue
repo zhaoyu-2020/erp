@@ -8,6 +8,16 @@
         <el-form-item label="客户名称">
           <el-input v-model="queryParams.name" placeholder="输入名称" clearable />
         </el-form-item>
+        <el-form-item label="洲别">
+          <el-select v-model="queryParams.continent" placeholder="选择洲别" clearable style="width: 180px">
+            <el-option
+              v-for="item in CONTINENT_OPTIONS"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -26,6 +36,11 @@
         <el-table-column label="客户编码" prop="customerCode" width="120" />
         <el-table-column label="名称" prop="name" min-width="150" />
         <el-table-column label="国家/地区" prop="country" width="120" />
+        <el-table-column label="洲别" prop="continent" width="130">
+          <template #default="{ row }">
+            <el-tag type="success">{{ formatContinentLabel(row.continent) }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="联系人" prop="contactPerson" width="120" />
         <el-table-column label="邮箱" prop="email" min-width="150" />
         <el-table-column label="电话" prop="phone" width="150" />
@@ -64,6 +79,16 @@
         <el-form-item label="国家/地区" prop="country">
           <el-input v-model="form.country" placeholder="输入国家/地区" />
         </el-form-item>
+        <el-form-item label="洲别" prop="continent">
+          <el-select v-model="form.continent" placeholder="选择洲别" style="width: 100%">
+            <el-option
+              v-for="item in CONTINENT_OPTIONS"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="联系人" prop="contactPerson">
           <el-input v-model="form.contactPerson" placeholder="输入联系人" />
         </el-form-item>
@@ -95,6 +120,21 @@ import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getCustomerPage, saveCustomer, updateCustomer, deleteCustomer } from '@/api/customer'
 
+const CONTINENT_OPTIONS = [
+  { label: '亚洲', value: 'ASIA' },
+  { label: '欧洲', value: 'EUROPE' },
+  { label: '北美洲', value: 'NORTH_AMERICA' },
+  { label: '南美洲', value: 'SOUTH_AMERICA' },
+  { label: '非洲', value: 'AFRICA' },
+  { label: '大洋洲', value: 'OCEANIA' },
+  { label: '南极洲', value: 'ANTARCTICA' }
+]
+
+const CONTINENT_LABEL_MAP = CONTINENT_OPTIONS.reduce<Record<string, string>>((acc, item) => {
+  acc[item.value] = item.label
+  return acc
+}, {})
+
 const loading = ref(false)
 const submitLoading = ref(false)
 const dataList = ref([])
@@ -106,7 +146,8 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   customerCode: '',
-  name: ''
+  name: '',
+  continent: ''
 })
 
 const form = reactive<any>({
@@ -114,6 +155,7 @@ const form = reactive<any>({
   customerCode: '',
   name: '',
   country: '',
+  continent: 'ASIA',
   contactPerson: '',
   email: '',
   phone: '',
@@ -122,7 +164,8 @@ const form = reactive<any>({
 
 const rules = {
   customerCode: [{ required: true, message: '请输入客户编码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }]
+  name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
+  continent: [{ required: true, message: '请选择洲别', trigger: 'change' }]
 }
 
 const getList = async () => {
@@ -143,6 +186,7 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryParams.customerCode = ''
   queryParams.name = ''
+  queryParams.continent = ''
   handleQuery()
 }
 
@@ -151,6 +195,7 @@ const resetForm = () => {
   form.customerCode = ''
   form.name = ''
   form.country = ''
+  form.continent = 'ASIA'
   form.contactPerson = ''
   form.email = ''
   form.phone = ''
@@ -171,6 +216,7 @@ const handleEdit = (row: any) => {
     customerCode: row.customerCode,
     name: row.name,
     country: row.country,
+    continent: row.continent || 'ASIA',
     contactPerson: row.contactPerson,
     email: row.email,
     phone: row.phone,
@@ -209,16 +255,25 @@ const handleSubmit = async () => {
 
 const handleExport = async () => {
   const res = await getCustomerPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
-  const rows = res.data.list || []
+  const rows = (res.data.list || []).map((row: any) => ({
+    ...row,
+    continent: formatContinentLabel(row.continent)
+  }))
   exportToCsv('客户管理导出', rows, [
     { label: '客户编码', key: 'customerCode' },
     { label: '名称', key: 'name' },
     { label: '国家/地区', key: 'country' },
+    { label: '洲别', key: 'continent' },
     { label: '联系人', key: 'contactPerson' },
     { label: '邮箱', key: 'email' },
     { label: '电话', key: 'phone' },
     { label: '级别', key: 'level' }
   ])
+}
+
+const formatContinentLabel = (continent?: string) => {
+  if (!continent) return '-'
+  return CONTINENT_LABEL_MAP[continent] || continent
 }
 
 onMounted(() => {

@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `biz_customer` (
   `customer_code` varchar(50) NOT NULL COMMENT '客户编号',
   `name` varchar(200) NOT NULL COMMENT '客户名称',
   `country` varchar(100) DEFAULT NULL COMMENT '国家/地区',
+  `continent` varchar(20) DEFAULT NULL COMMENT '洲别(ASIA/EUROPE/NORTH_AMERICA/SOUTH_AMERICA/AFRICA/OCEANIA/ANTARCTICA)',
   `contact_person` varchar(100) DEFAULT NULL COMMENT '联系人',
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `phone` varchar(50) DEFAULT NULL COMMENT '电话',
@@ -222,4 +223,3 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
 -- 插入默认角色和权限数据
 INSERT INTO `sys_role` (`role_code`, `role_name`, `description`) VALUES ('admin', '超级管理员', '系统最高权限');
 INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1);
-

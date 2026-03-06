@@ -12,6 +12,7 @@ public class Customer {
     private String customerCode;
     private String name;
     private String country;
+    private String continent;
     private String contactPerson;
     private String email;
     private String phone;
