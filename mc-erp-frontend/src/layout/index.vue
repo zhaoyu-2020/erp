@@ -4,7 +4,7 @@
     <el-aside width="210px" class="sidebar-container">
       <div class="logo">
         <el-icon :size="24" color="#fff"><OfficeBuilding /></el-icon>
-        <span class="logo-text">MC ERP System</span>
+        <span class="logo-text">MC ERP 系统</span>
       </div>
       <el-scrollbar>
         <el-menu
@@ -85,8 +85,8 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人中心</el-dropdown-item>
-                <el-dropdown-item divided>退出登录</el-dropdown-item>
+                <el-dropdown-item @click="router.push('/profile')">个人中心</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -106,8 +106,24 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessageBox, ElMessage } from 'element-plus'
+
 const $route = useRoute()
+const router = useRouter()
+
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  }).catch(() => {})
+}
 </script>
 
 <style scoped>

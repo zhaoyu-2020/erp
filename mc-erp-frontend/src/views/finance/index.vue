@@ -20,8 +20,8 @@
 
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
-        <el-button type="primary" icon="Plus">新建收款单</el-button>
-        <el-button type="success" icon="Download">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新建收款单</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
@@ -57,22 +57,70 @@
         @current-change="getList"
       />
     </el-card>
+
+    <!-- Add Dialog -->
+    <el-dialog v-model="dialogVisible" title="新建收款单" width="620px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="收款单号" prop="receiptNo">
+          <el-input v-model="form.receiptNo" placeholder="输入收款单号" />
+        </el-form-item>
+        <el-form-item label="客户ID" prop="customerId">
+          <el-input-number v-model="form.customerId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="金额" prop="amount">
+          <el-input-number v-model="form.amount" :min="0" :step="0.01" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="币种" prop="currency">
+          <el-input v-model="form.currency" placeholder="例如：USD" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
+            <el-option label="未认领" :value="1" />
+            <el-option label="已认领" :value="2" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { getFinanceReceiptPage } from '@/api/advancedModules'
+import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { exportToCsv } from '@/utils/export'
+import { getFinanceReceiptPage, saveFinanceReceipt } from '@/api/advancedModules'
 
 const loading = ref(false)
+const submitLoading = ref(false)
 const dataList = ref([])
 const total = ref(0)
+const dialogVisible = ref(false)
+const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   receiptNo: '',
   status: undefined
 })
+
+const form = reactive<any>({
+  receiptNo: '',
+  customerId: null,
+  amount: 0,
+  currency: '',
+  status: 1
+})
+
+const rules = {
+  receiptNo: [{ required: true, message: '请输入收款单号', trigger: 'blur' }],
+  customerId: [{ required: true, message: '请输入客户ID', trigger: 'change' }],
+  currency: [{ required: true, message: '请输入币种', trigger: 'blur' }]
+}
 
 const getList = async () => {
   loading.value = true
@@ -104,8 +152,50 @@ const getStatusType = (status: number) => {
   return map[status] || ''
 }
 
+const resetForm = () => {
+  form.receiptNo = ''
+  form.customerId = null
+  form.amount = 0
+  form.currency = ''
+  form.status = 1
+  formRef.value?.clearValidate()
+}
+
+const handleAdd = () => {
+  resetForm()
+  dialogVisible.value = true
+}
+
+const handleSubmit = async () => {
+  await formRef.value?.validate()
+  submitLoading.value = true
+  try {
+    await saveFinanceReceipt({ ...form })
+    ElMessage.success('创建成功')
+    dialogVisible.value = false
+    getList()
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+const handleExport = async () => {
+  const res = await getFinanceReceiptPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
+  const rows = res.data.list || []
+  exportToCsv('财务收据导出', rows, [
+    { label: '收款单号', key: 'receiptNo' },
+    { label: '客户', key: 'customerName' },
+    { label: '客户ID', key: 'customerId' },
+    { label: '币种', key: 'currency' },
+    { label: '金额', key: 'amount' },
+    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '认领时间', key: 'claimTime' },
+    { label: '创建时间', key: 'createTime' }
+  ])
+}
+
 onMounted(() => {
-  // getList()
+  getList()
 })
 </script>
 

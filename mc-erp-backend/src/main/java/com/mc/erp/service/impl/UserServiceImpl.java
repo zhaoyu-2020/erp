@@ -4,19 +4,30 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
+import com.mc.erp.config.JwtUtil;
 import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
+import com.mc.erp.entity.UserRole;
 import com.mc.erp.mapper.UserMapper;
+import com.mc.erp.mapper.UserRoleMapper;
 import com.mc.erp.service.UserService;
 import com.mc.erp.vo.UserVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
     @Override
     public PageResult<UserVO> getPage(UserQuery query) {
@@ -25,13 +36,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         wrapper.like(StringUtils.hasText(query.getUsername()), User::getUsername, query.getUsername());
         wrapper.like(StringUtils.hasText(query.getRealName()), User::getRealName, query.getRealName());
+        wrapper.like(StringUtils.hasText(query.getPhone()), User::getPhone, query.getPhone());
+        wrapper.like(StringUtils.hasText(query.getEmail()), User::getEmail, query.getEmail());
         wrapper.orderByDesc(User::getCreateTime);
 
         Page<User> resultPage = this.page(page, wrapper);
 
-        var voList = resultPage.getRecords().stream().map(user -> {
+        List<User> users = resultPage.getRecords();
+        List<Long> userIds = users.stream().map(User::getId).filter(Objects::nonNull).toList();
+        final Map<Long, List<Long>> roleIdsMap;
+        if (userIds.isEmpty()) {
+            roleIdsMap = Map.of();
+        } else {
+            var links = userRoleMapper.selectList(new LambdaQueryWrapper<UserRole>().in(UserRole::getUserId, userIds));
+            roleIdsMap = links.stream().collect(Collectors.groupingBy(
+                    UserRole::getUserId,
+                    Collectors.mapping(UserRole::getRoleId, Collectors.toList())
+            ));
+        }
+
+        var voList = users.stream().map(user -> {
             UserVO vo = new UserVO();
             BeanUtils.copyProperties(user, vo);
+            vo.setRoleIds(roleIdsMap.getOrDefault(user.getId(), List.of()));
             return vo;
         }).collect(Collectors.toList());
 
@@ -48,10 +75,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         com.mc.erp.vo.LoginVO loginVO = new com.mc.erp.vo.LoginVO();
-        loginVO.setToken(java.util.UUID.randomUUID().toString()); // Dummy token
+        loginVO.setToken(jwtUtil.generateToken(user.getId(), user.getUsername()));
         loginVO.setUserId(user.getId());
         loginVO.setUsername(user.getUsername());
         loginVO.setRealName(user.getRealName());
         return loginVO;
+    }
+
+    @Override
+    public List<Long> getRoleIds(Long userId) {
+        if (userId == null) return List.of();
+        var links = userRoleMapper.selectList(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userId));
+        return links.stream().map(UserRole::getRoleId).filter(Objects::nonNull).distinct().toList();
+    }
+
+    @Override
+    public boolean updateUserRoles(Long userId, List<Long> roleIds) {
+        if (userId == null) return false;
+        // 先清空
+        userRoleMapper.delete(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUserId, userId));
+        if (roleIds == null || roleIds.isEmpty()) return true;
+
+        // 再插入
+        for (Long roleId : roleIds.stream().filter(Objects::nonNull).distinct().toList()) {
+            UserRole link = new UserRole();
+            link.setUserId(userId);
+            link.setRoleId(roleId);
+            userRoleMapper.insert(link);
+        }
+        return true;
     }
 }

@@ -5,15 +5,17 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("sys_user")
-public class User {
+@TableName("biz_supplier_account")
+public class SupplierAccount {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String username;
-    private String password;
-    private String realName;
-    private String phone;
-    private String email;
+    private Long supplierId;
+    private String bankName;
+    private String accountName;
+    private String accountNo;
+    private String currency;
+    private String swiftCode;
+    private String remark;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableLogic

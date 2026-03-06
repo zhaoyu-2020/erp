@@ -1,5 +1,4 @@
 com/mc/erp/dto/SalesOrderQuery.class
-com/mc/erp/service/impl/UserServiceImpl.class
 com/mc/erp/controller/AuthController.class
 com/mc/erp/entity/SalesOrder.class
 com/mc/erp/controller/CustomerController.class

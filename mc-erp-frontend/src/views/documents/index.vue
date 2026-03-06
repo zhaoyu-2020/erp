@@ -21,7 +21,8 @@
 
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
-        <el-button type="primary" icon="Plus">新建报关单</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新建报关单</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
@@ -38,7 +39,7 @@
         <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary">打印</el-button>
-            <el-button link type="primary" v-if="scope.row.status === 1">编辑</el-button>
+            <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -52,22 +53,68 @@
         @current-change="getList"
       />
     </el-card>
+
+    <!-- Add/Edit Dialog -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="单证号" prop="docNo">
+          <el-input v-model="form.docNo" placeholder="输入单证号" :disabled="!!form.id" />
+        </el-form-item>
+        <el-form-item label="销售单ID" prop="salesOrderId">
+          <el-input-number v-model="form.salesOrderId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="申报日期" prop="declareDate">
+          <el-date-picker v-model="form.declareDate" type="date" placeholder="选择日期" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
+            <el-option label="待处理" :value="1" />
+            <el-option label="申报中" :value="2" />
+            <el-option label="已放行" :value="3" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { getCustomsDocPage } from '@/api/advancedModules'
+import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { exportToCsv } from '@/utils/export'
+import { getCustomsDocPage, saveCustomsDoc, updateCustomsDoc } from '@/api/advancedModules'
 
 const loading = ref(false)
+const submitLoading = ref(false)
 const dataList = ref([])
 const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   docNo: '',
   status: undefined
 })
+
+const form = reactive<any>({
+  id: null,
+  docNo: '',
+  salesOrderId: null,
+  declareDate: '',
+  status: 1
+})
+
+const rules = {
+  docNo: [{ required: true, message: '请输入单证号', trigger: 'blur' }],
+  salesOrderId: [{ required: true, message: '请输入销售单ID', trigger: 'change' }]
+}
 
 const getList = async () => {
   loading.value = true
@@ -99,8 +146,68 @@ const getStatusType = (status: number) => {
   return map[status] || ''
 }
 
+const resetForm = () => {
+  form.id = null
+  form.docNo = ''
+  form.salesOrderId = null
+  form.declareDate = ''
+  form.status = 1
+  formRef.value?.clearValidate()
+}
+
+const handleAdd = () => {
+  resetForm()
+  dialogTitle.value = '新建报关单'
+  dialogVisible.value = true
+}
+
+const handleEdit = (row: any) => {
+  resetForm()
+  Object.assign(form, {
+    id: row.id,
+    docNo: row.docNo,
+    salesOrderId: row.salesOrderId,
+    declareDate: row.declareDate,
+    status: row.status ?? 1
+  })
+  dialogTitle.value = '编辑报关单'
+  dialogVisible.value = true
+}
+
+const handleSubmit = async () => {
+  await formRef.value?.validate()
+  submitLoading.value = true
+  try {
+    if (form.id) {
+      await updateCustomsDoc({ ...form })
+    } else {
+      const payload = { ...form }
+      delete payload.id
+      await saveCustomsDoc(payload)
+    }
+    ElMessage.success(form.id ? '更新成功' : '创建成功')
+    dialogVisible.value = false
+    getList()
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+const handleExport = async () => {
+  const res = await getCustomsDocPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
+  const rows = res.data.list || []
+  exportToCsv('报关单证导出', rows, [
+    { label: '单证号', key: 'docNo' },
+    { label: '销售单ID', key: 'salesOrderId' },
+    { label: '关联销售单', key: 'salesOrderNo' },
+    { label: '申报日期', key: 'declareDate' },
+    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '创建时间', key: 'createTime' }
+  ])
+}
+
 onMounted(() => {
-  // getList()
+  getList()
 })
 </script>
 

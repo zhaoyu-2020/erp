@@ -2,6 +2,7 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/impl/UserServiceImpl.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/CustomsDocVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/PurchaseOrderMapper.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/SupplierAccountController.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/CustomerController.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/SupplierQuery.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/FinanceReceiptMapper.java
@@ -14,6 +15,7 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/impl/CustomsDocServiceImpl.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/RoleController.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/CustomsDocController.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/SupplierAccountMapper.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/impl/StockServiceImpl.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/UserVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/SupplierService.java
@@ -37,6 +39,7 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/ProductController.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/StockQuery.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/SalesOrderMapper.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/UserRoleMapper.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/SalesOrderService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/SalesOrderVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/FinanceReceiptController.java
@@ -44,11 +47,14 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/CustomerService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/LoginVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/MenuController.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/SupplierAccountService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/RoleVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/SupplierVO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/ProductQuery.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/common/Result.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/SupplierAccount.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/StockVO.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/impl/SupplierAccountServiceImpl.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/StockMapper.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/mapper/ProductMapper.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/Menu.java
@@ -63,6 +69,7 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/CustomsDocService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/UserService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/CustomsDocQuery.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/UserRole.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/service/FinanceReceiptService.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/Product.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/PurchaseOrderController.java
@@ -71,6 +78,7 @@
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/PurchaseOrderQuery.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/SalesOrder.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/vo/PurchaseOrderVO.java
+/Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/dto/UpdateUserRolesDTO.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/config/JwtUtil.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/entity/User.java
 /Users/zach/GitRepository/new-mc-erp/mc-erp-backend/src/main/java/com/mc/erp/controller/SalesOrderController.java

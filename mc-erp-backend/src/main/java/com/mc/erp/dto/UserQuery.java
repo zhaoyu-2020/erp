@@ -8,4 +8,6 @@ public class UserQuery {
     private Integer pageSize = 10;
     private String username;
     private String realName;
+    private String phone;
+    private String email;
 }

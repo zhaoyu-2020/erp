@@ -24,7 +24,7 @@
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新建订单</el-button>
-        <el-button type="success" icon="Download">导出</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table v-loading="loading" :data="orderList" border stripe>
@@ -61,23 +61,93 @@
         @current-change="getList"
       />
     </el-card>
+
+    <!-- Add/Edit Dialog -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="640px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="订单号" prop="orderNo">
+          <el-input v-model="form.orderNo" placeholder="输入订单号" :disabled="!!form.id" />
+        </el-form-item>
+        <el-form-item label="客户ID" prop="customerId">
+          <el-input-number v-model="form.customerId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="业务员ID" prop="salespersonId">
+          <el-input-number v-model="form.salespersonId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="贸易条款" prop="tradeTerm">
+          <el-select v-model="form.tradeTerm" placeholder="选择贸易条款" style="width: 100%">
+            <el-option label="FOB" value="FOB" />
+            <el-option label="CIF" value="CIF" />
+            <el-option label="EXW" value="EXW" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="币种" prop="currency">
+          <el-input v-model="form.currency" placeholder="例如：USD" />
+        </el-form-item>
+        <el-form-item label="汇率" prop="exchangeRate">
+          <el-input-number v-model="form.exchangeRate" :min="0" :step="0.0001" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="总金额" prop="totalAmount">
+          <el-input-number v-model="form.totalAmount" :min="0" :step="0.01" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
+            <el-option label="待处理" :value="1" />
+            <el-option label="采购中" :value="2" />
+            <el-option label="生产中" :value="3" />
+            <el-option label="已发货" :value="4" />
+            <el-option label="已完成" :value="5" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { getOrderPage } from '@/api/salesOrder'
+import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { exportToCsv } from '@/utils/export'
+import { getOrderPage, saveSalesOrder, updateSalesOrder } from '@/api/salesOrder'
 
 // Data definitions
 const loading = ref(false)
+const submitLoading = ref(false)
 const orderList = ref([])
 const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   orderNo: '',
   tradeTerm: ''
 })
+
+const form = reactive<any>({
+  id: null,
+  orderNo: '',
+  customerId: null,
+  salespersonId: null,
+  tradeTerm: '',
+  currency: '',
+  exchangeRate: 0,
+  totalAmount: 0,
+  status: 1
+})
+
+const rules = {
+  orderNo: [{ required: true, message: '请输入订单号', trigger: 'blur' }],
+  customerId: [{ required: true, message: '请输入客户ID', trigger: 'change' }],
+  tradeTerm: [{ required: true, message: '请选择贸易条款', trigger: 'change' }],
+  currency: [{ required: true, message: '请输入币种', trigger: 'blur' }]
+}
 
 // Fetch logic
 const getList = async () => {
@@ -105,13 +175,73 @@ const resetQuery = () => {
 }
 
 const handleAdd = () => {
-  console.log('Add Order')
+  resetForm()
+  dialogTitle.value = '新建订单'
+  dialogVisible.value = true
 }
 const handleDetail = (row: any) => {
   console.log('Detail', row)
 }
 const handleEdit = (row: any) => {
-  console.log('Edit', row)
+  resetForm()
+  Object.assign(form, {
+    id: row.id,
+    orderNo: row.orderNo,
+    customerId: row.customerId,
+    salespersonId: row.salespersonId,
+    tradeTerm: row.tradeTerm,
+    currency: row.currency,
+    exchangeRate: row.exchangeRate ?? 0,
+    totalAmount: row.totalAmount ?? 0,
+    status: row.status ?? 1
+  })
+  dialogTitle.value = '编辑订单'
+  dialogVisible.value = true
+}
+
+const resetForm = () => {
+  form.id = null
+  form.orderNo = ''
+  form.customerId = null
+  form.salespersonId = null
+  form.tradeTerm = ''
+  form.currency = ''
+  form.exchangeRate = 0
+  form.totalAmount = 0
+  form.status = 1
+  formRef.value?.clearValidate()
+}
+
+const handleSubmit = async () => {
+  await formRef.value?.validate()
+  submitLoading.value = true
+  try {
+    if (form.id) {
+      await updateSalesOrder({ ...form })
+    } else {
+      const payload = { ...form }
+      delete payload.id
+      await saveSalesOrder(payload)
+    }
+    ElMessage.success(form.id ? '更新成功' : '创建成功')
+    dialogVisible.value = false
+    getList()
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+const handleExport = async () => {
+  const res = await getOrderPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
+  const rows = res.data.list || []
+  exportToCsv('销售订单导出', rows, [
+    { label: '订单号', key: 'orderNo' },
+    { label: '贸易条款', key: 'tradeTerm' },
+    { label: '币种', key: 'currency' },
+    { label: '总金额', key: 'totalAmount' },
+    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '创建时间', key: 'createTime' }
+  ])
 }
 
 // Status dictionary
@@ -126,7 +256,7 @@ const getStatusType = (status: number) => {
 
 // Init
 onMounted(() => {
-  // getList() // uncomment when backend is ready
+  getList()
 })
 </script>
 

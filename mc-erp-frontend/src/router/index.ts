@@ -61,6 +61,30 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'FinanceList',
                 component: () => import('@/views/finance/index.vue'),
                 meta: { title: '财务收据', icon: 'Money' }
+            },
+            {
+                path: 'system/user',
+                name: 'UserList',
+                component: () => import('@/views/system/user/index.vue'),
+                meta: { title: '用户管理', icon: 'User' }
+            },
+            {
+                path: 'system/role',
+                name: 'RoleList',
+                component: () => import('@/views/system/role/index.vue'),
+                meta: { title: '角色管理', icon: 'UserFilled' }
+            },
+            {
+                path: 'system/menu',
+                name: 'MenuList',
+                component: () => import('@/views/system/menu/index.vue'),
+                meta: { title: '菜单管理', icon: 'Menu' }
+            },
+            {
+                path: 'profile',
+                name: 'Profile',
+                component: () => import('@/views/profile/index.vue'),
+                meta: { title: '个人中心', hidden: true }
             }
         ]
     }
@@ -73,7 +97,7 @@ const router = createRouter({
 
 const whiteList = ['/login'] // Routes that don't need authentication
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
     const token = localStorage.getItem('token')
 
     if (token) {

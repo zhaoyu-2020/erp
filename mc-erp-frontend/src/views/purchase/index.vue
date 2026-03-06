@@ -21,8 +21,8 @@
 
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
-        <el-button type="primary" icon="Plus">新增采购单</el-button>
-        <el-button type="success" icon="Download">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增采购单</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
@@ -40,7 +40,7 @@
         <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary">详情</el-button>
-            <el-button link type="primary" v-if="scope.row.status === 1">编辑</el-button>
+            <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -54,22 +54,73 @@
         @current-change="getList"
       />
     </el-card>
+
+    <!-- Add/Edit Dialog -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
+        <el-form-item label="采购单号" prop="poNo">
+          <el-input v-model="form.poNo" placeholder="输入采购单号" :disabled="!!form.id" />
+        </el-form-item>
+        <el-form-item label="供应商ID" prop="supplierId">
+          <el-input-number v-model="form.supplierId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="关联销售单ID" prop="salesOrderId">
+          <el-input-number v-model="form.salesOrderId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="总金额(RMB)" prop="totalAmount">
+          <el-input-number v-model="form.totalAmount" :min="0" :step="0.01" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
+            <el-option label="待处理" :value="1" />
+            <el-option label="生产中" :value="2" />
+            <el-option label="已入库" :value="3" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { getPurchaseOrderPage } from '@/api/purchaseOrder'
+import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { exportToCsv } from '@/utils/export'
+import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder } from '@/api/purchaseOrder'
 
 const loading = ref(false)
+const submitLoading = ref(false)
 const dataList = ref([])
 const total = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   poNo: '',
   status: undefined
 })
+
+const form = reactive<any>({
+  id: null,
+  poNo: '',
+  supplierId: null,
+  salesOrderId: null,
+  totalAmount: 0,
+  status: 1
+})
+
+const rules = {
+  poNo: [{ required: true, message: '请输入采购单号', trigger: 'blur' }],
+  supplierId: [{ required: true, message: '请输入供应商ID', trigger: 'change' }],
+  salesOrderId: [{ required: true, message: '请输入关联销售单ID', trigger: 'change' }]
+}
 
 const getList = async () => {
   loading.value = true
@@ -101,8 +152,70 @@ const getStatusType = (status: number) => {
   return map[status] || ''
 }
 
+const resetForm = () => {
+  form.id = null
+  form.poNo = ''
+  form.supplierId = null
+  form.salesOrderId = null
+  form.totalAmount = 0
+  form.status = 1
+  formRef.value?.clearValidate()
+}
+
+const handleAdd = () => {
+  resetForm()
+  dialogTitle.value = '新增采购单'
+  dialogVisible.value = true
+}
+
+const handleEdit = (row: any) => {
+  resetForm()
+  Object.assign(form, {
+    id: row.id,
+    poNo: row.poNo,
+    supplierId: row.supplierId,
+    salesOrderId: row.salesOrderId,
+    totalAmount: row.totalAmount ?? 0,
+    status: row.status ?? 1
+  })
+  dialogTitle.value = '编辑采购单'
+  dialogVisible.value = true
+}
+
+const handleSubmit = async () => {
+  await formRef.value?.validate()
+  submitLoading.value = true
+  try {
+    if (form.id) {
+      await updatePurchaseOrder({ ...form })
+    } else {
+      const payload = { ...form }
+      delete payload.id
+      await savePurchaseOrder(payload)
+    }
+    ElMessage.success(form.id ? '更新成功' : '创建成功')
+    dialogVisible.value = false
+    getList()
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+const handleExport = async () => {
+  const res = await getPurchaseOrderPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
+  const rows = res.data.list || []
+  exportToCsv('采购订单导出', rows, [
+    { label: '采购单号', key: 'poNo' },
+    { label: '供应商ID', key: 'supplierId' },
+    { label: '关联销售单ID', key: 'salesOrderId' },
+    { label: '总金额(RMB)', key: 'totalAmount' },
+    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '创建时间', key: 'createTime' }
+  ])
+}
+
 onMounted(() => {
-  // getList()
+  getList()
 })
 </script>
 

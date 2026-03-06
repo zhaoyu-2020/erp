@@ -18,6 +18,7 @@
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新增角色</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
@@ -71,6 +72,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getRolePage, saveRole, updateRole, deleteRole } from '@/api/system'
+import { exportToCsv } from '@/utils/export'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -157,7 +159,8 @@ const handleSubmit = async () => {
   submitLoading.value = true
   try {
     if (form.id) {
-      await updateRole({ id: form.id, roleName: form.roleName, description: form.description })
+      // 注意：后端是 updateById，若缺字段可能会把数据库字段更新为 null
+      await updateRole({ id: form.id, roleCode: form.roleCode, roleName: form.roleName, description: form.description })
     } else {
       await saveRole({ roleCode: form.roleCode, roleName: form.roleName, description: form.description })
     }
@@ -167,6 +170,17 @@ const handleSubmit = async () => {
   } finally {
     submitLoading.value = false
   }
+}
+
+const handleExport = async () => {
+  const res = await getRolePage({ ...queryParams, pageNum: 1, pageSize: 10000 })
+  const rows = res.data.list || []
+  exportToCsv('角色管理导出', rows, [
+    { label: '角色编码', key: 'roleCode' },
+    { label: '角色名称', key: 'roleName' },
+    { label: '描述', key: 'description' },
+    { label: '创建时间', key: 'createTime' }
+  ])
 }
 
 onMounted(() => {

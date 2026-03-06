@@ -86,7 +86,7 @@ const handleLogin = async () => {
           localStorage.setItem('userInfo', JSON.stringify(res.data))
           router.push('/')
         } else {
-          ElMessage.error(res.msg || '登录失败')
+          ElMessage.error(res.message || '登录失败')
         }
       } catch (error) {
         // error handled by global interceptor if defined, or explicitly here

@@ -1,5 +1,12 @@
 import axios from 'axios'
+import type { AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
+
+export type ApiResult<T> = {
+    code: number
+    message: string
+    data: T
+}
 
 const request = axios.create({
     baseURL: '/api/v1',
@@ -20,18 +27,38 @@ request.interceptors.request.use(
 )
 
 request.interceptors.response.use(
-    response => {
-        const res = response.data
+    ((response: any) => {
+        const res = response.data as ApiResult<any>
         if (res.code !== 200) {
-            ElMessage.error(res.message || 'Error')
-            return Promise.reject(new Error(res.message || 'Error'))
+            ElMessage.error(res.message || '请求失败')
+            return Promise.reject(new Error(res.message || '请求失败'))
         }
         return res
-    },
+    }) as any,
     error => {
-        ElMessage.error(error.message || 'Request Error')
+        const status = error.response?.status
+        const msg = error.response?.data?.message || error.message
+
+        // 未登录 / 登录过期：清除token并跳转登录
+        if (status === 401) {
+            ElMessage.error(msg || '登录已过期，请重新登录')
+            localStorage.removeItem('token')
+            localStorage.removeItem('userInfo')
+            window.location.href = '/login'
+            return Promise.reject(error)
+        }
+
+        // 已登录但无权限：只提示，不强制退出
+        if (status === 403) {
+            ElMessage.error(msg || '无操作权限')
+            return Promise.reject(error)
+        }
+
+        ElMessage.error(msg || '请求失败')
         return Promise.reject(error)
     }
 )
 
-export default request
+type Request = <T = any>(config: AxiosRequestConfig) => Promise<ApiResult<T>>
+
+export default request as unknown as Request

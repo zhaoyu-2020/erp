@@ -4,6 +4,7 @@
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd(null)">新增菜单</el-button>
         <el-button icon="Sort" @click="toggleExpandAll">展开/折叠</el-button>
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
       <el-table
@@ -94,6 +95,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { getMenuTree, saveMenu, updateMenu, deleteMenu } from '@/api/system'
+import { exportToCsv } from '@/utils/export'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -198,6 +200,41 @@ const handleSubmit = async () => {
   } finally {
     submitLoading.value = false
   }
+}
+
+const flattenTree = (nodes: any[], out: any[] = [], parentName = '') => {
+  nodes.forEach(n => {
+    out.push({
+      id: n.id,
+      parentId: n.parentId,
+      parentName,
+      menuName: n.menuName,
+      type: n.type,
+      path: n.path,
+      component: n.component,
+      permission: n.permission,
+      sort: n.sort,
+      icon: n.icon
+    })
+    if (n.children && n.children.length) flattenTree(n.children, out, n.menuName)
+  })
+  return out
+}
+
+const handleExport = () => {
+  const rows = flattenTree(menuList.value || [])
+  exportToCsv('菜单管理导出', rows, [
+    { label: 'ID', key: 'id' },
+    { label: '上级ID', key: 'parentId' },
+    { label: '上级名称', key: 'parentName' },
+    { label: '菜单名称', key: 'menuName' },
+    { label: '类型', value: (r: any) => (r.type === 1 ? '目录' : r.type === 2 ? '菜单' : '按钮') },
+    { label: '路由地址', key: 'path' },
+    { label: '组件路径', key: 'component' },
+    { label: '权限标识', key: 'permission' },
+    { label: '排序', key: 'sort' },
+    { label: '图标', key: 'icon' }
+  ])
 }
 
 onMounted(() => {

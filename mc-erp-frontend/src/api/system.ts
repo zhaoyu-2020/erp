@@ -21,6 +21,9 @@ export function deleteUser(id: number) {
 export function getRolePage(params: any) {
     return request({ url: '/roles/page', method: 'get', params })
 }
+export function getRoleList() {
+    return request({ url: '/roles/list', method: 'get' })
+}
 export function getRoleById(id: number) {
     return request({ url: `/roles/${id}`, method: 'get' })
 }
@@ -32,6 +35,14 @@ export function updateRole(data: any) {
 }
 export function deleteRole(id: number) {
     return request({ url: `/roles/${id}`, method: 'delete' })
+}
+
+// User-Role API
+export function getUserRoleIds(userId: number) {
+    return request({ url: `/users/${userId}/roles`, method: 'get' })
+}
+export function updateUserRoles(userId: number, roleIds: number[]) {
+    return request({ url: `/users/${userId}/roles`, method: 'put', data: { roleIds } })
 }
 
 // Menu API

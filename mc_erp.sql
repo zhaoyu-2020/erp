@@ -78,6 +78,23 @@ CREATE TABLE IF NOT EXISTS `biz_supplier` (
   UNIQUE KEY `uk_supplier_code` (`supplier_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='供应商档案表';
 
+-- 5-1. 供应商账户信息表
+CREATE TABLE IF NOT EXISTS `biz_supplier_account` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `supplier_id` bigint(20) NOT NULL COMMENT '供应商ID',
+  `bank_name` varchar(100) NOT NULL COMMENT '开户银行',
+  `account_name` varchar(100) NOT NULL COMMENT '账户名称',
+  `account_no` varchar(100) NOT NULL COMMENT '银行账号',
+  `currency` varchar(20) DEFAULT 'CNY' COMMENT '币种',
+  `swift_code` varchar(50) DEFAULT NULL COMMENT 'SWIFT码',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_supplier_id` (`supplier_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='供应商账户信息表';
+
 -- 6. 采购订单表
 CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -100,6 +117,8 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `username` varchar(50) NOT NULL COMMENT '用户名',
   `password` varchar(100) NOT NULL COMMENT '密码',
   `real_name` varchar(50) DEFAULT NULL COMMENT '真实姓名',
+  `phone` varchar(20) DEFAULT NULL COMMENT '手机号',
+  `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(1) DEFAULT '0',
@@ -154,6 +173,8 @@ CREATE TABLE IF NOT EXISTS `biz_finance_receipt` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_receipt_no` (`receipt_no`),
   KEY `idx_customer` (`customer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务水单表';
+
 -- 11. 角色表
 CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
