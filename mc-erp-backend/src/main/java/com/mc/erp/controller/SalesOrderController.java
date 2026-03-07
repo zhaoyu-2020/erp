@@ -8,8 +8,11 @@ import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.vo.SalesOrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/sales-orders")
 public class SalesOrderController {
 
@@ -27,12 +30,12 @@ public class SalesOrderController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody SalesOrder salesOrder) {
+    public Result<Boolean> save(@Valid @RequestBody SalesOrder salesOrder) {
         return Result.success(salesOrderService.save(salesOrder));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody SalesOrder salesOrder) {
+    public Result<Boolean> update(@Valid @RequestBody SalesOrder salesOrder) {
         return Result.success(salesOrderService.updateById(salesOrder));
     }
 

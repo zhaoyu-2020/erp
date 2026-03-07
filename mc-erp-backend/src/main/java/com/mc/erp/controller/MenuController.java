@@ -7,8 +7,11 @@ import com.mc.erp.vo.MenuVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/menus")
 public class MenuController {
 
@@ -26,12 +29,12 @@ public class MenuController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Menu menu) {
+    public Result<Boolean> save(@Valid @RequestBody Menu menu) {
         return Result.success(menuService.save(menu));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Menu menu) {
+    public Result<Boolean> update(@Valid @RequestBody Menu menu) {
         return Result.success(menuService.updateById(menu));
     }
 

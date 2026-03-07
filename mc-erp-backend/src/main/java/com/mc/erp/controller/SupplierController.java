@@ -8,8 +8,11 @@ import com.mc.erp.service.SupplierService;
 import com.mc.erp.vo.SupplierVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/suppliers")
 public class SupplierController {
 
@@ -27,12 +30,12 @@ public class SupplierController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Supplier supplier) {
+    public Result<Boolean> save(@Valid @RequestBody Supplier supplier) {
         return Result.success(supplierService.save(supplier));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Supplier supplier) {
+    public Result<Boolean> update(@Valid @RequestBody Supplier supplier) {
         return Result.success(supplierService.updateById(supplier));
     }
 

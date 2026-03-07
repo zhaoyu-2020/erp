@@ -1,6 +1,8 @@
 package com.mc.erp.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,13 +12,43 @@ import java.time.LocalDateTime;
 public class SalesOrder {
     @TableId(type = IdType.AUTO)
     private Long id;
+
+    @NotBlank(message = "订单号不能为空")
     private String orderNo;
-    private Long customerId;
+
+    @NotNull(message = "业务员ID不能为空")
     private Long salespersonId;
+
+    @NotNull(message = "客户ID不能为空")
+    private Long customerId;
+
     private String tradeTerm;
     private String currency;
-    private BigDecimal exchangeRate;
-    private BigDecimal totalAmount;
+
+    @NotNull(message = "定金汇率不能为空")
+    private BigDecimal depositExchangeRate;
+
+    @NotNull(message = "尾款汇率不能为空")
+    private BigDecimal finalExchangeRate;
+
+    @NotNull(message = "合同金额不能为空")
+    private BigDecimal contractAmount;
+
+    @NotNull(message = "定金比例不能为空")
+    private BigDecimal depositRate;
+
+    @NotNull(message = "收款金额不能为空")
+    private BigDecimal receivedAmount;
+
+    @NotNull(message = "预计收尾款天数不能为空")
+    private Integer expectedReceiptDays;
+
+    private String transportType;
+    private BigDecimal seaFreight;
+    private BigDecimal portFee;
+    private BigDecimal vat;
+    private BigDecimal profit;
+
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

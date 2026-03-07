@@ -8,8 +8,11 @@ import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.vo.PurchaseOrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/purchase-orders")
 public class PurchaseOrderController {
 
@@ -27,12 +30,12 @@ public class PurchaseOrderController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody PurchaseOrder purchaseOrder) {
+    public Result<Boolean> save(@Valid @RequestBody PurchaseOrder purchaseOrder) {
         return Result.success(purchaseOrderService.save(purchaseOrder));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody PurchaseOrder purchaseOrder) {
+    public Result<Boolean> update(@Valid @RequestBody PurchaseOrder purchaseOrder) {
         return Result.success(purchaseOrderService.updateById(purchaseOrder));
     }
 

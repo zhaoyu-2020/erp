@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/roles")
 public class RoleController {
 
@@ -30,12 +33,12 @@ public class RoleController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Role role) {
+    public Result<Boolean> save(@Valid @RequestBody Role role) {
         return Result.success(roleService.save(role));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Role role) {
+    public Result<Boolean> update(@Valid @RequestBody Role role) {
         return Result.success(roleService.updateById(role));
     }
 

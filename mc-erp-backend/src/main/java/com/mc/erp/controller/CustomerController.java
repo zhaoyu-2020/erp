@@ -8,8 +8,11 @@ import com.mc.erp.service.CustomerService;
 import com.mc.erp.vo.CustomerVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/customers")
 public class CustomerController {
 
@@ -22,17 +25,17 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public Result<Customer> getById(@PathVariable Long id) {
-        return Result.success(customerService.getById(id));
+    public Result<CustomerVO> getById(@PathVariable Long id) {
+        return Result.success(customerService.getByIdWithSalesUser(id));
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Customer customer) {
+    public Result<Boolean> save(@Valid @RequestBody Customer customer) {
         return Result.success(customerService.save(customer));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Customer customer) {
+    public Result<Boolean> update(@Valid @RequestBody Customer customer) {
         return Result.success(customerService.updateById(customer));
     }
 

@@ -5,6 +5,9 @@
         <el-form-item label="采购单号">
           <el-input v-model="queryParams.poNo" placeholder="输入采购单号" clearable />
         </el-form-item>
+        <el-form-item label="关联销售单号">
+          <el-input v-model="queryParams.salesOrderNo" placeholder="输入销售单号" clearable />
+        </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
             <el-option label="待处理" :value="1" />
@@ -27,10 +30,14 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="采购单号" prop="poNo" width="150" />
+        <el-table-column label="采购单号" prop="poNo" width="140" />
         <el-table-column label="供应商ID" prop="supplierId" width="120" />
-        <el-table-column label="关联销售单ID" prop="salesOrderId" width="150" />
-        <el-table-column label="总金额(RMB)" prop="totalAmount" width="180" align="right" />
+        <el-table-column label="供应商" prop="supplierName" width="140" />
+        <el-table-column label="关联销售单号" prop="salesOrderNo" width="160" />
+        <el-table-column label="总金额(RMB)" prop="totalAmount" width="160" align="right" />
+        <el-table-column label="实际金额(RMB)" prop="actualAmount" width="160" align="right" />
+        <el-table-column label="定金比例(%)" prop="depositRate" width="120" align="right" />
+        <el-table-column label="定金金额(RMB)" prop="depositAmount" width="160" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
@@ -56,27 +63,102 @@
     </el-card>
 
     <!-- Add/Edit Dialog -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="620px" @close="resetForm">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="采购单号" prop="poNo">
-          <el-input v-model="form.poNo" placeholder="输入采购单号" :disabled="!!form.id" />
-        </el-form-item>
-        <el-form-item label="供应商ID" prop="supplierId">
-          <el-input-number v-model="form.supplierId" :min="1" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="关联销售单ID" prop="salesOrderId">
-          <el-input-number v-model="form.salesOrderId" :min="1" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="总金额(RMB)" prop="totalAmount">
-          <el-input-number v-model="form.totalAmount" :min="0" :step="0.01" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
-            <el-option label="待处理" :value="1" />
-            <el-option label="生产中" :value="2" />
-            <el-option label="已入库" :value="3" />
-          </el-select>
-        </el-form-item>
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="采购单号" prop="poNo">
+              <el-input v-model="form.poNo" placeholder="输入采购单号" :disabled="!!form.id" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="供应商ID" prop="supplierId">
+              <el-input v-model="form.supplierId" placeholder="输入供应商ID" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="关联销售单号" prop="salesOrderNo">
+              <el-input v-model="form.salesOrderNo" placeholder="输入关联销售单号" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="总金额(RMB)" prop="totalAmount">
+              <el-input v-model="form.totalAmount" placeholder="输入订单金额" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="实际金额(RMB)" prop="actualAmount">
+              <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="定金比例(%)" prop="depositRate">
+              <el-input v-model="form.depositRate" placeholder="输入定金比例" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="定金金额(RMB)" prop="depositAmount">
+              <el-input v-model="form.depositAmount" placeholder="输入定金金额" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="交货日期" prop="deliveryDate">
+              <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="运输备注" prop="transportRemark">
+              <el-input v-model="form.transportRemark" placeholder="输入运输备注" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="总运费(RMB)" prop="totalFreight">
+              <el-input v-model="form.totalFreight" placeholder="输入总运费" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="照片" prop="photos">
+              <el-input v-model="form.photos" placeholder="多张用逗号分隔" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="材质单" prop="materialSheet">
+              <el-input v-model="form.materialSheet" placeholder="输入材质单" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="发票" prop="invoice">
+              <el-input v-model="form.invoice" placeholder="输入发票信息" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="form.status" placeholder="选择状态">
+                <el-option label="待处理" :value="1" />
+                <el-option label="生产中" :value="2" />
+                <el-option label="已入库" :value="3" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -104,6 +186,7 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   poNo: '',
+  salesOrderNo: '',
   status: undefined
 })
 
@@ -111,15 +194,28 @@ const form = reactive<any>({
   id: null,
   poNo: '',
   supplierId: null,
-  salesOrderId: null,
+  salesOrderNo: '',
   totalAmount: 0,
+  actualAmount: 0,
+  depositRate: 0,
+  depositAmount: 0,
+  deliveryDate: null,
+  transportRemark: '',
+  totalFreight: 0,
+  photos: '',
+  materialSheet: '',
+  invoice: '',
   status: 1
 })
 
 const rules = {
   poNo: [{ required: true, message: '请输入采购单号', trigger: 'blur' }],
   supplierId: [{ required: true, message: '请输入供应商ID', trigger: 'change' }],
-  salesOrderId: [{ required: true, message: '请输入关联销售单ID', trigger: 'change' }]
+  salesOrderNo: [{ required: true, message: '请输入关联销售单号', trigger: 'blur' }],
+  totalAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
+  actualAmount: [{ required: true, message: '请输入实际金额', trigger: 'blur' }],
+  depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
+  depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }]
 }
 
 const getList = async () => {
@@ -139,6 +235,7 @@ const handleQuery = () => {
 }
 const resetQuery = () => {
   queryParams.poNo = ''
+  queryParams.salesOrderNo = ''
   queryParams.status = undefined
   handleQuery()
 }
@@ -156,8 +253,17 @@ const resetForm = () => {
   form.id = null
   form.poNo = ''
   form.supplierId = null
-  form.salesOrderId = null
+  form.salesOrderNo = ''
   form.totalAmount = 0
+  form.actualAmount = 0
+  form.depositRate = 0
+  form.depositAmount = 0
+  form.deliveryDate = null
+  form.transportRemark = ''
+  form.totalFreight = 0
+  form.photos = ''
+  form.materialSheet = ''
+  form.invoice = ''
   form.status = 1
   formRef.value?.clearValidate()
 }
@@ -174,8 +280,17 @@ const handleEdit = (row: any) => {
     id: row.id,
     poNo: row.poNo,
     supplierId: row.supplierId,
-    salesOrderId: row.salesOrderId,
+    salesOrderNo: row.salesOrderNo,
     totalAmount: row.totalAmount ?? 0,
+    actualAmount: row.actualAmount ?? 0,
+    depositRate: row.depositRate ?? 0,
+    depositAmount: row.depositAmount ?? 0,
+    deliveryDate: row.deliveryDate ?? null,
+    transportRemark: row.transportRemark ?? '',
+    totalFreight: row.totalFreight ?? 0,
+    photos: row.photos ?? '',
+    materialSheet: row.materialSheet ?? '',
+    invoice: row.invoice ?? '',
     status: row.status ?? 1
   })
   dialogTitle.value = '编辑采购单'
@@ -207,8 +322,16 @@ const handleExport = async () => {
   exportToCsv('采购订单导出', rows, [
     { label: '采购单号', key: 'poNo' },
     { label: '供应商ID', key: 'supplierId' },
-    { label: '关联销售单ID', key: 'salesOrderId' },
+    { label: '供应商', key: 'supplierName' },
+    { label: '关联销售单号', key: 'salesOrderNo' },
     { label: '总金额(RMB)', key: 'totalAmount' },
+    { label: '实际金额(RMB)', key: 'actualAmount' },
+    { label: '定金比例(%)', key: 'depositRate' },
+    { label: '定金金额(RMB)', key: 'depositAmount' },
+    { label: '交货日期', key: 'deliveryDate' },
+    { label: '运输备注', key: 'transportRemark' },
+    { label: '总运费(RMB)', key: 'totalFreight' },
+    { label: '发票', key: 'invoice' },
     { label: '状态', value: (r: any) => getStatusLabel(r.status) },
     { label: '创建时间', key: 'createTime' }
   ])

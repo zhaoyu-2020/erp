@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/supplier-accounts")
 public class SupplierAccountController {
 
@@ -21,12 +24,12 @@ public class SupplierAccountController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody SupplierAccount account) {
+    public Result<Boolean> save(@Valid @RequestBody SupplierAccount account) {
         return Result.success(supplierAccountService.save(account));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody SupplierAccount account) {
+    public Result<Boolean> update(@Valid @RequestBody SupplierAccount account) {
         return Result.success(supplierAccountService.updateById(account));
     }
 

@@ -8,8 +8,11 @@ import com.mc.erp.service.StockService;
 import com.mc.erp.vo.StockVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/stocks")
 public class StockController {
 
@@ -27,12 +30,12 @@ public class StockController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Stock stock) {
+    public Result<Boolean> save(@Valid @RequestBody Stock stock) {
         return Result.success(stockService.save(stock));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Stock stock) {
+    public Result<Boolean> update(@Valid @RequestBody Stock stock) {
         return Result.success(stockService.updateById(stock));
     }
 

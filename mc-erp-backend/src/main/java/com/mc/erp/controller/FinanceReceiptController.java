@@ -8,8 +8,11 @@ import com.mc.erp.service.FinanceReceiptService;
 import com.mc.erp.vo.FinanceReceiptVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/finance-receipts")
 public class FinanceReceiptController {
 
@@ -27,12 +30,12 @@ public class FinanceReceiptController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody FinanceReceipt financeReceipt) {
+    public Result<Boolean> save(@Valid @RequestBody FinanceReceipt financeReceipt) {
         return Result.success(financeReceiptService.save(financeReceipt));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody FinanceReceipt financeReceipt) {
+    public Result<Boolean> update(@Valid @RequestBody FinanceReceipt financeReceipt) {
         return Result.success(financeReceiptService.updateById(financeReceipt));
     }
 

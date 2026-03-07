@@ -3,6 +3,12 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `spu_code` varchar(50) NOT NULL COMMENT '产品编码(内部)',
   `hs_code` varchar(20) DEFAULT NULL COMMENT '海关编码',
+  `type` varchar(50) DEFAULT NULL COMMENT '产品类型',
+  `spec` varchar(100) DEFAULT NULL COMMENT '规格',
+  `material` varchar(100) DEFAULT NULL COMMENT '材质',
+  `length` varchar(50) DEFAULT NULL COMMENT '长度',
+  `tolerance` varchar(50) DEFAULT NULL COMMENT '公差',
+  `declaration` varchar(255) DEFAULT NULL COMMENT '申报要素',
   `name_cn` varchar(200) NOT NULL COMMENT '中文品名',
   `name_en` varchar(200) DEFAULT NULL COMMENT '英文品名',
   `tax_refund_rate` decimal(5,4) DEFAULT '0.0000' COMMENT '退税率',
@@ -22,8 +28,18 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `salesperson_id` bigint(20) NOT NULL COMMENT '业务员ID(归属人)',
   `trade_term` varchar(20) NOT NULL COMMENT '贸易条款(FOB, CIF, EXW 等)',
   `currency` varchar(10) NOT NULL DEFAULT 'USD' COMMENT '结算币种',
-  `exchange_rate` decimal(10,4) NOT NULL COMMENT '立单时汇率(快照)',
-  `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '订单总金额',
+  `deposit_exchange_rate` decimal(10,4) NOT NULL DEFAULT '0.0000' COMMENT '定金汇率',
+  `final_exchange_rate` decimal(10,4) NOT NULL DEFAULT '0.0000' COMMENT '尾款汇率',
+  `contract_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '合同金额',
+  `actual_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '实际金额',
+  `deposit_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT '定金比例(%)',
+  `received_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '已收款金额',
+  `expected_receipt_days` int(11) NOT NULL DEFAULT '0' COMMENT '预计收尾款天数',
+  `transport_type` varchar(50) DEFAULT NULL COMMENT '运输类型(集装箱/散货/铁路/汽运)',
+  `sea_freight` decimal(15,2) DEFAULT '0.00' COMMENT '海运费',
+  `port_fee` decimal(15,2) DEFAULT '0.00' COMMENT '港杂费',
+  `vat` decimal(15,2) DEFAULT '0.00' COMMENT '增值税',
+  `profit` decimal(15,2) DEFAULT '0.00' COMMENT '利润',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2已审核待采购 3生产中 4已发货 5已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -37,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
 CREATE TABLE IF NOT EXISTS `biz_sales_order_item` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `order_id` bigint(20) NOT NULL COMMENT '销售订单主表ID',
-  `product_id` bigint(20) NOT NULL COMMENT '产品ID',
+  `product_id` bigint(20) DEFAULT NULL COMMENT '产品ID',
   `quantity` int(11) NOT NULL COMMENT '下单数量',
   `unit_price` decimal(10,2) NOT NULL COMMENT '外币单价',
   `total_price` decimal(15,2) NOT NULL COMMENT '单品总价(外币)',
@@ -49,19 +65,19 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order_item` (
 -- 4. 客户档案表
 CREATE TABLE IF NOT EXISTS `biz_customer` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `customer_code` varchar(50) NOT NULL COMMENT '客户编号',
   `name` varchar(200) NOT NULL COMMENT '客户名称',
   `country` varchar(100) DEFAULT NULL COMMENT '国家/地区',
   `continent` varchar(20) DEFAULT NULL COMMENT '洲别(ASIA/EUROPE/NORTH_AMERICA/SOUTH_AMERICA/AFRICA/OCEANIA/ANTARCTICA)',
-  `contact_person` varchar(100) DEFAULT NULL COMMENT '联系人',
+  `consignee` varchar(200) DEFAULT NULL COMMENT '收货人',
+  `notify` varchar(200) DEFAULT NULL COMMENT '通知人',
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `phone` varchar(50) DEFAULT NULL COMMENT '电话',
+  `sales_user_id` bigint(20) DEFAULT NULL COMMENT '业务员用户ID',
   `level` varchar(20) DEFAULT 'NORMAL' COMMENT '级别(VIP/NORMAL)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_customer_code` (`customer_code`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客户档案表';
 
 -- 5. 供应商档案表
@@ -100,10 +116,19 @@ CREATE TABLE IF NOT EXISTS `biz_supplier_account` (
 CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `po_no` varchar(50) NOT NULL COMMENT '采购单号',
-  `sales_order_id` bigint(20) DEFAULT NULL COMMENT '关联销售单ID',
   `supplier_id` bigint(20) NOT NULL COMMENT '供应商ID',
-  `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '采购总金额(RMB)',
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2生产中 3已入库',
+  `sales_order_no` varchar(50) DEFAULT NULL COMMENT '关联销售订单号',
+  `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '订单金额',
+  `actual_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '实际金额',
+  `deposit_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT '定金比例(%)',
+  `deposit_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '定金金额',
+  `delivery_date` date DEFAULT NULL COMMENT '交货期',
+  `transport_remark` varchar(500) DEFAULT NULL COMMENT '运输备注(车辆信息)',
+  `total_freight` decimal(15,2) DEFAULT '0.00' COMMENT '总运费',
+  `photos` varchar(1000) DEFAULT NULL COMMENT '照片(多张逗号分隔)',
+  `material_sheet` varchar(500) DEFAULT NULL COMMENT '材质单',
+  `invoice` varchar(500) DEFAULT NULL COMMENT '发票',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1已签合同 2已付定金 3生产完成 4待付尾款 5已发货 6已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `is_deleted` tinyint(1) DEFAULT '0',
@@ -111,6 +136,18 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   UNIQUE KEY `uk_po_no` (`po_no`),
   KEY `idx_supplier` (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单表';
+
+-- 6-1. 采购订单加工项表
+CREATE TABLE IF NOT EXISTS `biz_purchase_order_item` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `purchase_order_id` bigint(20) NOT NULL COMMENT '采购订单ID',
+  `content` varchar(500) NOT NULL COMMENT '加工内容',
+  `amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '金额',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_purchase_order` (`purchase_order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单加工项表';
 
 -- 7. 用户表
 CREATE TABLE IF NOT EXISTS `sys_user` (

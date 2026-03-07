@@ -2,9 +2,6 @@
   <div class="app-container">
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <el-form-item label="客户编码">
-          <el-input v-model="queryParams.customerCode" placeholder="输入编码" clearable />
-        </el-form-item>
         <el-form-item label="客户名称">
           <el-input v-model="queryParams.name" placeholder="输入名称" clearable />
         </el-form-item>
@@ -33,15 +30,16 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="客户编码" prop="customerCode" width="120" />
         <el-table-column label="名称" prop="name" min-width="150" />
+        <el-table-column label="收货人" prop="consignee" width="120" />
+        <el-table-column label="通知人" prop="notify" width="120" />
         <el-table-column label="国家/地区" prop="country" width="120" />
         <el-table-column label="洲别" prop="continent" width="130">
           <template #default="{ row }">
             <el-tag type="success">{{ formatContinentLabel(row.continent) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="联系人" prop="contactPerson" width="120" />
+        <el-table-column label="业务员" prop="salesUserName" width="120" />
         <el-table-column label="邮箱" prop="email" min-width="150" />
         <el-table-column label="电话" prop="phone" width="150" />
         <el-table-column label="级别" prop="level" width="100" align="center">
@@ -70,9 +68,6 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="客户编码" prop="customerCode">
-          <el-input v-model="form.customerCode" placeholder="输入客户编码" :disabled="!!form.id" />
-        </el-form-item>
         <el-form-item label="客户名称" prop="name">
           <el-input v-model="form.name" placeholder="输入客户名称" />
         </el-form-item>
@@ -89,8 +84,16 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="联系人" prop="contactPerson">
-          <el-input v-model="form.contactPerson" placeholder="输入联系人" />
+        <el-form-item label="收货人" prop="consignee">
+          <el-input v-model="form.consignee" placeholder="输入收货人" />
+        </el-form-item>
+        <el-form-item label="通知人" prop="notify">
+          <el-input v-model="form.notify" placeholder="输入通知人" />
+        </el-form-item>
+        <el-form-item label="业务员" prop="salesUserId">
+          <el-select v-model="form.salesUserId" placeholder="选择业务员" filterable clearable>
+            <el-option v-for="item in userOptions" :key="item.id" :label="item.username" :value="item.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email" placeholder="输入邮箱" />
@@ -119,6 +122,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getCustomerPage, saveCustomer, updateCustomer, deleteCustomer } from '@/api/customer'
+import { getUserPage } from '@/api/system'
 
 const CONTINENT_OPTIONS = [
   { label: '亚洲', value: 'ASIA' },
@@ -140,32 +144,35 @@ const submitLoading = ref(false)
 const dataList = ref([])
 const total = ref(0)
 const dialogVisible = ref(false)
+const userOptions = ref<any[]>([])
 const dialogTitle = ref('')
 const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
-  customerCode: '',
   name: '',
   continent: ''
 })
 
 const form = reactive<any>({
   id: null,
-  customerCode: '',
   name: '',
   country: '',
   continent: 'ASIA',
-  contactPerson: '',
+  consignee: '',
+  notify: '',
+  salesUserId: null,
   email: '',
   phone: '',
   level: 'NORMAL'
 })
 
 const rules = {
-  customerCode: [{ required: true, message: '请输入客户编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
-  continent: [{ required: true, message: '请选择洲别', trigger: 'change' }]
+  continent: [{ required: true, message: '请选择洲别', trigger: 'change' }],
+  consignee: [{ required: true, message: '请输入收货人', trigger: 'blur' }],
+  notify: [{ required: true, message: '请输入通知人', trigger: 'blur' }],
+  salesUserId: [{ required: true, message: '请选择业务员', trigger: 'change' }]
 }
 
 const getList = async () => {
@@ -179,12 +186,20 @@ const getList = async () => {
   }
 }
 
+const loadUsers = async () => {
+  try {
+    const res = await getUserPage({ pageNum: 1, pageSize: 1000 })
+    userOptions.value = res.data.list || []
+  } catch (error) {
+    console.error('加载用户列表失败', error)
+  }
+}
+
 const handleQuery = () => {
   queryParams.pageNum = 1
   getList()
 }
 const resetQuery = () => {
-  queryParams.customerCode = ''
   queryParams.name = ''
   queryParams.continent = ''
   handleQuery()
@@ -192,11 +207,12 @@ const resetQuery = () => {
 
 const resetForm = () => {
   form.id = null
-  form.customerCode = ''
   form.name = ''
   form.country = ''
   form.continent = 'ASIA'
-  form.contactPerson = ''
+  form.consignee = ''
+  form.notify = ''
+  form.salesUserId = null
   form.email = ''
   form.phone = ''
   form.level = 'NORMAL'
@@ -213,11 +229,12 @@ const handleEdit = (row: any) => {
   resetForm()
   Object.assign(form, {
     id: row.id,
-    customerCode: row.customerCode,
     name: row.name,
     country: row.country,
     continent: row.continent || 'ASIA',
-    contactPerson: row.contactPerson,
+    consignee: row.consignee,
+    notify: row.notify,
+    salesUserId: row.salesUserId,
     email: row.email,
     phone: row.phone,
     level: row.level || 'NORMAL'
@@ -260,11 +277,12 @@ const handleExport = async () => {
     continent: formatContinentLabel(row.continent)
   }))
   exportToCsv('客户管理导出', rows, [
-    { label: '客户编码', key: 'customerCode' },
     { label: '名称', key: 'name' },
+    { label: '收货人', key: 'consignee' },
+    { label: '通知人', key: 'notify' },
     { label: '国家/地区', key: 'country' },
     { label: '洲别', key: 'continent' },
-    { label: '联系人', key: 'contactPerson' },
+    { label: '业务员', key: 'salesUserName' },
     { label: '邮箱', key: 'email' },
     { label: '电话', key: 'phone' },
     { label: '级别', key: 'level' }
@@ -277,6 +295,7 @@ const formatContinentLabel = (continent?: string) => {
 }
 
 onMounted(() => {
+  loadUsers()
   getList()
 })
 </script>

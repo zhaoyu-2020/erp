@@ -8,8 +8,11 @@ import com.mc.erp.service.CustomsDocService;
 import com.mc.erp.vo.CustomsDocVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/customs-docs")
 public class CustomsDocController {
 
@@ -27,12 +30,12 @@ public class CustomsDocController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody CustomsDoc customsDoc) {
+    public Result<Boolean> save(@Valid @RequestBody CustomsDoc customsDoc) {
         return Result.success(customsDocService.save(customsDoc));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody CustomsDoc customsDoc) {
+    public Result<Boolean> update(@Valid @RequestBody CustomsDoc customsDoc) {
         return Result.success(customsDocService.updateById(customsDoc));
     }
 

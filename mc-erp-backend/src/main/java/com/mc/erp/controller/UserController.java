@@ -11,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/users")
 public class UserController {
 
@@ -30,12 +33,12 @@ public class UserController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody User user) {
+    public Result<Boolean> save(@Valid @RequestBody User user) {
         return Result.success(userService.save(user));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody User user) {
+    public Result<Boolean> update(@Valid @RequestBody User user) {
         return Result.success(userService.updateById(user));
     }
 
@@ -50,7 +53,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/roles")
-    public Result<Boolean> updateUserRoles(@PathVariable Long id, @RequestBody UpdateUserRolesDTO dto) {
+    public Result<Boolean> updateUserRoles(@PathVariable Long id, @Valid @RequestBody UpdateUserRolesDTO dto) {
         return Result.success(userService.updateUserRoles(id, dto == null ? null : dto.getRoleIds()));
     }
 }

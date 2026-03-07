@@ -8,8 +8,11 @@ import com.mc.erp.service.ProductService;
 import com.mc.erp.vo.ProductVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/products")
 public class ProductController {
 
@@ -27,12 +30,12 @@ public class ProductController {
     }
 
     @PostMapping
-    public Result<Boolean> save(@RequestBody Product product) {
+    public Result<Boolean> save(@Valid @RequestBody Product product) {
         return Result.success(productService.save(product));
     }
 
     @PutMapping
-    public Result<Boolean> update(@RequestBody Product product) {
+    public Result<Boolean> update(@Valid @RequestBody Product product) {
         return Result.success(productService.updateById(product));
     }
 

@@ -1,6 +1,8 @@
 package com.mc.erp.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -9,13 +11,26 @@ import java.time.LocalDateTime;
 public class Customer {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String customerCode;
+
+    @NotBlank(message = "客户名称不能为空")
     private String name;
     private String country;
     private String continent;
-    private String contactPerson;
+
+    @NotBlank(message = "收货人不能为空")
+    private String consignee;
+
+    @NotBlank(message = "通知人不能为空")
+    private String notify;
+
+    @Email(message = "邮箱格式不正确")
     private String email;
+
+    @NotBlank(message = "联系电话不能为空")
     private String phone;
+    /** 关联业务员用户ID */
+    @TableField("sales_user_id")
+    private Long salesUserId;
     private String level;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
