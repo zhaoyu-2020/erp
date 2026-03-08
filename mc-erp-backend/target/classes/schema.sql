@@ -1,3 +1,4 @@
+
 -- 1. 产品主数据表
 CREATE TABLE IF NOT EXISTS `biz_product` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
@@ -165,7 +166,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统用户表';
 
 -- 插入一条默认测试用户
-INSERT INTO `sys_user` (`username`, `password`, `real_name`) VALUES ('admin', '123456', 'Administrator');
+
 
 -- 8. 库存表 (WMS)
 CREATE TABLE IF NOT EXISTS `biz_stock` (
@@ -258,5 +259,4 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
 -- 插入默认角色和权限数据
-INSERT INTO `sys_role` (`role_code`, `role_name`, `description`) VALUES ('admin', '超级管理员', '系统最高权限');
-INSERT INTO `sys_user_role` (`user_id`, `role_id`) VALUES (1, 1);
+
