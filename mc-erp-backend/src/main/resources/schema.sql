@@ -22,10 +22,6 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   UNIQUE KEY `uk_spu_code` (`spu_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='外贸产品主数据表';
 
--- 已有库升级（MySQL 8+）：补充产品米重字段
-ALTER TABLE `biz_product`
-  ADD COLUMN IF NOT EXISTS `meter_weight` varchar(50) DEFAULT NULL COMMENT '米重' AFTER `length`;
-
 -- 2. 销售订单主表
 CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
