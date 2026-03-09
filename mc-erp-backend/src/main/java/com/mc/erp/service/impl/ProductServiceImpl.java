@@ -23,7 +23,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Page<Product> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
 
-        wrapper.like(StringUtils.hasText(query.getSpuCode()), Product::getSpuCode, query.getSpuCode());
         wrapper.like(StringUtils.hasText(query.getNameCn()), Product::getNameCn, query.getNameCn());
         wrapper.eq(StringUtils.hasText(query.getType()), Product::getType, query.getType());
         wrapper.orderByDesc(Product::getCreateTime);

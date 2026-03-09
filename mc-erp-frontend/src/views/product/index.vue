@@ -2,9 +2,7 @@
   <div class="app-container">
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <el-form-item label="SPU编码">
-          <el-input v-model="queryParams.spuCode" placeholder="输入SPU编码" clearable />
-        </el-form-item>
+        
         <el-form-item label="产品名称">
           <el-input v-model="queryParams.nameCn" placeholder="输入产品中文名称" clearable />
         </el-form-item>
@@ -33,7 +31,6 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="SPU编码" prop="spuCode" width="120" />
         <el-table-column label="中文名称" prop="nameCn" min-width="150" />
         <el-table-column label="英文名称" prop="nameEn" min-width="150" />
         <el-table-column label="类型" prop="type" width="120" />
@@ -71,9 +68,7 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="SPU编码" prop="spuCode">
-          <el-input v-model="form.spuCode" placeholder="输入SPU编码" :disabled="!!form.id" />
-        </el-form-item>
+        
         <el-form-item label="中文名称" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="输入中文名称" />
         </el-form-item>
@@ -151,14 +146,12 @@ const formRef = ref<FormInstance>()
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
-  spuCode: '',
   nameCn: '',
   type: ''
 })
 
 const form = reactive<any>({
   id: null,
-  spuCode: '',
   nameCn: '',
   nameEn: '',
   type: '',
@@ -174,7 +167,6 @@ const form = reactive<any>({
 })
 
 const rules = {
-  spuCode: [{ required: true, message: '请输入SPU编码', trigger: 'blur' }],
   nameCn: [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择类型', trigger: 'change' }],
   spec: [{ required: true, message: '请输入规格', trigger: 'blur' }],
@@ -202,7 +194,6 @@ const handleQuery = () => {
   getList()
 }
 const resetQuery = () => {
-  queryParams.spuCode = ''
   queryParams.nameCn = ''
   queryParams.type = ''
   handleQuery()
@@ -210,7 +201,6 @@ const resetQuery = () => {
 
 const resetForm = () => {
   form.id = null
-  form.spuCode = ''
   form.nameCn = ''
   form.nameEn = ''
   form.type = ''
@@ -236,7 +226,6 @@ const handleEdit = (row: any) => {
   resetForm()
   Object.assign(form, {
     id: row.id,
-    spuCode: row.spuCode,
     nameCn: row.nameCn,
     nameEn: row.nameEn,
     type: row.type,
@@ -285,7 +274,6 @@ const handleExport = async () => {
   const res = await getProductPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
   exportToCsv('产品管理导出', rows, [
-    { label: 'SPU编码', key: 'spuCode' },
     { label: '中文名称', key: 'nameCn' },
     { label: '英文名称', key: 'nameEn' },
     { label: '类型', key: 'type' },

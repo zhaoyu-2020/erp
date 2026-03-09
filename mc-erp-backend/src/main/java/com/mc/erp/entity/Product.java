@@ -12,10 +12,7 @@ import java.time.LocalDateTime;
 public class Product {
     @TableId(type = IdType.AUTO)
     private Long id;
-
-    @NotBlank(message = "SPU 编码不能为空")
-    private String spuCode;
-
+  
     @NotBlank(message = "商品类型不能为空")
     private String type;
 

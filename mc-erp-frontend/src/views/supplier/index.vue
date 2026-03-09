@@ -18,6 +18,7 @@
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新增供应商</el-button>
+        <el-button type="warning" icon="CollectionTag" @click="openProductTypeDialog">产品类型</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
@@ -70,6 +71,19 @@
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
       </template>
+    </el-dialog>
+
+    <!-- Product Type Dialog -->
+    <el-dialog v-model="productTypeDialogVisible" title="产品类型管理" width="560px" destroy-on-close>
+      <div class="product-type-input-row">
+        <el-input v-model="newProductTypeName" placeholder="请输入产品类型" clearable />
+        <el-button type="primary" :loading="productTypeSubmitLoading" @click="handleAddProductType">添加</el-button>
+      </div>
+      <el-table :data="productTypeList" border stripe size="small" v-loading="productTypeLoading">
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column label="产品类型" prop="typeName" min-width="220" />
+        <el-table-column label="创建时间" prop="createTime" min-width="180" />
+      </el-table>
     </el-dialog>
 
     <!-- Account Dialog -->
@@ -137,6 +151,7 @@ import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getSupplierPage, saveSupplier, updateSupplier, deleteSupplier } from '@/api/supplier'
 import { getSupplierAccountList, saveSupplierAccount, updateSupplierAccount, deleteSupplierAccount } from '@/api/supplierAccount'
+import { getProductTypeList, saveProductType } from '@/api/productType'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -254,6 +269,47 @@ const handleExport = async () => {
     { label: '电话', key: 'phone' },
     { label: '地址', key: 'address' }
   ])
+}
+
+// ===== 产品类型管理 =====
+const productTypeDialogVisible = ref(false)
+const productTypeLoading = ref(false)
+const productTypeSubmitLoading = ref(false)
+const newProductTypeName = ref('')
+const productTypeList = ref<any[]>([])
+
+const loadProductTypeList = async () => {
+  productTypeLoading.value = true
+  try {
+    const res = await getProductTypeList()
+    productTypeList.value = res.data || []
+  } finally {
+    productTypeLoading.value = false
+  }
+}
+
+const openProductTypeDialog = async () => {
+  productTypeDialogVisible.value = true
+  newProductTypeName.value = ''
+  await loadProductTypeList()
+}
+
+const handleAddProductType = async () => {
+  const typeName = newProductTypeName.value.trim()
+  if (!typeName) {
+    ElMessage.warning('请输入产品类型')
+    return
+  }
+
+  productTypeSubmitLoading.value = true
+  try {
+    await saveProductType({ typeName })
+    ElMessage.success('添加成功')
+    newProductTypeName.value = ''
+    await loadProductTypeList()
+  } finally {
+    productTypeSubmitLoading.value = false
+  }
 }
 
 onMounted(() => {
@@ -377,4 +433,5 @@ const handleAccountSubmit = async () => {
 .table-toolbar { margin-bottom: 16px; }
 .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 .account-toolbar { margin-bottom: 12px; }
+.product-type-input-row { display: flex; gap: 12px; margin-bottom: 12px; }
 </style>

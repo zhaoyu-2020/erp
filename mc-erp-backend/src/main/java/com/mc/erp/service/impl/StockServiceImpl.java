@@ -32,7 +32,6 @@ public class StockServiceImpl extends ServiceImpl<StockMapper, Stock> implements
             BeanUtils.copyProperties(stock, vo);
             // In a real application, you would typically fetch the product details here
             // using the ProductService to populate productCode and productName securely.
-            vo.setProductCode("SPU-" + stock.getProductId());
             vo.setProductName("Product " + stock.getProductId());
             return vo;
         }).collect(Collectors.toList());

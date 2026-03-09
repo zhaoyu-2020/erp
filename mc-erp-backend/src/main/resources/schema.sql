@@ -2,7 +2,6 @@
 -- 1. 产品主数据表
 CREATE TABLE IF NOT EXISTS `biz_product` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-  `spu_code` varchar(50) NOT NULL COMMENT '产品编码(内部)',
   `hs_code` varchar(20) DEFAULT NULL COMMENT '海关编码',
   `type` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `spec` varchar(100) DEFAULT NULL COMMENT '规格',
@@ -19,8 +18,19 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除:0否 1是',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_spu_code` (`spu_code`)
+  UNIQUE KEY `uk_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='外贸产品主数据表';
+
+-- 1-1. 产品类型表
+CREATE TABLE IF NOT EXISTS `biz_product_type` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `type_name` varchar(100) NOT NULL COMMENT '产品类型名称',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_type_name` (`type_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产品类型字典表';
 
 -- 2. 销售订单主表
 CREATE TABLE IF NOT EXISTS `biz_sales_order` (
