@@ -20,6 +20,9 @@ public class SalesOrderVO {
     private BigDecimal actualAmount;
     private BigDecimal depositRate;
     private BigDecimal receivedAmount;
+    private BigDecimal finalPaymentAmount;
+    private BigDecimal insuranceFee;
+    private BigDecimal insuranceAmount;
     private Integer expectedReceiptDays;
     private String transportType;
     private BigDecimal seaFreight;

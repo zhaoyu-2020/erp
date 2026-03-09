@@ -44,7 +44,10 @@
             <span>{{ row.actualAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="收款金额" prop="receivedAmount" width="120" align="right" />
+        <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
+        <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
+        <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
+        <el-table-column label="保险金额" prop="insuranceAmount" width="120" align="right" />
         <el-table-column label="预计收尾款(天)" prop="expectedReceiptDays" width="140" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="状态" prop="status" width="120" align="center">
@@ -167,13 +170,34 @@
 
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="收款金额" prop="receivedAmount">
-              <el-input v-model="form.receivedAmount" placeholder="输入收款金额" />
+            <el-form-item label="定金收款金额" prop="receivedAmount">
+              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="预计收尾款天数" prop="expectedReceiptDays">
               <el-input v-model="form.expectedReceiptDays" placeholder="输入天数" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="尾款金额" prop="finalPaymentAmount">
+              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="保险费用" prop="insuranceFee">
+              <el-input v-model="form.insuranceFee" placeholder="输入保险费用" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="保险金额" prop="insuranceAmount">
+              <el-input v-model="form.insuranceAmount" placeholder="输入保险金额" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -248,7 +272,10 @@
         <el-descriptions-item label="定金汇率">{{ detailData.depositExchangeRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="尾款汇率">{{ detailData.finalExchangeRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="收款金额">{{ detailData.receivedAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金收款金额">{{ detailData.receivedAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="尾款金额">{{ detailData.finalPaymentAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="保险费用">{{ detailData.insuranceFee ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="保险金额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="预计收尾款(天)">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
         <el-descriptions-item label="海运费">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
@@ -305,6 +332,9 @@ const form = reactive<any>({
   actualAmount: 0,
   depositRate: 0,
   receivedAmount: 0,
+  finalPaymentAmount: 0,
+  insuranceFee: 0,
+  insuranceAmount: 0,
   expectedReceiptDays: 0,
   transportType: '',
   seaFreight: 0,
@@ -327,6 +357,9 @@ const detailData = reactive<any>({
   actualAmount: 0,
   depositRate: 0,
   receivedAmount: 0,
+  finalPaymentAmount: 0,
+  insuranceFee: 0,
+  insuranceAmount: 0,
   expectedReceiptDays: 0,
   transportType: '',
   seaFreight: 0,
@@ -347,7 +380,7 @@ const rules = {
   finalExchangeRate: [{ required: true, message: '请输入尾款汇率', trigger: 'blur' }],
   contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
-  receivedAmount: [{ required: true, message: '请输入收款金额', trigger: 'blur' }],
+  receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
   expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }]
 }
 
@@ -395,6 +428,9 @@ const handleDetail = (row: any) => {
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     receivedAmount: row.receivedAmount ?? 0,
+    finalPaymentAmount: row.finalPaymentAmount ?? 0,
+    insuranceFee: row.insuranceFee ?? 0,
+    insuranceAmount: row.insuranceAmount ?? 0,
     expectedReceiptDays: row.expectedReceiptDays ?? 0,
     transportType: row.transportType ?? '',
     seaFreight: row.seaFreight ?? 0,
@@ -422,6 +458,9 @@ const handleEdit = async (row: any) => {
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     receivedAmount: row.receivedAmount ?? 0,
+    finalPaymentAmount: row.finalPaymentAmount ?? 0,
+    insuranceFee: row.insuranceFee ?? 0,
+    insuranceAmount: row.insuranceAmount ?? 0,
     expectedReceiptDays: row.expectedReceiptDays ?? 0,
     transportType: row.transportType ?? '',
     seaFreight: row.seaFreight ?? 0,
@@ -448,6 +487,9 @@ const resetForm = () => {
   form.actualAmount = 0
   form.depositRate = 0
   form.receivedAmount = 0
+  form.finalPaymentAmount = 0
+  form.insuranceFee = 0
+  form.insuranceAmount = 0
   form.expectedReceiptDays = 0
   form.transportType = ''
   form.seaFreight = 0
@@ -488,7 +530,10 @@ const handleExport = async () => {
     { label: '合同金额', key: 'contractAmount' },
     { label: '实际金额', key: 'actualAmount' },
     { label: '定金比例(%)', key: 'depositRate' },
-    { label: '收款金额', key: 'receivedAmount' },
+    { label: '定金收款金额', key: 'receivedAmount' },
+    { label: '尾款金额', key: 'finalPaymentAmount' },
+    { label: '保险费用', key: 'insuranceFee' },
+    { label: '保险金额', key: 'insuranceAmount' },
     { label: '预计收尾款(天)', key: 'expectedReceiptDays' },
     { label: '运输方式', key: 'transportType' },
     { label: '状态', value: (r: any) => getStatusLabel(r.status) },

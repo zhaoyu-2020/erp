@@ -37,8 +37,12 @@ public class SalesOrder {
     @NotNull(message = "定金比例不能为空")
     private BigDecimal depositRate;
 
-    @NotNull(message = "收款金额不能为空")
+    @NotNull(message = "定金收款金额不能为空")
     private BigDecimal receivedAmount;
+
+    private BigDecimal finalPaymentAmount;
+    private BigDecimal insuranceFee;
+    private BigDecimal insuranceAmount;
 
     @NotNull(message = "预计收尾款天数不能为空")
     private Integer expectedReceiptDays;
