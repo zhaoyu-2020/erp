@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `insurance_amount` decimal(15,2) DEFAULT '0.00' COMMENT '保险金额',
   `expected_receipt_days` int(11) NOT NULL DEFAULT '0' COMMENT '预计收尾款天数',
   `transport_type` varchar(50) DEFAULT NULL COMMENT '运输类型(集装箱/散货/铁路/汽运)',
-  `sea_freight` decimal(15,2) DEFAULT '0.00' COMMENT '海运费',
+  `sea_freight` decimal(15,2) DEFAULT '0.00' COMMENT '海运费(USD)',
   `port_fee` decimal(15,2) DEFAULT '0.00' COMMENT '港杂费',
   `vat` decimal(15,2) DEFAULT '0.00' COMMENT '增值税',
   `profit` decimal(15,2) DEFAULT '0.00' COMMENT '利润',

@@ -34,6 +34,9 @@ public class SalesOrder {
     @NotNull(message = "合同金额不能为空")
     private BigDecimal contractAmount;
 
+    @NotNull(message = "实际金额不能为空")
+    private BigDecimal actualAmount;
+
     @NotNull(message = "定金比例不能为空")
     private BigDecimal depositRate;
 

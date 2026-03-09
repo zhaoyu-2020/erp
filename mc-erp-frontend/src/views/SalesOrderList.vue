@@ -214,8 +214,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="海运费" prop="seaFreight">
-              <el-input v-model="form.seaFreight" placeholder="输入海运费" />
+            <el-form-item label="海运费(USD)" prop="seaFreight">
+              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -278,7 +278,7 @@
         <el-descriptions-item label="保险金额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="预计收尾款(天)">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="海运费">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="海运费(USD)">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="港杂费">{{ detailData.portFee ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="增值税">{{ detailData.vat ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="利润">{{ detailData.profit ?? '-' }}</el-descriptions-item>
