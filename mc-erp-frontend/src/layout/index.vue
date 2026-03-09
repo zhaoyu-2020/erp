@@ -46,6 +46,24 @@
             <el-icon><Money /></el-icon>
             <template #title>财务收据</template>
           </el-menu-item>
+          <el-sub-menu index="/reports">
+            <template #title>
+              <el-icon><DataAnalysis /></el-icon>
+              <span>报表管理</span>
+            </template>
+            <el-menu-item index="/dashboard">
+              <el-icon><Odometer /></el-icon>
+              <template #title>经营驾驶舱</template>
+            </el-menu-item>
+            <el-menu-item index="/reports/sales">
+              <el-icon><TrendCharts /></el-icon>
+              <template #title>销售报表</template>
+            </el-menu-item>
+            <el-menu-item index="/reports/finance">
+              <el-icon><Wallet /></el-icon>
+              <template #title>财务报表</template>
+            </el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="/system">
             <template #title>
               <el-icon><Setting /></el-icon>
@@ -150,6 +168,10 @@ const handleLogout = () => {
   font-size: 16px;
   margin-left: 10px;
 }
+.el-scrollbar {
+  flex: 1;
+  height: calc(100vh - 60px);
+}
 .el-menu {
   border-right: none;
 }
@@ -179,10 +201,10 @@ const handleLogout = () => {
   font-size: 14px;
 }
 .app-main {
-  min-height: calc(100vh - 50px);
+  height: calc(100vh - 50px);
   width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
   background-color: #f0f2f5;
   padding: 20px;
 }

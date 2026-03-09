@@ -65,10 +65,10 @@
           <el-input v-model="form.receiptNo" placeholder="输入收款单号" />
         </el-form-item>
         <el-form-item label="客户ID" prop="customerId">
-          <el-input-number v-model="form.customerId" :min="1" style="width: 100%" />
+          <el-input v-model="form.customerId" :min="1" style="width: 100%" />
         </el-form-item>
         <el-form-item label="金额" prop="amount">
-          <el-input-number v-model="form.amount" :min="0" :step="0.01" style="width: 100%" />
+          <el-input v-model="form.amount" :min="0" :step="0.01" style="width: 100%" />
         </el-form-item>
         <el-form-item label="币种" prop="currency">
           <el-input v-model="form.currency" placeholder="例如：USD" />

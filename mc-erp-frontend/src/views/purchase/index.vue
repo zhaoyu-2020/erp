@@ -46,7 +46,7 @@
         <el-table-column label="创建时间" prop="createTime" width="160" />
         <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
-            <el-button link type="primary">详情</el-button>
+            <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
           </template>
         </el-table-column>
@@ -183,6 +183,32 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
       </template>
     </el-dialog>
+
+    <!-- Detail Dialog -->
+    <el-dialog v-model="detailDialogVisible" title="采购订单详情" width="900px">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="采购单号">{{ detailData.poNo || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
+        <el-descriptions-item label="供应商ID">{{ detailData.supplierId ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="供应商">{{ detailData.supplierName || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="关联销售单号">{{ detailData.salesOrderNo || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="总金额(RMB)">{{ detailData.totalAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="实际金额(RMB)">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金金额(RMB)">{{ detailData.depositAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="交货日期">{{ detailData.deliveryDate || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="运输备注">{{ detailData.transportRemark || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="总运费(RMB)">{{ detailData.totalFreight ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="照片">{{ detailData.photos || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="材质单">{{ detailData.materialSheet || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="发票">{{ detailData.invoice || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button type="primary" @click="detailDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -200,6 +226,7 @@ const dataList = ref([])
 const total = ref(0)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
+const detailDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const supplierOptionsLoading = ref(false)
 const supplierOptions = ref<any[]>([])
@@ -227,6 +254,27 @@ const form = reactive<any>({
   materialSheet: '',
   invoice: '',
   status: 1
+})
+
+const detailData = reactive<any>({
+  id: null,
+  poNo: '',
+  supplierId: null,
+  supplierName: '',
+  salesOrderNo: '',
+  totalAmount: 0,
+  actualAmount: 0,
+  depositRate: 0,
+  depositAmount: 0,
+  deliveryDate: null,
+  transportRemark: '',
+  totalFreight: 0,
+  photos: '',
+  materialSheet: '',
+  invoice: '',
+  status: 1,
+  createTime: '',
+  updateTime: ''
 })
 
 const rules = {
@@ -294,6 +342,30 @@ const handleAdd = () => {
   loadSupplierOptions('')
   dialogTitle.value = '新增采购单'
   dialogVisible.value = true
+}
+
+const handleDetail = (row: any) => {
+  Object.assign(detailData, {
+    id: row.id,
+    poNo: row.poNo,
+    supplierId: row.supplierId,
+    supplierName: row.supplierName,
+    salesOrderNo: row.salesOrderNo,
+    totalAmount: row.totalAmount ?? 0,
+    actualAmount: row.actualAmount ?? 0,
+    depositRate: row.depositRate ?? 0,
+    depositAmount: row.depositAmount ?? 0,
+    deliveryDate: row.deliveryDate ?? null,
+    transportRemark: row.transportRemark ?? '',
+    totalFreight: row.totalFreight ?? 0,
+    photos: row.photos ?? '',
+    materialSheet: row.materialSheet ?? '',
+    invoice: row.invoice ?? '',
+    status: row.status ?? 1,
+    createTime: row.createTime ?? '',
+    updateTime: row.updateTime ?? ''
+  })
+  detailDialogVisible.value = true
 }
 
 const handleEdit = (row: any) => {

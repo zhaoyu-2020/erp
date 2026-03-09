@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `biz_customer` (
   `country` varchar(100) DEFAULT NULL COMMENT '国家/地区',
   `continent` varchar(20) DEFAULT NULL COMMENT '洲别(ASIA/EUROPE/NORTH_AMERICA/SOUTH_AMERICA/AFRICA/OCEANIA/ANTARCTICA)',
   `consignee` varchar(200) DEFAULT NULL COMMENT '收货人',
-  `notify` varchar(200) DEFAULT NULL COMMENT '通知人',
+  `notify` varchar(200) DEFAULT NULL COMMENT 'notify',
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `phone` varchar(50) DEFAULT NULL COMMENT '电话',
   `sales_user_id` bigint(20) DEFAULT NULL COMMENT '业务员用户ID',

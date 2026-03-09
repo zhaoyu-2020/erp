@@ -20,13 +20,12 @@ public class Customer {
     @NotBlank(message = "收货人不能为空")
     private String consignee;
 
-    @NotBlank(message = "通知人不能为空")
+    @NotBlank(message = "notify不能为空")
     private String notify;
 
     @Email(message = "邮箱格式不正确")
     private String email;
 
-    @NotBlank(message = "联系电话不能为空")
     private String phone;
     /** 关联业务员用户ID */
     @TableField("sales_user_id")

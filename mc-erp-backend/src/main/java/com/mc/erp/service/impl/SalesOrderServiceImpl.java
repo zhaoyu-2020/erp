@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.SalesOrderQuery;
+import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.User;
 import com.mc.erp.service.CustomerService;
+import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.mapper.SalesOrderMapper;
@@ -17,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +35,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private PurchaseOrderService purchaseOrderService;
 
     @Override
     public PageResult<SalesOrderVO> getPage(SalesOrderQuery query) {
@@ -65,5 +72,49 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         }).collect(Collectors.toList());
 
         return new PageResult<>(resultPage.getTotal(), voList);
+    }
+
+    @Override
+    public void calculateAndUpdateProfit(Long salesOrderId) {
+        // 获取销售订单信息
+        SalesOrder salesOrder = this.getById(salesOrderId);
+        if (salesOrder == null) {
+            throw new RuntimeException("销售订单不存在: " + salesOrderId);
+        }
+
+        // 查询所有关联到此销售订单的采购订单
+        LambdaQueryWrapper<PurchaseOrder> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PurchaseOrder::getSalesOrderNo, salesOrder.getOrderNo());
+        List<PurchaseOrder> purchaseOrders = purchaseOrderService.list(wrapper);
+
+        // 计算采购成本：所有采购订单的实际金额+运费总和
+        BigDecimal totalPurchaseCost = purchaseOrders.stream()
+                .map(po -> {
+                    BigDecimal actualAmount = po.getActualAmount() != null ? po.getActualAmount() : BigDecimal.ZERO;
+                    BigDecimal freight = po.getTotalFreight() != null ? po.getTotalFreight() : BigDecimal.ZERO;
+                    return actualAmount.add(freight);
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 利润计算公式：
+        // 利润 = 定金收款金额*定金汇率 + (尾款收款金额-海运费-保险费用)*尾款汇率 - 港杂费 - 采购成本
+        BigDecimal depositIncome = (salesOrder.getReceivedAmount() != null ? salesOrder.getReceivedAmount() : BigDecimal.ZERO)
+                .multiply(salesOrder.getDepositExchangeRate() != null ? salesOrder.getDepositExchangeRate() : BigDecimal.ZERO);
+
+        BigDecimal finalPayment = salesOrder.getFinalPaymentAmount() != null ? salesOrder.getFinalPaymentAmount() : BigDecimal.ZERO;
+        BigDecimal seaFreight = salesOrder.getSeaFreight() != null ? salesOrder.getSeaFreight() : BigDecimal.ZERO;
+        BigDecimal insuranceFee = salesOrder.getInsuranceFee() != null ? salesOrder.getInsuranceFee() : BigDecimal.ZERO;
+        BigDecimal finalExchangeRate = salesOrder.getFinalExchangeRate() != null ? salesOrder.getFinalExchangeRate() : BigDecimal.ZERO;
+        
+        BigDecimal finalIncome = finalPayment.subtract(seaFreight).subtract(insuranceFee)
+                .multiply(finalExchangeRate);
+
+        BigDecimal portFee = salesOrder.getPortFee() != null ? salesOrder.getPortFee() : BigDecimal.ZERO;
+
+        BigDecimal profit = depositIncome.add(finalIncome).subtract(portFee).subtract(totalPurchaseCost);
+        System.out.println("Calculated profit for Sales Order " + salesOrder.getOrderNo() + ": " + depositIncome + " (deposit) + " + finalIncome + " (final) - " + portFee + " (port fee) - " + totalPurchaseCost + " (purchase cost) = " + profit);
+        // 更新销售订单的利润
+        salesOrder.setProfit(profit);
+        this.updateById(salesOrder);
     }
 }

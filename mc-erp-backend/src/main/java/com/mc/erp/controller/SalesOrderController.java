@@ -36,7 +36,21 @@ public class SalesOrderController {
 
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody SalesOrder salesOrder) {
-        return Result.success(salesOrderService.updateById(salesOrder));
+        // 获取更新前的订单信息
+        SalesOrder oldOrder = salesOrderService.getById(salesOrder.getId());
+        
+        // 更新订单
+        boolean success = salesOrderService.updateById(salesOrder);
+        
+        // 如果状态变更为已完成（5），自动计算利润
+        if (success && salesOrder.getStatus() != null && salesOrder.getStatus() == 5) {
+            // 检查是否是状态发生变更
+            if (oldOrder == null || !Integer.valueOf(5).equals(oldOrder.getStatus())) {
+                salesOrderService.calculateAndUpdateProfit(salesOrder.getId());
+            }
+        }
+        
+        return Result.success(success);
     }
 
     @DeleteMapping("/{id}")

@@ -21,6 +21,24 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '销售订单', icon: 'Document' }
             },
             {
+                path: 'dashboard',
+                name: 'Dashboard',
+                component: () => import('@/views/reports/dashboard.vue'),
+                meta: { title: '经营驾驶舱', icon: 'DataAnalysis' }
+            },
+            {
+                path: 'reports/sales',
+                name: 'SalesReport',
+                component: () => import('@/views/reports/sales.vue'),
+                meta: { title: '销售报表', icon: 'TrendCharts' }
+            },
+            {
+                path: 'reports/finance',
+                name: 'FinanceReport',
+                component: () => import('@/views/reports/finance.vue'),
+                meta: { title: '财务报表', icon: 'Wallet' }
+            },
+            {
                 path: 'customers',
                 name: 'CustomerList',
                 component: () => import('@/views/customer/index.vue'),

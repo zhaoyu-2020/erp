@@ -31,8 +31,8 @@
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="名称" prop="name" min-width="150" />
-        <el-table-column label="收货人" prop="consignee" width="120" />
-        <el-table-column label="通知人" prop="notify" width="120" />
+        <el-table-column label="consignee" prop="consignee" width="120" />
+        <el-table-column label="notify" prop="notify" width="120" />
         <el-table-column label="国家/地区" prop="country" width="120" />
         <el-table-column label="洲别" prop="continent" width="130">
           <template #default="{ row }">
@@ -84,11 +84,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="收货人" prop="consignee">
+        <el-form-item label="consignee" prop="consignee">
           <el-input v-model="form.consignee" placeholder="输入收货人" />
         </el-form-item>
-        <el-form-item label="通知人" prop="notify">
-          <el-input v-model="form.notify" placeholder="输入通知人" />
+        <el-form-item label="notify" prop="notify">
+          <el-input v-model="form.notify" placeholder="输入notify" />
         </el-form-item>
         <el-form-item label="业务员" prop="salesUserId">
           <el-select v-model="form.salesUserId" placeholder="选择业务员" filterable clearable>
@@ -171,7 +171,7 @@ const rules = {
   name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
   continent: [{ required: true, message: '请选择洲别', trigger: 'change' }],
   consignee: [{ required: true, message: '请输入收货人', trigger: 'blur' }],
-  notify: [{ required: true, message: '请输入通知人', trigger: 'blur' }],
+  notify: [{ required: true, message: '请输入notify', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入电话', trigger: 'blur' }],
   email: [{ type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'change'] }],
   salesUserId: [{ required: true, message: '请选择业务员', trigger: 'change' }]
@@ -280,8 +280,8 @@ const handleExport = async () => {
   }))
   exportToCsv('客户管理导出', rows, [
     { label: '名称', key: 'name' },
-    { label: '收货人', key: 'consignee' },
-    { label: '通知人', key: 'notify' },
+    { label: 'consignee', key: 'consignee' },
+    { label: 'notify', key: 'notify' },
     { label: '国家/地区', key: 'country' },
     { label: '洲别', key: 'continent' },
     { label: '业务员', key: 'salesUserName' },
