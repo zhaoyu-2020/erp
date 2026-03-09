@@ -2,7 +2,6 @@
   <div class="app-container">
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        
         <el-form-item label="产品名称">
           <el-input v-model="queryParams.nameCn" placeholder="输入产品中文名称" clearable />
         </el-form-item>
@@ -26,6 +25,7 @@
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新增产品</el-button>
+        <el-button type="warning" icon="CollectionTag" @click="openProductTypeDialog">产品类型</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
@@ -68,7 +68,6 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        
         <el-form-item label="中文名称" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="输入中文名称" />
         </el-form-item>
@@ -86,7 +85,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="规格" prop="spec">
-          <el-input v-model="form.spec" placeholder="输入规格" />
+          <el-select v-model="form.spec" placeholder="选择规格（来源产品类型）" style="width: 100%" clearable>
+            <el-option
+              v-for="item in productTypeList"
+              :key="item.id"
+              :label="item.typeName"
+              :value="item.typeName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="材质" prop="material">
           <el-input v-model="form.material" placeholder="输入材质" />
@@ -118,6 +124,19 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
       </template>
     </el-dialog>
+
+    <!-- Product Type Dialog -->
+    <el-dialog v-model="productTypeDialogVisible" title="产品类型管理" width="560px" destroy-on-close>
+      <div class="product-type-input-row">
+        <el-input v-model="newProductTypeName" placeholder="请输入产品类型" clearable />
+        <el-button type="primary" :loading="productTypeSubmitLoading" @click="handleAddProductType">添加</el-button>
+      </div>
+      <el-table :data="productTypeList" border stripe size="small" v-loading="productTypeLoading">
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column label="产品类型" prop="typeName" min-width="220" />
+        <el-table-column label="创建时间" prop="createTime" min-width="180" />
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -127,6 +146,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getProductPage, saveProduct, updateProduct, deleteProduct } from '@/api/product'
+import { getProductTypeList, saveProductType } from '@/api/productType'
 
 const PRODUCT_TYPE_OPTIONS = [
   { label: 'H型钢', value: 'H型钢' },
@@ -143,6 +163,13 @@ const total = ref(0)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref<FormInstance>()
+
+const productTypeDialogVisible = ref(false)
+const productTypeLoading = ref(false)
+const productTypeSubmitLoading = ref(false)
+const newProductTypeName = ref('')
+const productTypeList = ref<any[]>([])
+
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -169,7 +196,7 @@ const form = reactive<any>({
 const rules = {
   nameCn: [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择类型', trigger: 'change' }],
-  spec: [{ required: true, message: '请输入规格', trigger: 'blur' }],
+  spec: [{ required: true, message: '请选择规格', trigger: 'change' }],
   material: [{ required: true, message: '请输入材质', trigger: 'blur' }],
   length: [{ required: true, message: '请输入长度', trigger: 'blur' }],
   meterWeight: [{ required: true, message: '请输入米重', trigger: 'blur' }],
@@ -289,7 +316,42 @@ const handleExport = async () => {
   ])
 }
 
+const loadProductTypeList = async () => {
+  productTypeLoading.value = true
+  try {
+    const res = await getProductTypeList()
+    productTypeList.value = res.data || []
+  } finally {
+    productTypeLoading.value = false
+  }
+}
+
+const openProductTypeDialog = async () => {
+  productTypeDialogVisible.value = true
+  newProductTypeName.value = ''
+  await loadProductTypeList()
+}
+
+const handleAddProductType = async () => {
+  const typeName = newProductTypeName.value.trim()
+  if (!typeName) {
+    ElMessage.warning('请输入产品类型')
+    return
+  }
+
+  productTypeSubmitLoading.value = true
+  try {
+    await saveProductType({ typeName })
+    ElMessage.success('添加成功')
+    newProductTypeName.value = ''
+    await loadProductTypeList()
+  } finally {
+    productTypeSubmitLoading.value = false
+  }
+}
+
 onMounted(() => {
+  loadProductTypeList()
   getList()
 })
 </script>
@@ -299,4 +361,5 @@ onMounted(() => {
 .search-wrap { margin-bottom: 16px; }
 .table-toolbar { margin-bottom: 16px; }
 .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+.product-type-input-row { display: flex; gap: 12px; margin-bottom: 12px; }
 </style>
