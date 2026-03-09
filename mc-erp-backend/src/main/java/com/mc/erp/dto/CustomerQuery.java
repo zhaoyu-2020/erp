@@ -8,4 +8,5 @@ public class CustomerQuery {
     private Integer pageSize = 10;
     private String name;
     private String continent;
+    private Long salesUserId;
 }

@@ -82,16 +82,37 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="客户ID" prop="customerId">
-              <el-input v-model="form.customerId" placeholder="输入客户ID" />
+            <el-form-item label="客户" prop="customerId">
+              <el-select v-model="form.customerId" placeholder="选择客户" filterable clearable style="width: 100%">
+                <el-option
+                  v-for="item in customerOptions"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="业务员ID" prop="salespersonId">
-              <el-input v-model="form.salespersonId" placeholder="输入业务员ID" />
+            <el-form-item label="业务员" prop="salespersonId">
+              <el-select
+                v-model="form.salespersonId"
+                placeholder="选择业务员"
+                filterable
+                clearable
+                style="width: 100%"
+                @change="onSalespersonChange"
+              >
+                <el-option
+                  v-for="item in salespersonOptions"
+                  :key="item.id"
+                  :label="item.realName || item.username"
+                  :value="item.id"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -212,6 +233,35 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
       </template>
     </el-dialog>
+
+    <!-- Detail Dialog -->
+    <el-dialog v-model="detailDialogVisible" title="订单详情" width="900px">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="订单号">{{ detailData.orderNo || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
+        <el-descriptions-item label="客户ID">{{ detailData.customerId ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="业务员ID">{{ detailData.salespersonId ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="贸易条款">{{ detailData.tradeTerm || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="币种">{{ detailData.currency || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="合同金额">{{ detailData.contractAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="实际金额">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金汇率">{{ detailData.depositExchangeRate ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="尾款汇率">{{ detailData.finalExchangeRate ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="收款金额">{{ detailData.receivedAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="预计收尾款(天)">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="海运费">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="港杂费">{{ detailData.portFee ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="增值税">{{ detailData.vat ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="利润">{{ detailData.profit ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button type="primary" @click="detailDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -221,6 +271,8 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getOrderPage, saveSalesOrder, updateSalesOrder } from '@/api/salesOrder'
+import { getUserPage } from '@/api/system'
+import { getCustomerPage } from '@/api/customer'
 
 // Data definitions
 const loading = ref(false)
@@ -229,7 +281,10 @@ const orderList = ref([])
 const total = ref(0)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
+const detailDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
+const salespersonOptions = ref<any[]>([])
+const customerOptions = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -259,10 +314,34 @@ const form = reactive<any>({
   status: 1
 })
 
+const detailData = reactive<any>({
+  id: null,
+  orderNo: '',
+  customerId: null,
+  salespersonId: null,
+  tradeTerm: '',
+  currency: '',
+  depositExchangeRate: 0,
+  finalExchangeRate: 0,
+  contractAmount: 0,
+  actualAmount: 0,
+  depositRate: 0,
+  receivedAmount: 0,
+  expectedReceiptDays: 0,
+  transportType: '',
+  seaFreight: 0,
+  portFee: 0,
+  vat: 0,
+  profit: 0,
+  status: 1,
+  createTime: '',
+  updateTime: ''
+})
+
 const rules = {
   orderNo: [{ required: true, message: '请输入订单号', trigger: 'blur' }],
-  customerId: [{ required: true, message: '请输入客户ID', trigger: 'change' }],
-  salespersonId: [{ required: true, message: '请输入业务员ID', trigger: 'change' }],
+  customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
+  salespersonId: [{ required: true, message: '请选择业务员', trigger: 'change' }],
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
   depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
   finalExchangeRate: [{ required: true, message: '请输入尾款汇率', trigger: 'blur' }],
@@ -303,9 +382,32 @@ const handleAdd = () => {
   dialogVisible.value = true
 }
 const handleDetail = (row: any) => {
-  console.log('Detail', row)
+  Object.assign(detailData, {
+    id: row.id,
+    orderNo: row.orderNo,
+    customerId: row.customerId,
+    salespersonId: row.salespersonId,
+    tradeTerm: row.tradeTerm,
+    currency: row.currency,
+    depositExchangeRate: row.depositExchangeRate ?? 0,
+    finalExchangeRate: row.finalExchangeRate ?? 0,
+    contractAmount: row.contractAmount ?? 0,
+    actualAmount: row.actualAmount ?? 0,
+    depositRate: row.depositRate ?? 0,
+    receivedAmount: row.receivedAmount ?? 0,
+    expectedReceiptDays: row.expectedReceiptDays ?? 0,
+    transportType: row.transportType ?? '',
+    seaFreight: row.seaFreight ?? 0,
+    portFee: row.portFee ?? 0,
+    vat: row.vat ?? 0,
+    profit: row.profit ?? 0,
+    status: row.status ?? 1,
+    createTime: row.createTime ?? '',
+    updateTime: row.updateTime ?? ''
+  })
+  detailDialogVisible.value = true
 }
-const handleEdit = (row: any) => {
+const handleEdit = async (row: any) => {
   resetForm()
   Object.assign(form, {
     id: row.id,
@@ -328,6 +430,7 @@ const handleEdit = (row: any) => {
     profit: row.profit ?? 0,
     status: row.status ?? 1
   })
+  await loadCustomerOptionsBySalespersonId(form.salespersonId)
   dialogTitle.value = '编辑订单'
   dialogVisible.value = true
 }
@@ -352,6 +455,7 @@ const resetForm = () => {
   form.vat = 0
   form.profit = 0
   form.status = 1
+  customerOptions.value = []
   formRef.value?.clearValidate()
 }
 
@@ -392,6 +496,29 @@ const handleExport = async () => {
   ])
 }
 
+const loadSalespersonOptions = async () => {
+  const res = await getUserPage({ pageNum: 1, pageSize: 1000 })
+  salespersonOptions.value = res.data?.list || []
+}
+
+const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null | undefined) => {
+  if (!salespersonId) {
+    customerOptions.value = []
+    return
+  }
+  const res = await getCustomerPage({
+    pageNum: 1,
+    pageSize: 1000,
+    salesUserId: salespersonId
+  })
+  customerOptions.value = res.data?.list || []
+}
+
+const onSalespersonChange = async (salespersonId: number | null) => {
+  form.customerId = null
+  await loadCustomerOptionsBySalespersonId(salespersonId)
+}
+
 // Status dictionary
 const getStatusLabel = (status: number) => {
   const map: Record<number, string> = { 1: '待处理', 2: '采购中', 3: '生产中', 4: '已发货', 5: '已完成' }
@@ -404,6 +531,7 @@ const getStatusType = (status: number) => {
 
 // Init
 onMounted(() => {
+  loadSalespersonOptions()
   getList()
 })
 </script>

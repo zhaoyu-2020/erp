@@ -54,6 +54,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
 
         wrapper.like(StringUtils.hasText(query.getName()), Customer::getName, query.getName());
         wrapper.eq(StringUtils.hasText(query.getContinent()), Customer::getContinent, query.getContinent());
+        wrapper.eq(query.getSalesUserId() != null, Customer::getSalesUserId, query.getSalesUserId());
         wrapper.orderByDesc(Customer::getCreateTime);
 
         Page<Customer> resultPage = this.page(page, wrapper);
