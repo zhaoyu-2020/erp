@@ -149,24 +149,144 @@
         </el-row>
 
         <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="照片" prop="photos">
-              <el-input v-model="form.photos" placeholder="多张用逗号分隔" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="材质单" prop="materialSheet">
-              <el-input v-model="form.materialSheet" placeholder="输入材质单" />
+          <el-col :span="24">
+            <el-form-item label="照片">
+              <div class="file-upload-area">
+                <el-upload
+                  multiple
+                  :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'photosFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'photosFileList')"
+                  :file-list="photosFileList"
+                  :show-file-list="false"
+                >
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="photosFileList.length" class="file-list">
+                  <div v-for="(f, i) in photosFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'photosFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="发票" prop="invoice">
-              <el-input v-model="form.invoice" placeholder="输入发票信息" />
+          <el-col :span="24">
+            <el-form-item label="材质单">
+              <div class="file-upload-area">
+                <el-upload
+                  multiple
+                  :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'materialFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'materialFileList')"
+                  :file-list="materialFileList"
+                  :show-file-list="false"
+                >
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="materialFileList.length" class="file-list">
+                  <div v-for="(f, i) in materialFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'materialFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="24">
+            <el-form-item label="发票">
+              <div class="file-upload-area">
+                <el-upload
+                  multiple
+                  :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'invoiceFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'invoiceFileList')"
+                  :file-list="invoiceFileList"
+                  :show-file-list="false"
+                >
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="invoiceFileList.length" class="file-list">
+                  <div v-for="(f, i) in invoiceFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'invoiceFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="24">
+            <el-form-item label="定金水单">
+              <div class="file-upload-area">
+                <el-upload multiple :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'depositSlipFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'depositSlipFileList')"
+                  :file-list="depositSlipFileList" :show-file-list="false">
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="depositSlipFileList.length" class="file-list">
+                  <div v-for="(f, i) in depositSlipFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'depositSlipFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="24">
+            <el-form-item label="尾款水单">
+              <div class="file-upload-area">
+                <el-upload multiple :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'finalPaymentSlipFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'finalPaymentSlipFileList')"
+                  :file-list="finalPaymentSlipFileList" :show-file-list="false">
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="finalPaymentSlipFileList.length" class="file-list">
+                  <div v-for="(f, i) in finalPaymentSlipFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'finalPaymentSlipFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="24">
+            <el-form-item label="运费水单">
+              <div class="file-upload-area">
+                <el-upload multiple :auto-upload="false"
+                  :on-change="(f: any) => handleFileChange(f, 'freightSlipFileList')"
+                  :on-remove="(f: any) => handleFileRemove(f, 'freightSlipFileList')"
+                  :file-list="freightSlipFileList" :show-file-list="false">
+                  <el-button size="small" icon="Upload">选择文件</el-button>
+                </el-upload>
+                <div v-if="freightSlipFileList.length" class="file-list">
+                  <div v-for="(f, i) in freightSlipFileList" :key="i" class="file-item">
+                    <span>{{ f.name }}</span>
+                    <el-button link type="danger" size="small" @click="removeFile(i, 'freightSlipFileList')">删除</el-button>
+                  </div>
+                </div>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
@@ -199,9 +319,48 @@
         <el-descriptions-item label="交货日期">{{ detailData.deliveryDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输备注">{{ detailData.transportRemark || '-' }}</el-descriptions-item>
         <el-descriptions-item label="总运费(RMB)">{{ detailData.totalFreight ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="照片">{{ detailData.photos || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="材质单">{{ detailData.materialSheet || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="发票">{{ detailData.invoice || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="照片" :span="2">
+          <template v-if="detailData.photos">
+            <a v-for="(url, i) in detailData.photos.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="材质单" :span="2">
+          <template v-if="detailData.materialSheet">
+            <a v-for="(url, i) in detailData.materialSheet.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="发票" :span="2">
+          <template v-if="detailData.invoice">
+            <a v-for="(url, i) in detailData.invoice.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="定金水单" :span="2">
+          <template v-if="detailData.depositSlip">
+            <a v-for="(url, i) in detailData.depositSlip.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="尾款水单" :span="2">
+          <template v-if="detailData.finalPaymentSlip">
+            <a v-for="(url, i) in detailData.finalPaymentSlip.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="运费水单" :span="2">
+          <template v-if="detailData.freightSlip">
+            <a v-for="(url, i) in detailData.freightSlip.split(',').filter((u: string) => u)" :key="i"
+               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+          </template>
+          <span v-else>-</span>
+        </el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
       </el-descriptions>
@@ -215,9 +374,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+import type { FormInstance, UploadFile } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
-import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder } from '@/api/purchaseOrder'
+import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 
 const loading = ref(false)
@@ -230,6 +389,12 @@ const detailDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const supplierOptionsLoading = ref(false)
 const supplierOptions = ref<any[]>([])
+const photosFileList = ref<UploadFile[]>([])
+const materialFileList = ref<UploadFile[]>([])
+const invoiceFileList = ref<UploadFile[]>([])
+const depositSlipFileList = ref<UploadFile[]>([])
+const finalPaymentSlipFileList = ref<UploadFile[]>([])
+const freightSlipFileList = ref<UploadFile[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -253,6 +418,9 @@ const form = reactive<any>({
   photos: '',
   materialSheet: '',
   invoice: '',
+  depositSlip: '',
+  finalPaymentSlip: '',
+  freightSlip: '',
   status: 1
 })
 
@@ -272,6 +440,9 @@ const detailData = reactive<any>({
   photos: '',
   materialSheet: '',
   invoice: '',
+  depositSlip: '',
+  finalPaymentSlip: '',
+  freightSlip: '',
   status: 1,
   createTime: '',
   updateTime: ''
@@ -318,6 +489,54 @@ const getStatusType = (status: number) => {
   return map[status] || ''
 }
 
+type FileListKey = 'photosFileList' | 'materialFileList' | 'invoiceFileList' | 'depositSlipFileList' | 'finalPaymentSlipFileList' | 'freightSlipFileList'
+
+const handleFileChange = (file: UploadFile, listKey: FileListKey) => {
+  const listMap = { photosFileList, materialFileList, invoiceFileList, depositSlipFileList, finalPaymentSlipFileList, freightSlipFileList }
+  const list = listMap[listKey]
+  if (!list.value.find(f => f.uid === file.uid)) {
+    list.value.push(file)
+  }
+}
+
+const handleFileRemove = (file: UploadFile, listKey: FileListKey) => {
+  const listMap = { photosFileList, materialFileList, invoiceFileList, depositSlipFileList, finalPaymentSlipFileList, freightSlipFileList }
+  const list = listMap[listKey]
+  list.value = list.value.filter(f => f.uid !== file.uid)
+}
+
+const removeFile = (index: number, listKey: FileListKey) => {
+  const listMap = { photosFileList, materialFileList, invoiceFileList, depositSlipFileList, finalPaymentSlipFileList, freightSlipFileList }
+  listMap[listKey].value.splice(index, 1)
+}
+
+// Convert stored URL string back to UploadFile list for editing
+const urlsToFileList = (urlStr: string): UploadFile[] => {
+  if (!urlStr) return []
+  return urlStr.split(',').filter(u => u).map((url, i) => ({
+    uid: i,
+    name: url.split('/').pop() || `文件${i + 1}`,
+    url,
+    status: 'success'
+  } as unknown as UploadFile))
+}
+
+const uploadFilesForField = async (fileList: UploadFile[]): Promise<string> => {
+  // Separate already-uploaded (have url, no raw) from new files (have raw)
+  const newFiles: File[] = fileList
+    .filter(f => f.raw)
+    .map(f => f.raw as File)
+  const existingList: string[] = fileList
+    .filter(f => !f.raw && (f as any).url)
+    .map(f => (f as any).url as string)
+  if (newFiles.length === 0) {
+    return existingList.join(',')
+  }
+  const res = await uploadPurchaseFiles(newFiles)
+  const uploaded: string[] = res.data || []
+  return [...existingList, ...uploaded].join(',')
+}
+
 const resetForm = () => {
   form.id = null
   form.poNo = ''
@@ -333,7 +552,16 @@ const resetForm = () => {
   form.photos = ''
   form.materialSheet = ''
   form.invoice = ''
+  form.depositSlip = ''
+  form.finalPaymentSlip = ''
+  form.freightSlip = ''
   form.status = 1
+  photosFileList.value = []
+  materialFileList.value = []
+  invoiceFileList.value = []
+  depositSlipFileList.value = []
+  finalPaymentSlipFileList.value = []
+  freightSlipFileList.value = []
   formRef.value?.clearValidate()
 }
 
@@ -361,6 +589,9 @@ const handleDetail = (row: any) => {
     photos: row.photos ?? '',
     materialSheet: row.materialSheet ?? '',
     invoice: row.invoice ?? '',
+    depositSlip: row.depositSlip ?? '',
+    finalPaymentSlip: row.finalPaymentSlip ?? '',
+    freightSlip: row.freightSlip ?? '',
     status: row.status ?? 1,
     createTime: row.createTime ?? '',
     updateTime: row.updateTime ?? ''
@@ -388,8 +619,17 @@ const handleEdit = (row: any) => {
     photos: row.photos ?? '',
     materialSheet: row.materialSheet ?? '',
     invoice: row.invoice ?? '',
+    depositSlip: row.depositSlip ?? '',
+    finalPaymentSlip: row.finalPaymentSlip ?? '',
+    freightSlip: row.freightSlip ?? '',
     status: row.status ?? 1
   })
+  photosFileList.value = urlsToFileList(row.photos ?? '')
+  materialFileList.value = urlsToFileList(row.materialSheet ?? '')
+  invoiceFileList.value = urlsToFileList(row.invoice ?? '')
+  depositSlipFileList.value = urlsToFileList(row.depositSlip ?? '')
+  finalPaymentSlipFileList.value = urlsToFileList(row.finalPaymentSlip ?? '')
+  freightSlipFileList.value = urlsToFileList(row.freightSlip ?? '')
   loadSupplierOptions('')
   dialogTitle.value = '编辑采购单'
   dialogVisible.value = true
@@ -413,6 +653,12 @@ const handleSubmit = async () => {
   await formRef.value?.validate()
   submitLoading.value = true
   try {
+    form.photos = await uploadFilesForField(photosFileList.value)
+    form.materialSheet = await uploadFilesForField(materialFileList.value)
+    form.invoice = await uploadFilesForField(invoiceFileList.value)
+    form.depositSlip = await uploadFilesForField(depositSlipFileList.value)
+    form.finalPaymentSlip = await uploadFilesForField(finalPaymentSlipFileList.value)
+    form.freightSlip = await uploadFilesForField(freightSlipFileList.value)
     if (form.id) {
       await updatePurchaseOrder({ ...form })
     } else {
@@ -459,4 +705,9 @@ onMounted(() => {
 .search-wrap { margin-bottom: 16px; }
 .table-toolbar { margin-bottom: 16px; }
 .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+.file-upload-area { width: 100%; }
+.file-list { margin-top: 8px; }
+.file-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
+.file-link { margin-right: 12px; color: #409eff; text-decoration: none; }
+.file-link:hover { text-decoration: underline; }
 </style>

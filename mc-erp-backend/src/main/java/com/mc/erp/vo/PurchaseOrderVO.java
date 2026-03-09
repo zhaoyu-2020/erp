@@ -22,6 +22,9 @@ public class PurchaseOrderVO {
     private String photos;
     private String materialSheet;
     private String invoice;
+    private String depositSlip;
+    private String finalPaymentSlip;
+    private String freightSlip;
     private Integer status;
     private LocalDateTime createTime;
 }
