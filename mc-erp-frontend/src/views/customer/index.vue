@@ -172,6 +172,8 @@ const rules = {
   continent: [{ required: true, message: '请选择洲别', trigger: 'change' }],
   consignee: [{ required: true, message: '请输入收货人', trigger: 'blur' }],
   notify: [{ required: true, message: '请输入通知人', trigger: 'blur' }],
+  phone: [{ required: true, message: '请输入电话', trigger: 'blur' }],
+  email: [{ type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'change'] }],
   salesUserId: [{ required: true, message: '请选择业务员', trigger: 'change' }]
 }
 

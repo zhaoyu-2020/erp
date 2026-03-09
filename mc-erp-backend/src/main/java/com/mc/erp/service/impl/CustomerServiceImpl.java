@@ -75,6 +75,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
 
     @Override
     public boolean save(Customer entity) {
+        normalizeCustomerPayload(entity);
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
             throw new AccessDeniedException("无操作权限");
@@ -88,6 +89,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
 
     @Override
     public boolean updateById(Customer entity) {
+        normalizeCustomerPayload(entity);
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
             throw new AccessDeniedException("无操作权限");
@@ -161,5 +163,19 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             }
         }
         return false;
+    }
+
+    /**
+     * 前端空字符串会触发后端 @Email 校验失败，这里统一标准化为空值。
+     */
+    private void normalizeCustomerPayload(Customer entity) {
+        if (entity == null) {
+            return;
+        }
+        if (!StringUtils.hasText(entity.getEmail())) {
+            entity.setEmail(null);
+        } else {
+            entity.setEmail(entity.getEmail().trim());
+        }
     }
 }

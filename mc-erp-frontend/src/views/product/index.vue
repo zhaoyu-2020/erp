@@ -77,22 +77,17 @@
         <el-form-item label="类型" prop="type">
           <el-select v-model="form.type" placeholder="选择类型" style="width: 100%">
             <el-option
-              v-for="item in PRODUCT_TYPE_OPTIONS"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="规格" prop="spec">
-          <el-select v-model="form.spec" placeholder="选择规格（来源产品类型）" style="width: 100%" clearable>
-            <el-option
               v-for="item in productTypeList"
               :key="item.id"
               :label="item.typeName"
               :value="item.typeName"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item label="规格" prop="spec">
+          <el-input v-model="form.spec" placeholder="输入规格" >
+            
+          </el-input>
         </el-form-item>
         <el-form-item label="材质" prop="material">
           <el-input v-model="form.material" placeholder="输入材质" />
