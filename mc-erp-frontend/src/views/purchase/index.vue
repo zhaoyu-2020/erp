@@ -73,7 +73,25 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="供应商ID" prop="supplierId">
-              <el-input v-model="form.supplierId" placeholder="输入供应商ID" />
+              <el-select
+                v-model="form.supplierId"
+                filterable
+                remote
+                reserve-keyword
+                clearable
+                placeholder="输入关键字搜索供应商"
+                :remote-method="loadSupplierOptions"
+                :loading="supplierOptionsLoading"
+                style="width: 100%"
+                @focus="loadSupplierOptions('')"
+              >
+                <el-option
+                  v-for="item in supplierOptions"
+                  :key="item.id"
+                  :label="`${item.name}（${item.supplierCode || item.id}）`"
+                  :value="item.id"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -174,6 +192,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder } from '@/api/purchaseOrder'
+import { getSupplierPage } from '@/api/supplier'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -182,6 +201,8 @@ const total = ref(0)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref<FormInstance>()
+const supplierOptionsLoading = ref(false)
+const supplierOptions = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -210,7 +231,7 @@ const form = reactive<any>({
 
 const rules = {
   poNo: [{ required: true, message: '请输入采购单号', trigger: 'blur' }],
-  supplierId: [{ required: true, message: '请输入供应商ID', trigger: 'change' }],
+  supplierId: [{ required: true, message: '请选择供应商', trigger: 'change' }],
   salesOrderNo: [{ required: true, message: '请输入关联销售单号', trigger: 'blur' }],
   totalAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
   actualAmount: [{ required: true, message: '请输入实际金额', trigger: 'blur' }],
@@ -270,12 +291,16 @@ const resetForm = () => {
 
 const handleAdd = () => {
   resetForm()
+  loadSupplierOptions('')
   dialogTitle.value = '新增采购单'
   dialogVisible.value = true
 }
 
 const handleEdit = (row: any) => {
   resetForm()
+  supplierOptions.value = row.supplierId
+    ? [{ id: row.supplierId, name: row.supplierName, supplierCode: '' }]
+    : []
   Object.assign(form, {
     id: row.id,
     poNo: row.poNo,
@@ -293,8 +318,23 @@ const handleEdit = (row: any) => {
     invoice: row.invoice ?? '',
     status: row.status ?? 1
   })
+  loadSupplierOptions('')
   dialogTitle.value = '编辑采购单'
   dialogVisible.value = true
+}
+
+const loadSupplierOptions = async (keyword: string) => {
+  supplierOptionsLoading.value = true
+  try {
+    const res = await getSupplierPage({
+      pageNum: 1,
+      pageSize: 50,
+      name: keyword
+    })
+    supplierOptions.value = res.data?.list || []
+  } finally {
+    supplierOptionsLoading.value = false
+  }
 }
 
 const handleSubmit = async () => {
