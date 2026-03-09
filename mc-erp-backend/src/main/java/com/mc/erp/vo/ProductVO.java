@@ -12,6 +12,7 @@ public class ProductVO {
     private String spec;
     private String material;
     private String length;
+    private String meterWeight;
     private String tolerance;
     private String hsCode;
     private BigDecimal taxRefundRate;

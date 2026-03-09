@@ -28,6 +28,9 @@ public class Product {
     @NotBlank(message = "长度不能为空")
     private String length;
 
+    @NotBlank(message = "米重不能为空")
+    private String meterWeight;
+
     @NotBlank(message = "公差不能为空")
     private String tolerance;
 

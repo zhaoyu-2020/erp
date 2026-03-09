@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   `spec` varchar(100) DEFAULT NULL COMMENT '规格',
   `material` varchar(100) DEFAULT NULL COMMENT '材质',
   `length` varchar(50) DEFAULT NULL COMMENT '长度',
+  `meter_weight` varchar(50) DEFAULT NULL COMMENT '米重',
   `tolerance` varchar(50) DEFAULT NULL COMMENT '公差',
   `declaration` varchar(255) DEFAULT NULL COMMENT '申报要素',
   `name_cn` varchar(200) NOT NULL COMMENT '中文品名',
@@ -20,6 +21,10 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_spu_code` (`spu_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='外贸产品主数据表';
+
+-- 已有库升级（MySQL 8+）：补充产品米重字段
+ALTER TABLE `biz_product`
+  ADD COLUMN IF NOT EXISTS `meter_weight` varchar(50) DEFAULT NULL COMMENT '米重' AFTER `length`;
 
 -- 2. 销售订单主表
 CREATE TABLE IF NOT EXISTS `biz_sales_order` (
@@ -259,4 +264,3 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
 -- 插入默认角色和权限数据
-
