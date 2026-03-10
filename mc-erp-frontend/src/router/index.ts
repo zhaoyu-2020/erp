@@ -103,6 +103,18 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'Profile',
                 component: () => import('@/views/profile/index.vue'),
                 meta: { title: '个人中心', hidden: true }
+            },
+            {
+                path: 'sales-orders/:orderId/details',
+                name: 'SalesOrderDetail',
+                component: () => import('@/views/sales-order/detail.vue'),
+                meta: { title: '销售订单明细', hidden: true }
+            },
+            {
+                path: 'sales-order-details',
+                name: 'SalesOrderDetailList',
+                component: () => import('@/views/sales-order-detail/index.vue'),
+                meta: { title: '销售订单明细', icon: 'DocumentChecked' }
             }
         ]
     }

@@ -53,6 +53,9 @@ public class SalesOrder {
     @NotNull(message = "预计收尾款日期不能为空")
     private java.time.LocalDate expectedReceiptDays;
 
+    @NotBlank(message = "目的港不能为空")
+    private String destinationPort;
+
     private String transportType;
     private BigDecimal seaFreight;
     private BigDecimal portFee;

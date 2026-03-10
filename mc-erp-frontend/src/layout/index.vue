@@ -18,6 +18,10 @@
             <el-icon><Document /></el-icon>
             <template #title>销售订单</template>
           </el-menu-item>
+          <el-menu-item index="/sales-order-details">
+            <el-icon><DocumentChecked /></el-icon>
+            <template #title>销售订单明细</template>
+          </el-menu-item>
           <el-menu-item index="/purchase-orders">
             <el-icon><ShoppingCart /></el-icon>
             <template #title>采购订单</template>

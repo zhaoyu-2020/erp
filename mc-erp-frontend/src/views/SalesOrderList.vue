@@ -79,9 +79,10 @@
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column label="操作" width="220" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
+            <el-button link type="success" @click="handleGoDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
           </template>
         </el-table-column>
@@ -217,6 +218,14 @@
             </el-col>
         </el-row>
 
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="目的港" prop="destinationPort">
+              <el-input v-model="form.destinationPort" placeholder="输入目的港（英文）" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-divider content-position="left" class="group-divider">尾款</el-divider>
 
         <el-row :gutter="16">
@@ -340,6 +349,7 @@
         <el-descriptions-item label="保险费用">{{ detailData.insuranceFee ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="保额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="预计尾款日期">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="目的港">{{ detailData.destinationPort || '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
         <el-descriptions-item label="海运费(USD)">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="港杂费">{{ detailData.portFee ?? '-' }}</el-descriptions-item>
@@ -357,6 +367,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
@@ -366,6 +377,7 @@ import { getCustomerPage } from '@/api/customer'
 
 // Data definitions
 const loading = ref(false)
+const router = useRouter()
 const submitLoading = ref(false)
 const orderList = ref([])
 const total = ref(0)
@@ -407,6 +419,7 @@ const form = reactive<any>({
   insuranceFee: null,
   insuranceAmount: null,
   expectedReceiptDays: null,
+  destinationPort: '',
   transportType: '',
   seaFreight: null,
   portFee: null,
@@ -432,6 +445,7 @@ const detailData = reactive<any>({
   insuranceFee: null,
   insuranceAmount: null,
   expectedReceiptDays: null,
+  destinationPort: '',
   transportType: '',
   seaFreight: null,
   portFee: null,
@@ -448,6 +462,7 @@ const rules = {
   tradeTerm: [{ required: true, message: '请选择贸易条款', trigger: 'change' }],
   salespersonId: [{ required: true, message: '请选择业务员', trigger: 'change' }],
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
+  destinationPort: [{ required: true, message: '请输入目的港', trigger: 'blur' }],
   depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
   contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
@@ -524,6 +539,9 @@ const handleAdd = () => {
   dialogTitle.value = '新建订单'
   dialogVisible.value = true
 }
+const handleGoDetail = (row: any) => {
+  router.push({ name: 'SalesOrderDetail', params: { orderId: row.id }, query: { orderNo: row.orderNo } })
+}
 const handleDetail = (row: any) => {
   Object.assign(detailData, {
     id: row.id,
@@ -542,6 +560,7 @@ const handleDetail = (row: any) => {
   insuranceFee: row.insuranceFee ?? null,
   insuranceAmount: row.insuranceAmount ?? null,
   expectedReceiptDays: row.expectedReceiptDays ?? null,
+  destinationPort: row.destinationPort ?? '',
   transportType: row.transportType ?? '',
   seaFreight: row.seaFreight ?? null,
   portFee: row.portFee ?? null,
@@ -572,6 +591,7 @@ const handleEdit = async (row: any) => {
   insuranceFee: row.insuranceFee ?? null,
   insuranceAmount: row.insuranceAmount ?? null,
   expectedReceiptDays: row.expectedReceiptDays ?? null,
+  destinationPort: row.destinationPort ?? '',
   transportType: row.transportType ?? '',
   seaFreight: row.seaFreight ?? null,
   portFee: row.portFee ?? null,
@@ -603,6 +623,7 @@ const resetForm = () => {
   form.insuranceFee = null
   form.insuranceAmount = null
   form.expectedReceiptDays = null
+  form.destinationPort = ''
   form.transportType = ''
   form.seaFreight = null
   form.portFee = null
@@ -647,6 +668,7 @@ const handleExport = async () => {
     { label: '保险费用', key: 'insuranceFee' },
     { label: '保额', key: 'insuranceAmount' },
     { label: '预计尾款日期', key: 'expectedReceiptDays' },
+    { label: '目的港', key: 'destinationPort' },
     { label: '运输方式', key: 'transportType' },
     { label: '状态', value: (r: any) => getStatusLabel(r.status) },
     { label: '创建时间', key: 'createTime' }

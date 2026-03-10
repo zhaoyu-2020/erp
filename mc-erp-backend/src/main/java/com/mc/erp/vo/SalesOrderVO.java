@@ -27,6 +27,7 @@ public class SalesOrderVO {
     private BigDecimal insuranceFee;
     private BigDecimal insuranceAmount;
     private LocalDate expectedReceiptDays;
+    private String destinationPort;
     private String transportType;
     private BigDecimal seaFreight;
     private BigDecimal portFee;

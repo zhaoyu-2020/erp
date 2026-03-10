@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `insurance_fee` decimal(15,2) DEFAULT '0.00' COMMENT '保险费用',
   `insurance_amount` decimal(15,2) DEFAULT '0.00' COMMENT '保险金额',
   `expected_receipt_days` date DEFAULT NULL COMMENT '预计收尾款日期',
+  `destination_port` varchar(100) NOT NULL DEFAULT '' COMMENT '目的港',
   `transport_type` varchar(50) DEFAULT NULL COMMENT '运输类型(集装箱/散货/铁路/汽运)',
   `sea_freight` decimal(15,2) DEFAULT '0.00' COMMENT '海运费(USD)',
   `port_fee` decimal(15,2) DEFAULT '0.00' COMMENT '港杂费',
@@ -278,5 +279,44 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   `menu_id` bigint(20) NOT NULL,
   PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
+
+-- 15. 销售订单详情表
+CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `order_id` bigint(20) NOT NULL COMMENT '销售订单ID',
+  `detail_seq` int(11) DEFAULT NULL COMMENT '详情序号',
+  `product_id` bigint(20) DEFAULT NULL COMMENT '关联产品ID',
+  `spec` varchar(100) DEFAULT NULL COMMENT '产品规格',
+  `product_type` varchar(100) DEFAULT NULL COMMENT '产品类型',
+  `material` varchar(100) DEFAULT NULL COMMENT '材质',
+  `length` varchar(50) DEFAULT NULL COMMENT '长度(米)',
+  `tolerance` varchar(50) DEFAULT NULL COMMENT '公差',
+  `quantity_ton` decimal(15,3) DEFAULT NULL COMMENT '数量(t/吨)',
+  `quantity_pc` int(11) DEFAULT NULL COMMENT '数量(pc/片)',
+  `quantity_meter` decimal(15,2) DEFAULT NULL COMMENT '数量(m/米)',
+  `fob_price` decimal(15,2) DEFAULT NULL COMMENT 'FOB价格',
+  `cif_price` decimal(15,2) DEFAULT NULL COMMENT 'CIF价格',
+  `price_total` decimal(15,2) DEFAULT NULL COMMENT '价格汇总(CIF价格*吨数)',
+  `packaging_weight` decimal(15,3) DEFAULT NULL COMMENT '包装重量',
+  `packaging` varchar(200) DEFAULT NULL COMMENT '包装',
+  `coil_inner_diameter` varchar(50) DEFAULT NULL COMMENT '卷内径(mm)',
+  `processing_items` varchar(500) DEFAULT NULL COMMENT '加工项',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+
+  `ordered_quantity` decimal(15,3) DEFAULT NULL COMMENT '订货数量',
+  `actual_quantity` decimal(15,3) DEFAULT NULL COMMENT '实际结算重量',
+  `actual_theoretical_weight` decimal(15,3) DEFAULT NULL COMMENT '实际理论重量',
+  `bundle_count` int(11) DEFAULT NULL COMMENT '捆数',
+  `net_weight` decimal(15,3) DEFAULT NULL COMMENT '净重',
+  `gross_weight` decimal(15,3) DEFAULT NULL COMMENT '毛重',
+  `volume` decimal(15,4) DEFAULT NULL COMMENT '体积',
+  `origin_place` varchar(200) DEFAULT NULL COMMENT '货源地',
+  
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售订单详情表';
 
 -- 插入默认角色和权限数据
