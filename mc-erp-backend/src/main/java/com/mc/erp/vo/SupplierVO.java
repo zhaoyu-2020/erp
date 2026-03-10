@@ -11,5 +11,9 @@ public class SupplierVO {
     private String contactPerson;
     private String phone;
     private String address;
+    /**
+     * 产品类型(多个用英文逗号分隔)
+     */
+    private String productType;
     private LocalDateTime createTime;
 }

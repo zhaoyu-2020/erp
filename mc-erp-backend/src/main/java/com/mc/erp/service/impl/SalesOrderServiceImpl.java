@@ -19,6 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -49,14 +56,18 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         wrapper.eq(query.getCustomerId() != null, SalesOrder::getCustomerId, query.getCustomerId());
         wrapper.eq(StringUtils.hasText(query.getTradeTerm()), SalesOrder::getTradeTerm, query.getTradeTerm());
         wrapper.eq(query.getStatus() != null, SalesOrder::getStatus, query.getStatus());
+        wrapper.eq(query.getCreateUserId() != null, SalesOrder::getCreateUserId, query.getCreateUserId());
         wrapper.orderByDesc(SalesOrder::getCreateTime);
 
         Page<SalesOrder> resultPage = this.page(page, wrapper);
 
-        Set<Long> userIds = resultPage.getRecords().stream().map(SalesOrder::getSalespersonId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> userIds = resultPage.getRecords().stream()
+                .flatMap(order -> Stream.of(order.getSalespersonId(), order.getCreateUserId()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
         Map<Long, String> userNameMap = userIds.isEmpty()
                 ? Collections.emptyMap()
-                : userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, User::getUsername));
+                : userService.listByIds(userIds).stream().collect(Collectors.toMap(User::getId, User::getRealName));
 
         Set<Long> customerIds = resultPage.getRecords().stream().map(SalesOrder::getCustomerId).filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Long, String> customerNameMap = customerIds.isEmpty()
@@ -67,6 +78,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             SalesOrderVO vo = new SalesOrderVO();
             BeanUtils.copyProperties(order, vo);
             vo.setSalespersonName(userNameMap.get(order.getSalespersonId()));
+            vo.setCreateUserName(userNameMap.get(order.getCreateUserId()));
             vo.setCustomerName(customerNameMap.get(order.getCustomerId()));
             return vo;
         }).collect(Collectors.toList());

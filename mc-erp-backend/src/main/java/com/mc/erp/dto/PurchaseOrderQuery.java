@@ -10,4 +10,7 @@ public class PurchaseOrderQuery {
     private String supplierName;
     private String salesOrderNo;
     private Integer status;
+
+    private Long salespersonId;
+    private Long createUserId;
 }

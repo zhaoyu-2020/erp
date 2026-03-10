@@ -8,10 +8,13 @@ import com.mc.erp.config.JwtUtil;
 import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
 import com.mc.erp.entity.UserRole;
+import com.mc.erp.entity.Role;
+import com.mc.erp.mapper.RoleMapper;
 import com.mc.erp.mapper.UserMapper;
 import com.mc.erp.mapper.UserRoleMapper;
 import com.mc.erp.service.UserService;
 import com.mc.erp.vo.UserVO;
+import com.mc.erp.vo.UserWithRoleVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private UserRoleMapper userRoleMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Override
     public PageResult<UserVO> getPage(UserQuery query) {
@@ -104,5 +110,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userRoleMapper.insert(link);
         }
         return true;
+    }
+
+    @Override
+    public List<UserWithRoleVO> listWithRoles() {
+        // 查询所有未删除用户
+        List<User> users = this.list(new LambdaQueryWrapper<User>().orderByAsc(User::getId));
+        if (users.isEmpty()) return List.of();
+
+        List<Long> userIds = users.stream().map(User::getId).filter(Objects::nonNull).toList();
+
+        // 查询用户-角色关联
+        List<UserRole> links = userRoleMapper.selectList(
+                new LambdaQueryWrapper<UserRole>().in(UserRole::getUserId, userIds));
+
+        // 收集所有 roleId，查角色名称
+        List<Long> roleIds = links.stream().map(UserRole::getRoleId).filter(Objects::nonNull).distinct().toList();
+        Map<Long, String> roleNameMap = roleIds.isEmpty() ? Map.of()
+                : roleMapper.selectList(new LambdaQueryWrapper<Role>().in(Role::getId, roleIds))
+                        .stream().collect(Collectors.toMap(Role::getId, Role::getRoleName));
+
+        // userId -> roleNames
+        Map<Long, List<String>> userRoleNamesMap = links.stream()
+                .collect(Collectors.groupingBy(
+                        UserRole::getUserId,
+                        Collectors.mapping(
+                                link -> roleNameMap.getOrDefault(link.getRoleId(), ""),
+                                Collectors.filtering(s -> !s.isEmpty(), Collectors.toList()))));
+
+        return users.stream().map(user -> {
+            UserWithRoleVO vo = new UserWithRoleVO();
+            vo.setId(user.getId());
+            vo.setUsername(user.getUsername());
+            vo.setRealName(user.getRealName());
+            vo.setRoleNames(userRoleNamesMap.getOrDefault(user.getId(), List.of()));
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

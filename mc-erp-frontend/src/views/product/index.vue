@@ -108,7 +108,7 @@
           <el-input v-model="form.hsCode" placeholder="输入hscode" />
         </el-form-item>
         <el-form-item label="退税率" prop="taxRefundRate">
-          <el-input-number v-model="form.taxRefundRate" :min="0" :max="1" :step="0.01" style="width: 100%" />
+          <el-input v-model="form.taxRefundRate" placeholder="输入退税率" style="width: 100%" />
         </el-form-item>
         <el-form-item label="申报要素" prop="declaration">
           <el-input v-model="form.declaration" type="textarea" :rows="3" placeholder="输入申报要素" />

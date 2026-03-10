@@ -148,9 +148,16 @@ public class ReportServiceImpl implements ReportService {
                         )
                 ));
         
-        List<Customer> customers = customerService.listByIds(customerSales.keySet());
-        Map<Long, String> customerNames = customers.stream()
-                .collect(Collectors.toMap(Customer::getId, Customer::getName));
+        List<Customer> customers;
+        Map<Long, String> customerNames;
+        if (customerSales.isEmpty()) {
+            customers = new ArrayList<>();
+            customerNames = new java.util.HashMap<>();
+        } else {
+            customers = customerService.listByIds(customerSales.keySet());
+            customerNames = customers.stream()
+                    .collect(Collectors.toMap(Customer::getId, Customer::getName));
+        }
         
         List<RankingVO> customerRanking = customerSales.entrySet().stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))

@@ -6,11 +6,34 @@
         <el-form-item label="订单号" prop="orderNo">
           <el-input v-model="queryParams.orderNo" placeholder="输入订单号" clearable />
         </el-form-item>
-        <el-form-item label="贸易条款" prop="tradeTerm">
-          <el-select v-model="queryParams.tradeTerm" placeholder="选择贸易条款" clearable>
-            <el-option label="FOB" value="FOB" />
-            <el-option label="CIF" value="CIF" />
-            <el-option label="EXW" value="EXW" />
+       
+        <el-form-item label="创建人" prop="createUserName">
+          <el-autocomplete
+            v-model="queryParams.createUserName"
+            :fetch-suggestions="queryCreateUser"
+            placeholder="输入或选择创建人"
+            clearable
+            style="width: 160px"
+            @select="onCreateUserSelect"
+          />
+        </el-form-item>
+        <el-form-item label="业务人员" prop="salespersonName">
+          <el-autocomplete
+            v-model="queryParams.salespersonName"
+            :fetch-suggestions="querySalesperson"
+            placeholder="输入或选择业务人员"
+            clearable
+            style="width: 160px"
+            @select="onSalespersonSelect"
+          />
+        </el-form-item>
+        <el-form-item label="订单状态" prop="status">
+          <el-select v-model="queryParams.status" placeholder="选择订单状态" clearable style="width: 120px">
+            <el-option label="待处理" :value="1" />
+            <el-option label="采购中" :value="2" />
+            <el-option label="生产中" :value="3" />
+            <el-option label="已发货" :value="4" />
+            <el-option label="已完成" :value="5" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -38,7 +61,7 @@
             <span>{{ row.contractAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="实际金额" width="160" align="right">
+        <el-table-column label="总收款" width="160" align="right">
           <template #default="{ row }">
             <span class="currency-text">{{ row.currency }} </span>
             <span>{{ row.actualAmount }}</span>
@@ -47,8 +70,8 @@
         <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
         <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
         <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
-        <el-table-column label="保险金额" prop="insuranceAmount" width="120" align="right" />
-        <el-table-column label="预计收尾款(天)" prop="expectedReceiptDays" width="140" align="center" />
+        <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" />
+        <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
@@ -78,22 +101,18 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
+        <el-divider content-position="left" class="group-divider">预收</el-divider>
+
+
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="订单号" prop="orderNo">
               <el-input v-model="form.orderNo" placeholder="输入订单号" :disabled="!!form.id" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="客户" prop="customerId">
-              <el-select v-model="form.customerId" placeholder="选择客户" filterable clearable style="width: 100%">
-                <el-option
-                  v-for="item in customerOptions"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
+           <el-col :span="12">
+            <el-form-item label="合同金额" prop="contractAmount">
+              <el-input v-model="form.contractAmount" placeholder="输入合同金额" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -118,6 +137,62 @@
               </el-select>
             </el-form-item>
           </el-col>
+          
+           <el-col :span="12">
+            <el-form-item label="定金比例(%)" prop="depositRate">
+              <el-input v-model="form.depositRate" placeholder="输入定金比例" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="客户" prop="customerId">
+              <el-select v-model="form.customerId" placeholder="选择客户" filterable clearable style="width: 100%">
+                <el-option
+                  v-for="item in customerOptions"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+           <el-col :span="12">
+            <el-form-item label="定金收款金额" prop="receivedAmount">
+              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额" />
+            </el-form-item>
+          </el-col>
+         
+         
+        </el-row>
+
+        <el-row :gutter="16">
+         
+         
+        </el-row>
+
+        <el-row :gutter="16">
+           <el-col :span="12">
+            <el-form-item label="币种" prop="currency">
+              <el-autocomplete
+                v-model="form.currency"
+                :fetch-suggestions="queryCurrency"
+                placeholder="输入或选择币种"
+                clearable
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+           <el-col :span="12">
+            <el-form-item label="定金汇率" prop="depositExchangeRate">
+              <el-input v-model="form.depositExchangeRate" placeholder="输入定金汇率" />
+            </el-form-item>
+          </el-col>
+         
+        </el-row>
+
+        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="贸易条款" prop="tradeTerm">
               <el-select v-model="form.tradeTerm" placeholder="选择贸易条款">
@@ -127,82 +202,29 @@
               </el-select>
             </el-form-item>
           </el-col>
+         
+            <el-col :span="12">
+            <el-form-item label="预计尾款日期" prop="expectedReceiptDays">
+              <el-date-picker
+              v-model="form.expectedReceiptDays"
+              type="date"
+              placeholder="选择日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+              />
+            </el-form-item>
+            </el-col>
         </el-row>
 
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="币种" prop="currency">
-              <el-input v-model="form.currency" placeholder="例如：USD" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="定金汇率" prop="depositExchangeRate">
-              <el-input v-model="form.depositExchangeRate" placeholder="输入定金汇率" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-divider content-position="left" class="group-divider">尾款</el-divider>
 
         <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="尾款汇率" prop="finalExchangeRate">
-              <el-input v-model="form.finalExchangeRate" placeholder="输入尾款汇率" />
+           <el-col :span="12">
+            <el-form-item label="总收款" prop="actualAmount">
+              <el-input v-model="form.actualAmount" placeholder="输入总收款" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="合同金额" prop="contractAmount">
-              <el-input v-model="form.contractAmount" placeholder="输入合同金额" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="实际金额" prop="actualAmount">
-              <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="定金比例(%)" prop="depositRate">
-              <el-input v-model="form.depositRate" placeholder="输入定金比例" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="定金收款金额" prop="receivedAmount">
-              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="预计收尾款天数" prop="expectedReceiptDays">
-              <el-input v-model="form.expectedReceiptDays" placeholder="输入天数" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="尾款金额" prop="finalPaymentAmount">
-              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="保险费用" prop="insuranceFee">
-              <el-input v-model="form.insuranceFee" placeholder="输入保险费用" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="保险金额" prop="insuranceAmount">
-              <el-input v-model="form.insuranceAmount" placeholder="输入保险金额" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="运输方式" prop="transportType">
               <el-select v-model="form.transportType" placeholder="选择运输方式">
@@ -213,25 +235,56 @@
               </el-select>
             </el-form-item>
           </el-col>
+
+         
+        </el-row>
+
+
+        <el-row :gutter="16">
           <el-col :span="12">
+            <el-form-item label="尾款金额" prop="finalPaymentAmount">
+              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额" />
+            </el-form-item>
+          </el-col>
+
+           <el-col :span="12">
             <el-form-item label="海运费(USD)" prop="seaFreight">
               <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)" />
             </el-form-item>
           </el-col>
+          
+          
         </el-row>
 
         <el-row :gutter="16">
           <el-col :span="12">
+            <el-form-item label="尾款汇率" prop="finalExchangeRate">
+              <el-input v-model="form.finalExchangeRate" placeholder="输入尾款汇率" />
+            </el-form-item>
+          </el-col>
+           <el-col :span="12">
             <el-form-item label="港杂费" prop="portFee">
               <el-input v-model="form.portFee" placeholder="输入港杂费" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="增值税" prop="vat">
-              <el-input v-model="form.vat" placeholder="输入增值税" />
+           
+        </el-row>
+      
+        <el-row :gutter="16">
+           <el-col :span="12">
+            <el-form-item label="保额" prop="insuranceAmount">
+              <el-input v-model="form.insuranceAmount" placeholder="输入保额" />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="保险费用" prop="insuranceFee">
+              <el-input v-model="form.insuranceFee" placeholder="输入保险费用" />
+            </el-form-item>
+          </el-col>
+         
         </el-row>
+
+        <el-divider content-position="left" class="group-divider">订单后</el-divider>
 
         <el-row :gutter="16">
           <el-col :span="12">
@@ -240,6 +293,16 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="增值税" prop="vat">
+              <el-input v-model="form.vat" placeholder="输入增值税" />
+            </el-form-item>
+          </el-col>
+         
+        </el-row>
+
+
+        <el-row :gutter="16" >
+           <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
                 <el-option label="待处理" :value="1" />
@@ -268,15 +331,15 @@
         <el-descriptions-item label="贸易条款">{{ detailData.tradeTerm || '-' }}</el-descriptions-item>
         <el-descriptions-item label="币种">{{ detailData.currency || '-' }}</el-descriptions-item>
         <el-descriptions-item label="合同金额">{{ detailData.contractAmount ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="实际金额">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="总收款">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金汇率">{{ detailData.depositExchangeRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="尾款汇率">{{ detailData.finalExchangeRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金收款金额">{{ detailData.receivedAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="尾款金额">{{ detailData.finalPaymentAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="保险费用">{{ detailData.insuranceFee ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="保险金额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="预计收尾款(天)">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="保额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="预计尾款日期">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
         <el-descriptions-item label="海运费(USD)">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="港杂费">{{ detailData.portFee ?? '-' }}</el-descriptions-item>
@@ -298,7 +361,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getOrderPage, saveSalesOrder, updateSalesOrder } from '@/api/salesOrder'
-import { getUserPage } from '@/api/system'
+import { getUserListWithRoles } from '@/api/system'
 import { getCustomerPage } from '@/api/customer'
 
 // Data definitions
@@ -312,11 +375,18 @@ const detailDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const salespersonOptions = ref<any[]>([])
 const customerOptions = ref<any[]>([])
+const allUsers = ref<any[]>([])
+const businessUsers = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   orderNo: '',
-  tradeTerm: ''
+  tradeTerm: '',
+  createUserName: '',
+  createUserId: null as number | null,
+  salespersonName: '',
+  salespersonId: null as number | null,
+  status: null as number | null
 })
 
 const form = reactive<any>({
@@ -324,23 +394,24 @@ const form = reactive<any>({
   orderNo: '',
   customerId: null,
   salespersonId: null,
+  createUserId: null,
   tradeTerm: '',
   currency: '',
-  depositExchangeRate: 0,
-  finalExchangeRate: 0,
-  contractAmount: 0,
-  actualAmount: 0,
-  depositRate: 0,
-  receivedAmount: 0,
-  finalPaymentAmount: 0,
-  insuranceFee: 0,
-  insuranceAmount: 0,
-  expectedReceiptDays: 0,
+  depositExchangeRate: null,
+  finalExchangeRate: null,
+  contractAmount: null,
+  actualAmount: null,
+  depositRate: null,
+  receivedAmount: null,
+  finalPaymentAmount: null,
+  insuranceFee: null,
+  insuranceAmount: null,
+  expectedReceiptDays: null,
   transportType: '',
-  seaFreight: 0,
-  portFee: 0,
-  vat: 0,
-  profit: 0,
+  seaFreight: null,
+  portFee: null,
+  vat: null,
+  profit: null,
   status: 1
 })
 
@@ -351,21 +422,21 @@ const detailData = reactive<any>({
   salespersonId: null,
   tradeTerm: '',
   currency: '',
-  depositExchangeRate: 0,
-  finalExchangeRate: 0,
-  contractAmount: 0,
-  actualAmount: 0,
-  depositRate: 0,
-  receivedAmount: 0,
-  finalPaymentAmount: 0,
-  insuranceFee: 0,
-  insuranceAmount: 0,
-  expectedReceiptDays: 0,
+  depositExchangeRate: null,
+  finalExchangeRate: null,
+  contractAmount: null,
+  actualAmount: null,
+  depositRate: null,
+  receivedAmount: null,
+  finalPaymentAmount: null,
+  insuranceFee: null,
+  insuranceAmount: null,
+  expectedReceiptDays: null,
   transportType: '',
-  seaFreight: 0,
-  portFee: 0,
-  vat: 0,
-  profit: 0,
+  seaFreight: null,
+  portFee: null,
+  vat: null,
+  profit: null,
   status: 1,
   createTime: '',
   updateTime: ''
@@ -374,10 +445,10 @@ const detailData = reactive<any>({
 const rules = {
   orderNo: [{ required: true, message: '请输入订单号', trigger: 'blur' }],
   customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
+  tradeTerm: [{ required: true, message: '请选择贸易条款', trigger: 'change' }],
   salespersonId: [{ required: true, message: '请选择业务员', trigger: 'change' }],
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
   depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
-  finalExchangeRate: [{ required: true, message: '请输入尾款汇率', trigger: 'blur' }],
   contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
   receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
@@ -398,6 +469,40 @@ const getList = async () => {
   }
 }
 
+// Currency autocomplete
+const currencyOptions = ['USD', 'RMB']
+const queryCurrency = (queryString: string, cb: (results: { value: string }[]) => void) => {
+  const results = queryString
+    ? currencyOptions.filter(c => c.toLowerCase().includes(queryString.toLowerCase())).map(c => ({ value: c }))
+    : currencyOptions.map(c => ({ value: c }))
+  cb(results)
+}
+
+// User autocomplete methods
+const queryCreateUser = (queryString: string, cb: (results: { value: string; data: any }[]) => void) => {
+  const users = allUsers.value
+  const results = queryString
+    ? users.filter(user => user.realName?.toLowerCase().includes(queryString.toLowerCase())).map(user => ({ value: user.realName, data: user }))
+    : users.map(user => ({ value: user.realName, data: user }))
+  cb(results)
+}
+
+const querySalesperson = (queryString: string, cb: (results: { value: string; data: any }[]) => void) => {
+  const users = businessUsers.value
+  const results = queryString
+    ? users.filter(user => user.realName?.toLowerCase().includes(queryString.toLowerCase())).map(user => ({ value: user.realName, data: user }))
+    : users.map(user => ({ value: user.realName, data: user }))
+  cb(results)
+}
+
+const onCreateUserSelect = (item: { value: string; data: any }) => {
+  queryParams.createUserId = item.data.id
+}
+
+const onSalespersonSelect = (item: { value: string; data: any }) => {
+  queryParams.salespersonId = item.data.id
+}
+
 // Search and reset
 const handleQuery = () => {
   queryParams.pageNum = 1
@@ -406,6 +511,11 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryParams.orderNo = ''
   queryParams.tradeTerm = ''
+  queryParams.createUserName = ''
+  queryParams.createUserId = null
+  queryParams.salespersonName = ''
+  queryParams.salespersonId = null
+  queryParams.status = null
   handleQuery()
 }
 
@@ -422,21 +532,21 @@ const handleDetail = (row: any) => {
     salespersonId: row.salespersonId,
     tradeTerm: row.tradeTerm,
     currency: row.currency,
-    depositExchangeRate: row.depositExchangeRate ?? 0,
-    finalExchangeRate: row.finalExchangeRate ?? 0,
-    contractAmount: row.contractAmount ?? 0,
-    actualAmount: row.actualAmount ?? 0,
-    depositRate: row.depositRate ?? 0,
-    receivedAmount: row.receivedAmount ?? 0,
-    finalPaymentAmount: row.finalPaymentAmount ?? 0,
-    insuranceFee: row.insuranceFee ?? 0,
-    insuranceAmount: row.insuranceAmount ?? 0,
-    expectedReceiptDays: row.expectedReceiptDays ?? 0,
-    transportType: row.transportType ?? '',
-    seaFreight: row.seaFreight ?? 0,
-    portFee: row.portFee ?? 0,
-    vat: row.vat ?? 0,
-    profit: row.profit ?? 0,
+  depositExchangeRate: row.depositExchangeRate ?? null,
+  finalExchangeRate: row.finalExchangeRate ?? null,
+  contractAmount: row.contractAmount ?? null,
+  actualAmount: row.actualAmount ?? null,
+  depositRate: row.depositRate ?? null,
+  receivedAmount: row.receivedAmount ?? null,
+  finalPaymentAmount: row.finalPaymentAmount ?? null,
+  insuranceFee: row.insuranceFee ?? null,
+  insuranceAmount: row.insuranceAmount ?? null,
+  expectedReceiptDays: row.expectedReceiptDays ?? null,
+  transportType: row.transportType ?? '',
+  seaFreight: row.seaFreight ?? null,
+  portFee: row.portFee ?? null,
+  vat: row.vat ?? null,
+  profit: row.profit ?? null,
     status: row.status ?? 1,
     createTime: row.createTime ?? '',
     updateTime: row.updateTime ?? ''
@@ -452,21 +562,21 @@ const handleEdit = async (row: any) => {
     salespersonId: row.salespersonId,
     tradeTerm: row.tradeTerm,
     currency: row.currency,
-    depositExchangeRate: row.depositExchangeRate ?? 0,
-    finalExchangeRate: row.finalExchangeRate ?? 0,
-    contractAmount: row.contractAmount ?? 0,
-    actualAmount: row.actualAmount ?? 0,
-    depositRate: row.depositRate ?? 0,
-    receivedAmount: row.receivedAmount ?? 0,
-    finalPaymentAmount: row.finalPaymentAmount ?? 0,
-    insuranceFee: row.insuranceFee ?? 0,
-    insuranceAmount: row.insuranceAmount ?? 0,
-    expectedReceiptDays: row.expectedReceiptDays ?? 0,
-    transportType: row.transportType ?? '',
-    seaFreight: row.seaFreight ?? 0,
-    portFee: row.portFee ?? 0,
-    vat: row.vat ?? 0,
-    profit: row.profit ?? 0,
+  depositExchangeRate: row.depositExchangeRate ?? null,
+  finalExchangeRate: row.finalExchangeRate ?? null,
+  contractAmount: row.contractAmount ?? null,
+  actualAmount: row.actualAmount ?? null,
+  depositRate: row.depositRate ?? null,
+  receivedAmount: row.receivedAmount ?? null,
+  finalPaymentAmount: row.finalPaymentAmount ?? null,
+  insuranceFee: row.insuranceFee ?? null,
+  insuranceAmount: row.insuranceAmount ?? null,
+  expectedReceiptDays: row.expectedReceiptDays ?? null,
+  transportType: row.transportType ?? '',
+  seaFreight: row.seaFreight ?? null,
+  portFee: row.portFee ?? null,
+  vat: row.vat ?? null,
+  profit: row.profit ?? null,
     status: row.status ?? 1
   })
   await loadCustomerOptionsBySalespersonId(form.salespersonId)
@@ -475,27 +585,29 @@ const handleEdit = async (row: any) => {
 }
 
 const resetForm = () => {
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
   form.id = null
   form.orderNo = ''
   form.customerId = null
   form.salespersonId = null
+  form.createUserId = userInfo.userId || null
   form.tradeTerm = ''
   form.currency = ''
-  form.depositExchangeRate = 0
-  form.finalExchangeRate = 0
-  form.contractAmount = 0
-  form.actualAmount = 0
-  form.depositRate = 0
-  form.receivedAmount = 0
-  form.finalPaymentAmount = 0
-  form.insuranceFee = 0
-  form.insuranceAmount = 0
-  form.expectedReceiptDays = 0
+  form.depositExchangeRate = null
+  form.finalExchangeRate = null
+  form.contractAmount = null
+  form.actualAmount = null
+  form.depositRate = null
+  form.receivedAmount = null
+  form.finalPaymentAmount = null
+  form.insuranceFee = null
+  form.insuranceAmount = null
+  form.expectedReceiptDays = null
   form.transportType = ''
-  form.seaFreight = 0
-  form.portFee = 0
-  form.vat = 0
-  form.profit = 0
+  form.seaFreight = null
+  form.portFee = null
+  form.vat = null
+  form.profit = null
   form.status = 1
   customerOptions.value = []
   formRef.value?.clearValidate()
@@ -528,13 +640,13 @@ const handleExport = async () => {
     { label: '贸易条款', key: 'tradeTerm' },
     { label: '币种', key: 'currency' },
     { label: '合同金额', key: 'contractAmount' },
-    { label: '实际金额', key: 'actualAmount' },
+    { label: '总收款', key: 'actualAmount' },
     { label: '定金比例(%)', key: 'depositRate' },
     { label: '定金收款金额', key: 'receivedAmount' },
     { label: '尾款金额', key: 'finalPaymentAmount' },
     { label: '保险费用', key: 'insuranceFee' },
-    { label: '保险金额', key: 'insuranceAmount' },
-    { label: '预计收尾款(天)', key: 'expectedReceiptDays' },
+    { label: '保额', key: 'insuranceAmount' },
+    { label: '预计尾款日期', key: 'expectedReceiptDays' },
     { label: '运输方式', key: 'transportType' },
     { label: '状态', value: (r: any) => getStatusLabel(r.status) },
     { label: '创建时间', key: 'createTime' }
@@ -542,8 +654,16 @@ const handleExport = async () => {
 }
 
 const loadSalespersonOptions = async () => {
-  const res = await getUserPage({ pageNum: 1, pageSize: 1000 })
-  salespersonOptions.value = res.data?.list || []
+  const res = await getUserListWithRoles()
+  const list: any[] = res.data || []
+  // 所有用户（用于创建人搜索）
+  allUsers.value = list
+  // 业务人员：角色名称包含"业务"的用户
+  businessUsers.value = list.filter((user: any) =>
+    user.roleNames?.some((name: string) => name.includes('业务'))
+  )
+  // 供新建/编辑表单的业务员下拉
+  salespersonOptions.value = list
 }
 
 const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null | undefined) => {
@@ -599,5 +719,8 @@ onMounted(() => {
 .currency-text {
   font-weight: bold;
   color: #606266;
+}
+.group-divider {
+  margin: 8px 0 16px;
 }
 </style>

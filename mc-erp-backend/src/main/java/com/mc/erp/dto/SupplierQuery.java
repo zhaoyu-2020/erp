@@ -8,4 +8,8 @@ public class SupplierQuery {
     private Integer pageSize = 10;
     private String supplierCode;
     private String name;
+    /**
+     * 产品类型(多个用英文逗号分隔)
+     */
+    private String productType;
 }

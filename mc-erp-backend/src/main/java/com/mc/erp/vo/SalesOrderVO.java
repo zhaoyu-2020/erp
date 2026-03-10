@@ -3,6 +3,7 @@ package com.mc.erp.vo;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class SalesOrderVO {
@@ -10,6 +11,8 @@ public class SalesOrderVO {
     private String orderNo;
     private Long salespersonId;
     private String salespersonName;
+    private Long createUserId;
+    private String createUserName;
     private Long customerId;
     private String customerName;
     private String tradeTerm;
@@ -23,7 +26,7 @@ public class SalesOrderVO {
     private BigDecimal finalPaymentAmount;
     private BigDecimal insuranceFee;
     private BigDecimal insuranceAmount;
-    private Integer expectedReceiptDays;
+    private LocalDate expectedReceiptDays;
     private String transportType;
     private BigDecimal seaFreight;
     private BigDecimal portFee;

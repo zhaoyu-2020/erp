@@ -7,6 +7,7 @@ import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
 import com.mc.erp.service.UserService;
 import com.mc.erp.vo.UserVO;
+import com.mc.erp.vo.UserWithRoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,14 @@ public class UserController {
     @GetMapping("/page")
     public Result<PageResult<UserVO>> getPage(UserQuery query) {
         return Result.success(userService.getPage(query));
+    }
+
+    /**
+     * 查询所有用户（含角色名称），用于前端创建人/业务人员搜索下拉
+     */
+    @GetMapping("/list-with-roles")
+    public Result<List<UserWithRoleVO>> listWithRoles() {
+        return Result.success(userService.listWithRoles());
     }
 
     @GetMapping("/{id}")

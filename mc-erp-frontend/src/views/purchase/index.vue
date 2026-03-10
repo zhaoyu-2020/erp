@@ -8,6 +8,26 @@
         <el-form-item label="关联销售单号">
           <el-input v-model="queryParams.salesOrderNo" placeholder="输入销售单号" clearable />
         </el-form-item>
+        <el-form-item label="创建人">
+          <el-autocomplete
+            v-model="queryParams.createUserName"
+            :fetch-suggestions="queryCreateUser"
+            placeholder="输入或选择创建人"
+            clearable
+            style="width: 160px"
+            @select="onCreateUserSelect"
+          />
+        </el-form-item>
+        <el-form-item label="业务人员">
+          <el-autocomplete
+            v-model="queryParams.salespersonName"
+            :fetch-suggestions="querySalesperson"
+            placeholder="输入或选择业务人员"
+            clearable
+            style="width: 160px"
+            @select="onSalespersonSelect"
+          />
+        </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
             <el-option label="待处理" :value="1" />
@@ -65,6 +85,7 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
+        <el-divider content-position="left" class="group-divider">必填信息</el-divider>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="采购单号" prop="poNo">
@@ -128,19 +149,23 @@
               <el-input v-model="form.depositAmount" placeholder="输入定金金额" />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-divider content-position="left" class="group-divider">非必填信息</el-divider>
+        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="交货日期" prop="deliveryDate">
               <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="运输备注" prop="transportRemark">
               <el-input v-model="form.transportRemark" placeholder="输入运输备注" />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="总运费(RMB)" prop="totalFreight">
               <el-input v-model="form.totalFreight" placeholder="输入总运费" />
@@ -322,42 +347,42 @@
         <el-descriptions-item label="照片" :span="2">
           <template v-if="detailData.photos">
             <a v-for="(url, i) in detailData.photos.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="材质单" :span="2">
           <template v-if="detailData.materialSheet">
             <a v-for="(url, i) in detailData.materialSheet.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="发票" :span="2">
           <template v-if="detailData.invoice">
             <a v-for="(url, i) in detailData.invoice.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="定金水单" :span="2">
           <template v-if="detailData.depositSlip">
             <a v-for="(url, i) in detailData.depositSlip.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="尾款水单" :span="2">
           <template v-if="detailData.finalPaymentSlip">
             <a v-for="(url, i) in detailData.finalPaymentSlip.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
         <el-descriptions-item label="运费水单" :span="2">
           <template v-if="detailData.freightSlip">
             <a v-for="(url, i) in detailData.freightSlip.split(',').filter((u: string) => u)" :key="i"
-               :href="url" target="_blank" class="file-link">文件{{ i + 1 }}</a>
+               :href="url" target="_blank" class="file-link">文件{{ Number(i) + 1 }}</a>
           </template>
           <span v-else>-</span>
         </el-descriptions-item>
@@ -378,6 +403,7 @@ import type { FormInstance, UploadFile } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
+import { getUserListWithRoles } from '@/api/system'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -400,8 +426,15 @@ const queryParams = reactive({
   pageSize: 10,
   poNo: '',
   salesOrderNo: '',
-  status: undefined
+  status: undefined,
+  createUserId: undefined,
+  createUserName: '',
+  salespersonId: undefined,
+  salespersonName: ''
 })
+
+const allUsers = ref<any[]>([])
+const businessUsers = ref<any[]>([])
 
 const form = reactive<any>({
   id: null,
@@ -458,10 +491,17 @@ const rules = {
   depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }]
 }
 
+
 const getList = async () => {
   loading.value = true
   try {
-    const res = await getPurchaseOrderPage(queryParams)
+    // Prepare query
+    const params: any = { ...queryParams }
+    if (params.createUserName && params.createUserId) params.createUserId = params.createUserId
+    else params.createUserId = undefined
+    if (params.salespersonName && params.salespersonId) params.salespersonId = params.salespersonId
+    else params.salespersonId = undefined
+    const res = await getPurchaseOrderPage(params)
     dataList.value = res.data.list
     total.value = res.data.total
   } finally {
@@ -477,7 +517,48 @@ const resetQuery = () => {
   queryParams.poNo = ''
   queryParams.salesOrderNo = ''
   queryParams.status = undefined
+  queryParams.createUserId = undefined
+  queryParams.createUserName = ''
+  queryParams.salespersonId = undefined
+  queryParams.salespersonName = ''
   handleQuery()
+}
+
+// User dropdown logic (copied from sales order)
+const loadUserOptions = async () => {
+  const res = await getUserListWithRoles()
+  const list: any[] = res.data || []
+  allUsers.value = list
+  businessUsers.value = list.filter((user: any) =>
+    user.roleNames?.some((name: string) => name.includes('业务'))
+  )
+}
+
+const queryCreateUser = (queryString: string, cb: (results: any[]) => void) => {
+  const results = allUsers.value.filter((user: any) => {
+    return (
+      user.realName?.toLowerCase().includes(queryString.toLowerCase()) ||
+      user.username?.toLowerCase().includes(queryString.toLowerCase())
+    )
+  })
+  cb(results.map(u => ({ value: u.realName || u.username, id: u.id })))
+}
+const querySalesperson = (queryString: string, cb: (results: any[]) => void) => {
+  const results = businessUsers.value.filter((user: any) => {
+    return (
+      user.realName?.toLowerCase().includes(queryString.toLowerCase()) ||
+      user.username?.toLowerCase().includes(queryString.toLowerCase())
+    )
+  })
+  cb(results.map(u => ({ value: u.realName || u.username, id: u.id })))
+}
+const onCreateUserSelect = (item: any) => {
+  queryParams.createUserName = item.value
+  queryParams.createUserId = item.id
+}
+const onSalespersonSelect = (item: any) => {
+  queryParams.salespersonName = item.value
+  queryParams.salespersonId = item.id
 }
 
 const getStatusLabel = (status: number) => {
@@ -696,6 +777,7 @@ const handleExport = async () => {
 }
 
 onMounted(() => {
+  loadUserOptions()
   getList()
 })
 </script>
@@ -710,4 +792,5 @@ onMounted(() => {
 .file-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
 .file-link { margin-right: 12px; color: #409eff; text-decoration: none; }
 .file-link:hover { text-decoration: underline; }
+.group-divider { margin: 8px 0 16px; }
 </style>

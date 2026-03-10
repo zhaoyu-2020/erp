@@ -99,7 +99,7 @@
         <div class="right-menu">
           <el-dropdown trigger="click">
             <span class="avatar-wrapper">
-              管理员 <el-icon><CaretBottom /></el-icon>
+              {{ displayName }} <el-icon><CaretBottom /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -126,9 +126,22 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { ref, computed, onMounted } from 'vue'
 
 const $route = useRoute()
 const router = useRouter()
+
+const userInfo = ref<{ realName?: string; username?: string }>({})
+const displayName = computed(() => userInfo.value.realName || userInfo.value.username || '管理员')
+
+onMounted(() => {
+  try {
+    const stored = localStorage.getItem('userInfo')
+    if (stored) {
+      userInfo.value = JSON.parse(stored)
+    }
+  } catch {}
+})
 
 const handleLogout = () => {
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {

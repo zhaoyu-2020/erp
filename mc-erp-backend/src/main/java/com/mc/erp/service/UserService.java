@@ -7,6 +7,7 @@ import com.mc.erp.entity.User;
 import com.mc.erp.dto.LoginDTO;
 import com.mc.erp.vo.LoginVO;
 import com.mc.erp.vo.UserVO;
+import com.mc.erp.vo.UserWithRoleVO;
 
 import java.util.List;
 
@@ -20,4 +21,7 @@ public interface UserService extends IService<User> {
 
     /** 设置用户角色（全量覆盖） */
     boolean updateUserRoles(Long userId, List<Long> roleIds);
+
+    /** 查询所有用户（含角色名称），用于前端下拉搜索 */
+    List<UserWithRoleVO> listWithRoles();
 }

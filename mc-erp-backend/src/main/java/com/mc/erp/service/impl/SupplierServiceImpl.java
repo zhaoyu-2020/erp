@@ -23,9 +23,10 @@ public class SupplierServiceImpl extends ServiceImpl<SupplierMapper, Supplier> i
         Page<Supplier> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Supplier> wrapper = new LambdaQueryWrapper<>();
 
-        wrapper.like(StringUtils.hasText(query.getSupplierCode()), Supplier::getSupplierCode, query.getSupplierCode());
-        wrapper.like(StringUtils.hasText(query.getName()), Supplier::getName, query.getName());
-        wrapper.orderByDesc(Supplier::getCreateTime);
+    wrapper.like(StringUtils.hasText(query.getSupplierCode()), Supplier::getSupplierCode, query.getSupplierCode());
+    wrapper.like(StringUtils.hasText(query.getName()), Supplier::getName, query.getName());
+    wrapper.like(StringUtils.hasText(query.getProductType()), Supplier::getProductType, query.getProductType());
+    wrapper.orderByDesc(Supplier::getCreateTime);
 
         Page<Supplier> resultPage = this.page(page, wrapper);
 

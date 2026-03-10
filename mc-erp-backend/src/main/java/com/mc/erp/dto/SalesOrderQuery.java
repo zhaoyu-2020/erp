@@ -11,4 +11,5 @@ public class SalesOrderQuery {
     private Long customerId;
     private String tradeTerm;
     private Integer status;
+    private Long createUserId;
 }

@@ -23,6 +23,10 @@ public class Supplier {
     @NotBlank(message = "联系电话不能为空")
     private String phone;
     private String address;
+    /**
+     * 产品类型(多个用英文逗号分隔)
+     */
+    private String productType;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableLogic

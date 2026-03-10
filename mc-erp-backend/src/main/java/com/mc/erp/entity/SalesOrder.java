@@ -19,6 +19,8 @@ public class SalesOrder {
     @NotNull(message = "业务员ID不能为空")
     private Long salespersonId;
 
+    private Long createUserId;
+
     @NotNull(message = "客户ID不能为空")
     private Long customerId;
 
@@ -47,8 +49,9 @@ public class SalesOrder {
     private BigDecimal insuranceFee;
     private BigDecimal insuranceAmount;
 
-    @NotNull(message = "预计收尾款天数不能为空")
-    private Integer expectedReceiptDays;
+    /** 预计收尾款日期 */
+    @NotNull(message = "预计收尾款日期不能为空")
+    private java.time.LocalDate expectedReceiptDays;
 
     private String transportType;
     private BigDecimal seaFreight;

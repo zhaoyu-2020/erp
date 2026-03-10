@@ -122,7 +122,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getCustomerPage, saveCustomer, updateCustomer, deleteCustomer } from '@/api/customer'
-import { getUserPage } from '@/api/system'
+import { getUserListWithRoles } from '@/api/system'
 
 const CONTINENT_OPTIONS = [
   { label: '亚洲', value: 'ASIA' },
@@ -169,10 +169,10 @@ const form = reactive<any>({
 
 const rules = {
   name: [{ required: true, message: '请输入客户名称', trigger: 'blur' }],
+  country: [{ required: true, message: '请输入国家/地区', trigger: 'blur' }],
   continent: [{ required: true, message: '请选择洲别', trigger: 'change' }],
   consignee: [{ required: true, message: '请输入收货人', trigger: 'blur' }],
   notify: [{ required: true, message: '请输入notify', trigger: 'blur' }],
-  phone: [{ required: true, message: '请输入电话', trigger: 'blur' }],
   email: [{ type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'change'] }],
   salesUserId: [{ required: true, message: '请选择业务员', trigger: 'change' }]
 }
@@ -190,8 +190,19 @@ const getList = async () => {
 
 const loadUsers = async () => {
   try {
-    const res = await getUserPage({ pageNum: 1, pageSize: 1000 })
-    userOptions.value = res.data.list || []
+    // 获取当前用户信息
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    const res = await getUserListWithRoles()
+    const allUsers = res.data || []
+    // 判断是否管理员（roleNames 包含 '管理员'）
+    const currentUser = allUsers.find((u: any) => u.id === userInfo.userId)
+    const isAdmin = currentUser && Array.isArray(currentUser.roleNames) && currentUser.roleNames.includes('管理员')
+    if (isAdmin) {
+      userOptions.value = allUsers
+    } else {
+      // 只显示自己
+      userOptions.value = currentUser ? [currentUser] : []
+    }
   } catch (error) {
     console.error('加载用户列表失败', error)
   }

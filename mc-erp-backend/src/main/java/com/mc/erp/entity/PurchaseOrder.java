@@ -23,6 +23,12 @@ public class PurchaseOrder {
     @NotBlank(message = "关联销售订单号不能为空")
     private String salesOrderNo;
 
+    // 业务员ID
+    private Long salespersonId;
+
+    // 创建人ID
+    private Long createUserId;
+
     // 订单金额
     @NotNull(message = "订单金额不能为空")
     private BigDecimal totalAmount;

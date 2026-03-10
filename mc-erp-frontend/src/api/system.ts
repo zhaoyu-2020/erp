@@ -16,6 +16,12 @@ export function updateUser(data: any) {
 export function deleteUser(id: number) {
     return request({ url: `/users/${id}`, method: 'delete' })
 }
+/**
+ * 查询所有用户（含角色名称），用于前端搜索下拉
+ */
+export function getUserListWithRoles() {
+    return request({ url: '/users/list-with-roles', method: 'get' })
+}
 
 // Role API
 export function getRolePage(params: any) {

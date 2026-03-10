@@ -8,6 +8,23 @@
         <el-form-item label="名称">
           <el-input v-model="queryParams.name" placeholder="输入名称" clearable />
         </el-form-item>
+        <el-form-item label="产品类型">
+          <el-select
+            v-model="queryParams.productType"
+            filterable
+            allow-create
+            clearable
+            placeholder="输入或选择产品类型"
+            style="width: 180px"
+          >
+            <el-option
+              v-for="item in productTypeList"
+              :key="item.id"
+              :label="item.typeName"
+              :value="item.typeName"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
           <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -22,12 +39,13 @@
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="编码" prop="supplierCode" width="120" />
-        <el-table-column label="名称" prop="name" min-width="150" />
-        <el-table-column label="联系人" prop="contactPerson" width="120" />
-        <el-table-column label="电话" prop="phone" width="150" />
-        <el-table-column label="地址" prop="address" min-width="200" show-overflow-tooltip />
+  <el-table-column type="index" label="序号" width="60" align="center" />
+  <el-table-column label="编码" prop="supplierCode" width="120" />
+  <el-table-column label="名称" prop="name" min-width="150" />
+  <el-table-column label="产品类型" prop="productType" width="120" />
+  <el-table-column label="联系人" prop="contactPerson" width="120" />
+  <el-table-column label="电话" prop="phone" width="150" />
+  <el-table-column label="地址" prop="address" min-width="200" show-overflow-tooltip />
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
@@ -55,6 +73,24 @@
         </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input v-model="form.name" placeholder="输入名称" />
+        </el-form-item>
+        <el-form-item label="产品类型" prop="productType">
+          <el-select
+            v-model="form.productTypeArr"
+            filterable
+            allow-create
+            clearable
+            multiple
+            collapse-tags
+            placeholder="输入或选择产品类型"
+          >
+            <el-option
+              v-for="item in productTypeList"
+              :key="item.id"
+              :label="item.typeName"
+              :value="item.typeName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="联系人" prop="contactPerson">
           <el-input v-model="form.contactPerson" placeholder="输入联系人" />
@@ -137,6 +173,7 @@ import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getSupplierPage, saveSupplier, updateSupplier, deleteSupplier } from '@/api/supplier'
 import { getSupplierAccountList, saveSupplierAccount, updateSupplierAccount, deleteSupplierAccount } from '@/api/supplierAccount'
+import { getProductTypeList } from '@/api/productType'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -149,13 +186,16 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   supplierCode: '',
-  name: ''
+  name: '',
+  productType: ''
 })
 
 const form = reactive<any>({
   id: null,
   supplierCode: '',
   name: '',
+  productType: '', // 用于提交和回显
+  productTypeArr: [], // 用于多选控件
   contactPerson: '',
   phone: '',
   address: ''
@@ -191,6 +231,8 @@ const resetForm = () => {
   form.id = null
   form.supplierCode = ''
   form.name = ''
+  form.productType = ''
+  form.productTypeArr = []
   form.contactPerson = ''
   form.phone = ''
   form.address = ''
@@ -209,6 +251,8 @@ const handleEdit = (row: any) => {
     id: row.id,
     supplierCode: row.supplierCode,
     name: row.name,
+    productType: row.productType,
+    productTypeArr: row.productType ? row.productType.split(',') : [],
     contactPerson: row.contactPerson,
     phone: row.phone,
     address: row.address
@@ -226,7 +270,20 @@ const handleDelete = (row: any) => {
 }
 
 const handleSubmit = async () => {
-  await formRef.value?.validate()
+  try {
+    await formRef.value?.validate()
+  } catch (err: any) {
+    // Element Plus 校验失败时会抛出错误对象，直接友好提示
+    if (err && err.length) {
+      const first = err[0]
+      ElMessage.warning(first.message || '请完善必填项')
+    } else {
+      ElMessage.warning('请完善必填项')
+    }
+    return
+  }
+  // 多选转字符串
+  form.productType = (form.productTypeArr || []).join(',')
   submitLoading.value = true
   try {
     if (form.id) {
@@ -250,13 +307,20 @@ const handleExport = async () => {
   exportToCsv('供应商管理导出', rows, [
     { label: '编码', key: 'supplierCode' },
     { label: '名称', key: 'name' },
+    { label: '产品类型', key: 'productType' },
     { label: '联系人', key: 'contactPerson' },
     { label: '电话', key: 'phone' },
     { label: '地址', key: 'address' }
   ])
 }
 
+const productTypeList = ref<any[]>([])
+const loadProductTypeList = async () => {
+  const res = await getProductTypeList()
+  productTypeList.value = res.data || []
+}
 onMounted(() => {
+  loadProductTypeList()
   getList()
 })
 
