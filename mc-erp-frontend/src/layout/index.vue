@@ -26,6 +26,10 @@
             <el-icon><ShoppingCart /></el-icon>
             <template #title>采购订单</template>
           </el-menu-item>
+          <el-menu-item index="/purchase-order-details">
+            <el-icon><DocumentChecked /></el-icon>
+            <template #title>采购订单明细</template>
+          </el-menu-item>
           <el-menu-item index="/products">
             <el-icon><Goods /></el-icon>
             <template #title>产品管理(PIM)</template>
