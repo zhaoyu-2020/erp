@@ -61,6 +61,7 @@ public class SalesOrder {
     private BigDecimal portFee;
     private BigDecimal vat;
     private BigDecimal profit;
+    private BigDecimal loss;
 
     private Integer status;
     private LocalDateTime createTime;

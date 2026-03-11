@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `port_fee` decimal(15,2) DEFAULT '0.00' COMMENT '港杂费',
   `vat` decimal(15,2) DEFAULT '0.00' COMMENT '增值税',
   `profit` decimal(15,2) DEFAULT '0.00' COMMENT '利润',
+  `loss` decimal(15,2) DEFAULT NULL COMMENT '损耗(定金+尾款-明细价格汇总之和)',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2已审核待采购 3生产中 4已发货 5已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -160,7 +161,6 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   KEY `idx_supplier` (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单表';
 
--- 6-1. 采购订单加工项表
 CREATE TABLE IF NOT EXISTS `biz_purchase_order_item` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `purchase_order_id` bigint(20) NOT NULL COMMENT '采购订单ID',
@@ -171,6 +171,43 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_item` (
   PRIMARY KEY (`id`),
   KEY `idx_purchase_order` (`purchase_order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单加工项表';
+
+-- 6-2. 采购订单明细表（参考销售订单明细）
+CREATE TABLE IF NOT EXISTS `biz_purchase_order_detail` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `purchase_order_id` bigint(20) NOT NULL COMMENT '采购订单ID',
+  `product_id` bigint(20) DEFAULT NULL COMMENT '产品ID',
+  `spec` varchar(100) DEFAULT NULL COMMENT '产品规格',
+  `product_type` varchar(100) DEFAULT NULL COMMENT '产品类型',
+  `material` varchar(100) DEFAULT NULL COMMENT '材质',
+  `length` varchar(50) DEFAULT NULL COMMENT '长度',
+  `tolerance` varchar(50) DEFAULT NULL COMMENT '公差',
+  `quantity_ton` decimal(15,3) DEFAULT NULL COMMENT '数量(吨)',
+  `quantity_pc` int(11) DEFAULT NULL COMMENT '数量(pc)',
+  `quantity_meter` decimal(15,3) DEFAULT NULL COMMENT '数量(米)',
+  `fob_price` decimal(15,2) DEFAULT NULL COMMENT 'FOB价格',
+  `cif_price` decimal(15,2) DEFAULT NULL COMMENT 'CIF价格',
+  `price_total` decimal(15,2) DEFAULT NULL COMMENT '价格汇总',
+  `packaging_weight` decimal(15,3) DEFAULT NULL COMMENT '包装重量',
+  `packaging` varchar(200) DEFAULT NULL COMMENT '包装',
+  `coil_inner_diameter` varchar(50) DEFAULT NULL COMMENT '卷内径',
+  `processing_items` varchar(500) DEFAULT NULL COMMENT '加工项',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `detail_seq` int(11) DEFAULT NULL COMMENT '详情序号',
+  `ordered_quantity` decimal(15,3) DEFAULT NULL COMMENT '订货数量',
+  `actual_quantity` decimal(15,3) DEFAULT NULL COMMENT '实际数量',
+  `bundle_count` int(11) DEFAULT NULL COMMENT '捆数',
+  `net_weight` decimal(15,3) DEFAULT NULL COMMENT '净重',
+  `gross_weight` decimal(15,3) DEFAULT NULL COMMENT '毛重',
+  `volume` decimal(15,3) DEFAULT NULL COMMENT '体积',
+  `origin_place` varchar(200) DEFAULT NULL COMMENT '货源地',
+  `actual_theoretical_weight` decimal(15,3) DEFAULT NULL COMMENT '实际理论重量',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_purchase_order_detail_order` (`purchase_order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单明细表';
 
 -- 7. 用户表
 CREATE TABLE IF NOT EXISTS `sys_user` (

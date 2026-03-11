@@ -63,6 +63,18 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '采购订单', icon: 'ShoppingCart' }
             },
             {
+                path: 'purchase-orders/:orderId/details',
+                name: 'PurchaseOrderDetail',
+                component: () => import('@/views/purchase-order/detail.vue'),
+                meta: { title: '采购订单明细', hidden: true }
+            },
+            {
+                path: 'purchase-order-details',
+                name: 'PurchaseOrderDetailList',
+                component: () => import('@/views/purchase-order-detail/index.vue'),
+                meta: { title: '采购订单明细', icon: 'DocumentChecked' }
+            },
+            {
                 path: 'wms',
                 name: 'WMSList',
                 component: () => import('@/views/wms/index.vue'),

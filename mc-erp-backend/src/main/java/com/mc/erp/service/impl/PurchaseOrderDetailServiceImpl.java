@@ -4,17 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
-import com.mc.erp.dto.SalesOrderDetailQuery;
+import com.mc.erp.dto.PurchaseOrderDetailQuery;
 import com.mc.erp.entity.Product;
 import com.mc.erp.entity.ProductType;
-import com.mc.erp.entity.SalesOrder;
-import com.mc.erp.entity.SalesOrderDetail;
+import com.mc.erp.entity.PurchaseOrder;
+import com.mc.erp.entity.PurchaseOrderDetail;
 import com.mc.erp.mapper.ProductMapper;
 import com.mc.erp.mapper.ProductTypeMapper;
-import com.mc.erp.mapper.SalesOrderDetailMapper;
-import com.mc.erp.mapper.SalesOrderMapper;
-import com.mc.erp.service.SalesOrderDetailService;
-import com.mc.erp.vo.SalesOrderDetailVO;
+import com.mc.erp.mapper.PurchaseOrderDetailMapper;
+import com.mc.erp.mapper.PurchaseOrderMapper;
+import com.mc.erp.service.PurchaseOrderDetailService;
+import com.mc.erp.vo.PurchaseOrderDetailVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMapper, SalesOrderDetail>
-        implements SalesOrderDetailService {
+public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDetailMapper, PurchaseOrderDetail>
+        implements PurchaseOrderDetailService {
 
     @Autowired
     private ProductMapper productMapper;
@@ -37,55 +37,56 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     private ProductTypeMapper productTypeMapper;
 
     @Autowired
-    private SalesOrderMapper salesOrderMapper;
+    private PurchaseOrderMapper purchaseOrderMapper;
 
     @Override
-    public PageResult<SalesOrderDetailVO> getPage(SalesOrderDetailQuery query) {
-        // If filtering by orderNo, resolve to orderId first
-        Long resolvedOrderId = query.getOrderId();
-        if (StringUtils.hasText(query.getOrderNo()) && resolvedOrderId == null) {
-            LambdaQueryWrapper<SalesOrder> soWrapper = new LambdaQueryWrapper<SalesOrder>()
-                    .eq(SalesOrder::getOrderNo, query.getOrderNo().trim())
+    public PageResult<PurchaseOrderDetailVO> getPage(PurchaseOrderDetailQuery query) {
+        Long resolvedOrderId = query.getPurchaseOrderId();
+        if (StringUtils.hasText(query.getPoNo()) && resolvedOrderId == null) {
+            LambdaQueryWrapper<PurchaseOrder> poWrapper = new LambdaQueryWrapper<PurchaseOrder>()
+                    .eq(PurchaseOrder::getPoNo, query.getPoNo().trim())
                     .last("LIMIT 1");
-            SalesOrder so = salesOrderMapper.selectOne(soWrapper);
-            if (so != null) {
-                resolvedOrderId = so.getId();
+            PurchaseOrder po = purchaseOrderMapper.selectOne(poWrapper);
+            if (po != null) {
+                resolvedOrderId = po.getId();
             } else {
-                // orderNo provided but not found — return empty
                 return new PageResult<>(0L, List.of());
             }
         }
 
-        Page<SalesOrderDetail> page = new Page<>(query.getPageNum(), query.getPageSize());
-        LambdaQueryWrapper<SalesOrderDetail> wrapper = new LambdaQueryWrapper<>();
+        Page<PurchaseOrderDetail> page = new Page<>(query.getPageNum(), query.getPageSize());
+        LambdaQueryWrapper<PurchaseOrderDetail> wrapper = new LambdaQueryWrapper<>();
         if (resolvedOrderId != null) {
-            wrapper.eq(SalesOrderDetail::getOrderId, resolvedOrderId);
+            wrapper.eq(PurchaseOrderDetail::getPurchaseOrderId, resolvedOrderId);
         }
         if (StringUtils.hasText(query.getSpec())) {
-            wrapper.like(SalesOrderDetail::getSpec, query.getSpec().trim());
+            wrapper.like(PurchaseOrderDetail::getSpec, query.getSpec().trim());
         }
         if (StringUtils.hasText(query.getProductType())) {
-            wrapper.like(SalesOrderDetail::getProductType, query.getProductType().trim());
+            wrapper.like(PurchaseOrderDetail::getProductType, query.getProductType().trim());
         }
         if (StringUtils.hasText(query.getMaterial())) {
-            wrapper.like(SalesOrderDetail::getMaterial, query.getMaterial().trim());
+            wrapper.like(PurchaseOrderDetail::getMaterial, query.getMaterial().trim());
         }
-        wrapper.orderByAsc(SalesOrderDetail::getOrderId).orderByAsc(SalesOrderDetail::getDetailSeq)
-               .orderByAsc(SalesOrderDetail::getId);
+        wrapper.orderByAsc(PurchaseOrderDetail::getPurchaseOrderId)
+                .orderByAsc(PurchaseOrderDetail::getDetailSeq)
+                .orderByAsc(PurchaseOrderDetail::getId);
 
-        Page<SalesOrderDetail> resultPage = this.page(page, wrapper);
+        Page<PurchaseOrderDetail> resultPage = this.page(page, wrapper);
 
-        // Resolve orderNo for each detail
         List<Long> orderIds = resultPage.getRecords().stream()
-                .map(SalesOrderDetail::getOrderId).distinct().collect(Collectors.toList());
-        Map<Long, String> orderNoMap = orderIds.isEmpty() ? Map.of() :
-                salesOrderMapper.selectList(new LambdaQueryWrapper<SalesOrder>()
-                        .in(SalesOrder::getId, orderIds))
-                        .stream().collect(Collectors.toMap(SalesOrder::getId, SalesOrder::getOrderNo));
+                .map(PurchaseOrderDetail::getPurchaseOrderId)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<Long, String> poNoMap = orderIds.isEmpty() ? Map.of() :
+                purchaseOrderMapper.selectList(new LambdaQueryWrapper<PurchaseOrder>()
+                        .in(PurchaseOrder::getId, orderIds))
+                        .stream()
+                        .collect(Collectors.toMap(PurchaseOrder::getId, PurchaseOrder::getPoNo));
 
-        List<SalesOrderDetailVO> voList = resultPage.getRecords().stream().map(d -> {
-            SalesOrderDetailVO vo = toVO(d);
-            vo.setOrderNo(orderNoMap.getOrDefault(d.getOrderId(), ""));
+        List<PurchaseOrderDetailVO> voList = resultPage.getRecords().stream().map(d -> {
+            PurchaseOrderDetailVO vo = toVO(d);
+            vo.setPoNo(poNoMap.getOrDefault(d.getPurchaseOrderId(), ""));
             return vo;
         }).collect(Collectors.toList());
 
@@ -93,16 +94,16 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     @Override
-    public List<SalesOrderDetailVO> listByOrderId(Long orderId) {
-        List<SalesOrderDetail> list = this.list(new LambdaQueryWrapper<SalesOrderDetail>()
-                .eq(SalesOrderDetail::getOrderId, orderId)
-                .orderByAsc(SalesOrderDetail::getId));
+    public List<PurchaseOrderDetailVO> listByOrderId(Long orderId) {
+        List<PurchaseOrderDetail> list = this.list(new LambdaQueryWrapper<PurchaseOrderDetail>()
+                .eq(PurchaseOrderDetail::getPurchaseOrderId, orderId)
+                .orderByAsc(PurchaseOrderDetail::getId));
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public boolean saveDetail(SalesOrderDetail detail) {
+    public boolean saveDetail(PurchaseOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
@@ -111,31 +112,16 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
 
     @Override
     @Transactional
-    public boolean updateDetail(SalesOrderDetail detail) {
+    public boolean updateDetail(PurchaseOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
         return this.updateById(detail);
     }
 
-    private BigDecimal computePriceTotal(SalesOrderDetail detail) {
-        BigDecimal qty = detail.getQuantityTon();
-        if (qty == null) {
-            return detail.getPriceTotal();
-        }
-
-        String tradeTerm = null;
-        if (detail.getOrderId() != null) {
-            SalesOrder order = salesOrderMapper.selectById(detail.getOrderId());
-            tradeTerm = order != null ? order.getTradeTerm() : null;
-        }
-
-        // 先看贸易条款：FOB 用 FOB 价格，CIF 用 CIF 价格；其余保持现有值
-        if ("FOB".equalsIgnoreCase(tradeTerm) && detail.getFobPrice() != null) {
-            return detail.getFobPrice().multiply(qty);
-        }
-        if ("CIF".equalsIgnoreCase(tradeTerm) && detail.getCifPrice() != null) {
-            return detail.getCifPrice().multiply(qty);
+    private BigDecimal computePriceTotal(PurchaseOrderDetail detail) {
+        if (detail.getCifPrice() != null && detail.getQuantityTon() != null) {
+            return detail.getCifPrice().multiply(detail.getQuantityTon());
         }
         return detail.getPriceTotal();
     }
@@ -152,14 +138,13 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         }
     }
 
-    private Long findOrCreateProduct(SalesOrderDetail detail) {
+    private Long findOrCreateProduct(PurchaseOrderDetail detail) {
         String spec = detail.getSpec();
         String type = detail.getProductType();
         String material = detail.getMaterial();
         String length = detail.getLength();
         String tolerance = detail.getTolerance();
 
-        // Only attempt deduplication when all 5 identifying fields are present
         if (StringUtils.hasText(spec) && StringUtils.hasText(type)
                 && StringUtils.hasText(material) && StringUtils.hasText(length)
                 && StringUtils.hasText(tolerance)) {
@@ -178,7 +163,6 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             }
         }
 
-        // Create a new product record
         Product product = new Product();
         product.setSpec(StringUtils.hasText(spec) ? spec.trim() : null);
         product.setType(StringUtils.hasText(type) ? type.trim() : null);
@@ -186,7 +170,6 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         product.setLength(StringUtils.hasText(length) ? length.trim() : null);
         product.setTolerance(StringUtils.hasText(tolerance) ? tolerance.trim() : null);
         product.setMeterWeight("0");
-        // Build a meaningful Chinese name from available fields
         String nameParts = List.of(
                 StringUtils.hasText(type) ? type.trim() : "",
                 StringUtils.hasText(spec) ? spec.trim() : "",
@@ -200,8 +183,8 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         return product.getId();
     }
 
-    private SalesOrderDetailVO toVO(SalesOrderDetail detail) {
-        SalesOrderDetailVO vo = new SalesOrderDetailVO();
+    private PurchaseOrderDetailVO toVO(PurchaseOrderDetail detail) {
+        PurchaseOrderDetailVO vo = new PurchaseOrderDetailVO();
         BeanUtils.copyProperties(detail, vo);
         return vo;
     }

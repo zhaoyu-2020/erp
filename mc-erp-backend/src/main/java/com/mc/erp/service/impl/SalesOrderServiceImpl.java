@@ -7,9 +7,11 @@ import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
+import com.mc.erp.entity.SalesOrderDetail;
 import com.mc.erp.entity.User;
 import com.mc.erp.service.CustomerService;
 import com.mc.erp.service.PurchaseOrderService;
+import com.mc.erp.service.SalesOrderDetailService;
 import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.mapper.SalesOrderMapper;
@@ -19,13 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOrder> implements SalesOrderService {
@@ -45,6 +41,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private PurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private SalesOrderDetailService salesOrderDetailService;
 
     @Override
     public PageResult<SalesOrderVO> getPage(SalesOrderQuery query) {
@@ -127,6 +126,35 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         System.out.println("Calculated profit for Sales Order " + salesOrder.getOrderNo() + ": " + depositIncome + " (deposit) + " + finalIncome + " (final) - " + portFee + " (port fee) - " + totalPurchaseCost + " (purchase cost) = " + profit);
         // 更新销售订单的利润
         salesOrder.setProfit(profit);
+        this.updateById(salesOrder);
+    }
+
+    @Override
+    public void calculateAndUpdateLoss(Long salesOrderId) {
+        // 获取销售订单信息
+        SalesOrder salesOrder = this.getById(salesOrderId);
+        if (salesOrder == null) {
+            throw new RuntimeException("销售订单不存在: " + salesOrderId);
+        }
+
+        // 查询该订单所有明细，汇总价格
+        LambdaQueryWrapper<SalesOrderDetail> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SalesOrderDetail::getOrderId, salesOrderId);
+        List<SalesOrderDetail> details = salesOrderDetailService.list(wrapper);
+
+        BigDecimal totalDetailPrice = details.stream()
+                .map(d -> d.getPriceTotal() != null ? d.getPriceTotal() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 损耗 = 定金收款金额 + 尾款金额 - 明细价格汇总之和
+        BigDecimal receivedAmount = salesOrder.getReceivedAmount() != null ? salesOrder.getReceivedAmount() : BigDecimal.ZERO;
+        BigDecimal finalPayment = salesOrder.getFinalPaymentAmount() != null ? salesOrder.getFinalPaymentAmount() : BigDecimal.ZERO;
+
+        BigDecimal loss = receivedAmount.add(finalPayment).subtract(totalDetailPrice);
+        System.out.println("Calculated loss for Sales Order " + salesOrder.getOrderNo() + ": "
+                + receivedAmount + " (deposit) + " + finalPayment + " (final) - " + totalDetailPrice + " (detail total) = " + loss);
+
+        salesOrder.setLoss(loss);
         this.updateById(salesOrder);
     }
 }

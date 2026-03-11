@@ -14,4 +14,11 @@ public interface SalesOrderService extends IService<SalesOrder> {
      * @param salesOrderId 销售订单ID
      */
     void calculateAndUpdateProfit(Long salesOrderId);
+
+    /**
+     * 计算并更新销售订单的损耗
+     * 公式：损耗 = 定金收款金额 + 尾款金额 - 销售订单明细中所有价格汇总之和
+     * @param salesOrderId 销售订单ID
+     */
+    void calculateAndUpdateLoss(Long salesOrderId);
 }

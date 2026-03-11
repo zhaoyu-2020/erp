@@ -67,6 +67,7 @@
         <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
+            <el-button link type="primary" @click="goToDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
           </template>
         </el-table-column>
@@ -398,6 +399,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
@@ -405,6 +407,7 @@ import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPur
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
 
+const router = useRouter()
 const loading = ref(false)
 const submitLoading = ref(false)
 const dataList = ref([])
@@ -678,6 +681,10 @@ const handleDetail = (row: any) => {
     updateTime: row.updateTime ?? ''
   })
   detailDialogVisible.value = true
+}
+
+const goToDetail = (row: any) => {
+  router.push({ name: 'PurchaseOrderDetail', params: { orderId: row.id }, query: { poNo: row.poNo } })
 }
 
 const handleEdit = (row: any) => {

@@ -73,6 +73,7 @@
         <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" />
         <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
+        <el-table-column label="损耗" prop="loss" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
@@ -311,6 +312,11 @@
 
 
         <el-row :gutter="16" >
+          <el-col :span="12">
+            <el-form-item label="损耗" prop="loss">
+              <el-input v-model="form.loss" placeholder="状态变为已完成时自动计算" disabled />
+            </el-form-item>
+          </el-col>
            <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
@@ -355,6 +361,7 @@
         <el-descriptions-item label="港杂费">{{ detailData.portFee ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="增值税">{{ detailData.vat ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="利润">{{ detailData.profit ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="损耗">{{ detailData.loss ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
       </el-descriptions>
@@ -425,6 +432,7 @@ const form = reactive<any>({
   portFee: null,
   vat: null,
   profit: null,
+  loss: null,
   status: 1
 })
 
@@ -451,6 +459,7 @@ const detailData = reactive<any>({
   portFee: null,
   vat: null,
   profit: null,
+  loss: null,
   status: 1,
   createTime: '',
   updateTime: ''
@@ -566,6 +575,7 @@ const handleDetail = (row: any) => {
   portFee: row.portFee ?? null,
   vat: row.vat ?? null,
   profit: row.profit ?? null,
+  loss: row.loss ?? null,
     status: row.status ?? 1,
     createTime: row.createTime ?? '',
     updateTime: row.updateTime ?? ''
@@ -581,22 +591,23 @@ const handleEdit = async (row: any) => {
     salespersonId: row.salespersonId,
     tradeTerm: row.tradeTerm,
     currency: row.currency,
-  depositExchangeRate: row.depositExchangeRate ?? null,
-  finalExchangeRate: row.finalExchangeRate ?? null,
-  contractAmount: row.contractAmount ?? null,
-  actualAmount: row.actualAmount ?? null,
-  depositRate: row.depositRate ?? null,
-  receivedAmount: row.receivedAmount ?? null,
-  finalPaymentAmount: row.finalPaymentAmount ?? null,
-  insuranceFee: row.insuranceFee ?? null,
-  insuranceAmount: row.insuranceAmount ?? null,
-  expectedReceiptDays: row.expectedReceiptDays ?? null,
-  destinationPort: row.destinationPort ?? '',
-  transportType: row.transportType ?? '',
-  seaFreight: row.seaFreight ?? null,
-  portFee: row.portFee ?? null,
-  vat: row.vat ?? null,
-  profit: row.profit ?? null,
+    depositExchangeRate: row.depositExchangeRate ?? null,
+    finalExchangeRate: row.finalExchangeRate ?? null,
+    contractAmount: row.contractAmount ?? null,
+    actualAmount: row.actualAmount ?? null,
+    depositRate: row.depositRate ?? null,
+    receivedAmount: row.receivedAmount ?? null,
+    finalPaymentAmount: row.finalPaymentAmount ?? null,
+    insuranceFee: row.insuranceFee ?? null,
+    insuranceAmount: row.insuranceAmount ?? null,
+    expectedReceiptDays: row.expectedReceiptDays ?? null,
+    destinationPort: row.destinationPort ?? '',
+    transportType: row.transportType ?? '',
+    seaFreight: row.seaFreight ?? null,
+    portFee: row.portFee ?? null,
+    vat: row.vat ?? null,
+    loss: row.loss ?? null,
+    profit: row.profit ?? null,
     status: row.status ?? 1
   })
   await loadCustomerOptionsBySalespersonId(form.salespersonId)
@@ -628,6 +639,7 @@ const resetForm = () => {
   form.seaFreight = null
   form.portFee = null
   form.vat = null
+  form.loss = null
   form.profit = null
   form.status = 1
   customerOptions.value = []
