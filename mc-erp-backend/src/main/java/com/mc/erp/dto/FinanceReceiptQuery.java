@@ -7,6 +7,6 @@ public class FinanceReceiptQuery {
     private Integer pageNum = 1;
     private Integer pageSize = 10;
     private String receiptNo;
-    private Long customerId;
+    private String serialNo;
     private Integer status;
 }

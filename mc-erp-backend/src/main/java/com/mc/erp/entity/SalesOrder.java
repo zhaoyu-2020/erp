@@ -19,7 +19,11 @@ public class SalesOrder {
     @NotNull(message = "业务员ID不能为空")
     private Long salespersonId;
 
-    private Long createUserId;
+    @TableField(fill = FieldFill.INSERT)
+    private Long createId;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateId;
 
     @NotNull(message = "客户ID不能为空")
     private Long customerId;

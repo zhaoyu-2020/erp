@@ -12,5 +12,5 @@ public class PurchaseOrderQuery {
     private Integer status;
 
     private Long salespersonId;
-    private Long createUserId;
+    private Long createId;
 }

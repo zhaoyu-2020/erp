@@ -27,7 +27,12 @@ public class PurchaseOrder {
     private Long salespersonId;
 
     // 创建人ID
-    private Long createUserId;
+    @TableField(fill = FieldFill.INSERT)
+    private Long createId;
+
+    // 更新人ID
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateId;
 
     // 订单金额
     @NotNull(message = "订单金额不能为空")

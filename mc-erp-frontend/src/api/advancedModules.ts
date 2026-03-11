@@ -48,6 +48,10 @@ export function getFinanceReceiptPage(params: any) {
     })
 }
 
+export function getFinanceReceiptById(id: number) {
+    return request({ url: `/finance-receipts/${id}`, method: 'get' })
+}
+
 export function saveFinanceReceipt(data: any) {
     return request({ url: '/finance-receipts', method: 'post', data })
 }

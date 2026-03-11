@@ -3,13 +3,13 @@ package com.mc.erp.controller;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FinanceReceiptQuery;
-import com.mc.erp.entity.FinanceReceipt;
+import com.mc.erp.dto.FinanceReceiptSaveDTO;
 import com.mc.erp.service.FinanceReceiptService;
 import com.mc.erp.vo.FinanceReceiptVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
@@ -25,18 +25,20 @@ public class FinanceReceiptController {
     }
 
     @GetMapping("/{id}")
-    public Result<FinanceReceipt> getById(@PathVariable Long id) {
-        return Result.success(financeReceiptService.getById(id));
+    public Result<FinanceReceiptVO> getById(@PathVariable Long id) {
+        return Result.success(financeReceiptService.getWithDetails(id));
     }
 
     @PostMapping
-    public Result<Boolean> save(@Valid @RequestBody FinanceReceipt financeReceipt) {
-        return Result.success(financeReceiptService.save(financeReceipt));
+    public Result<Void> save(@Valid @RequestBody FinanceReceiptSaveDTO dto) {
+        financeReceiptService.saveWithDetails(dto);
+        return Result.success(null);
     }
 
     @PutMapping
-    public Result<Boolean> update(@Valid @RequestBody FinanceReceipt financeReceipt) {
-        return Result.success(financeReceiptService.updateById(financeReceipt));
+    public Result<Void> update(@Valid @RequestBody FinanceReceiptSaveDTO dto) {
+        financeReceiptService.updateWithDetails(dto);
+        return Result.success(null);
     }
 
     @DeleteMapping("/{id}")

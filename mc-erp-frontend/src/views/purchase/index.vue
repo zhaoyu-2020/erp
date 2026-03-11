@@ -430,7 +430,7 @@ const queryParams = reactive({
   poNo: '',
   salesOrderNo: '',
   status: undefined,
-  createUserId: undefined,
+  createId: undefined,
   createUserName: '',
   salespersonId: undefined,
   salespersonName: ''
@@ -500,8 +500,8 @@ const getList = async () => {
   try {
     // Prepare query
     const params: any = { ...queryParams }
-    if (params.createUserName && params.createUserId) params.createUserId = params.createUserId
-    else params.createUserId = undefined
+    if (params.createUserName && params.createId) params.createId = params.createId
+    else params.createId = undefined
     if (params.salespersonName && params.salespersonId) params.salespersonId = params.salespersonId
     else params.salespersonId = undefined
     const res = await getPurchaseOrderPage(params)
@@ -520,7 +520,7 @@ const resetQuery = () => {
   queryParams.poNo = ''
   queryParams.salesOrderNo = ''
   queryParams.status = undefined
-  queryParams.createUserId = undefined
+  queryParams.createId = undefined
   queryParams.createUserName = ''
   queryParams.salespersonId = undefined
   queryParams.salespersonName = ''
@@ -557,7 +557,7 @@ const querySalesperson = (queryString: string, cb: (results: any[]) => void) => 
 }
 const onCreateUserSelect = (item: any) => {
   queryParams.createUserName = item.value
-  queryParams.createUserId = item.id
+  queryParams.createId = item.id
 }
 const onSalespersonSelect = (item: any) => {
   queryParams.salespersonName = item.value

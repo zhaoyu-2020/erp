@@ -402,7 +402,7 @@ const queryParams = reactive({
   orderNo: '',
   tradeTerm: '',
   createUserName: '',
-  createUserId: null as number | null,
+  createId: null as number | null,
   salespersonName: '',
   salespersonId: null as number | null,
   status: null as number | null
@@ -413,7 +413,7 @@ const form = reactive<any>({
   orderNo: '',
   customerId: null,
   salespersonId: null,
-  createUserId: null,
+  createId: null,
   tradeTerm: '',
   currency: '',
   depositExchangeRate: null,
@@ -520,7 +520,7 @@ const querySalesperson = (queryString: string, cb: (results: { value: string; da
 }
 
 const onCreateUserSelect = (item: { value: string; data: any }) => {
-  queryParams.createUserId = item.data.id
+  queryParams.createId = item.data.id
 }
 
 const onSalespersonSelect = (item: { value: string; data: any }) => {
@@ -536,7 +536,7 @@ const resetQuery = () => {
   queryParams.orderNo = ''
   queryParams.tradeTerm = ''
   queryParams.createUserName = ''
-  queryParams.createUserId = null
+  queryParams.createId = null
   queryParams.salespersonName = ''
   queryParams.salespersonId = null
   queryParams.status = null
@@ -621,7 +621,7 @@ const resetForm = () => {
   form.orderNo = ''
   form.customerId = null
   form.salespersonId = null
-  form.createUserId = userInfo.userId || null
+  form.createId = userInfo.userId || null
   form.tradeTerm = ''
   form.currency = ''
   form.depositExchangeRate = null

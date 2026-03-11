@@ -1,14 +1,19 @@
 <template>
   <div class="app-container">
+    <!-- 搜索栏 -->
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
         <el-form-item label="收款单号">
           <el-input v-model="queryParams.receiptNo" placeholder="输入收款单号" clearable />
         </el-form-item>
+        <el-form-item label="流水号">
+          <el-input v-model="queryParams.serialNo" placeholder="输入银行流水号" clearable />
+        </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
-            <el-option label="未认领" :value="1" />
-            <el-option label="已认领" :value="2" />
+          <el-select v-model="queryParams.status" placeholder="选择状态" clearable style="width:120px">
+            <el-option label="新建" :value="1" />
+            <el-option label="认领中" :value="2" />
+            <el-option label="完成" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -18,6 +23,7 @@
       </el-form>
     </el-card>
 
+    <!-- 表格 -->
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新建收款单</el-button>
@@ -27,23 +33,25 @@
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="收款单号" prop="receiptNo" width="150" />
-        <el-table-column label="客户" prop="customerName" min-width="150" />
-        <el-table-column label="金额" width="150" align="right">
+        <el-table-column label="流水号" prop="serialNo" min-width="160" />
+        <el-table-column label="金额" width="160" align="right">
           <template #default="{ row }">
-            <b>{{ row.currency }}</b> {{ row.amount }}
+            <b>{{ row.currency }}</b>&nbsp;{{ row.amount }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" prop="status" width="120" align="center">
+        <el-table-column label="收款日期" prop="receiptDate" width="120" align="center" />
+        <el-table-column label="收款银行" prop="receivingBank" min-width="160" />
+        <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
+            <el-tag :type="statusTagType(row.status)">{{ row.statusLabel }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="认领时间" prop="claimTime" width="160" />
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="150" fixed="right" align="center">
-          <template #default="scope">
-            <el-button link type="primary" v-if="scope.row.status === 1">认领</el-button>
-            <el-button link type="primary">详情</el-button>
+        <el-table-column label="操作" width="200" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="handleDetail(row)">详情/认领</el-button>
+            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -55,73 +63,143 @@
         layout="total, sizes, prev, pager, next, jumper"
         class="pagination-container"
         @current-change="getList"
+        @size-change="getList"
       />
     </el-card>
 
-    <!-- Add Dialog -->
-    <el-dialog v-model="dialogVisible" title="新建收款单" width="620px" @close="resetForm">
+    <!-- 新建/编辑收款单对话框 -->
+    <el-dialog v-model="formDialogVisible" :title="formDialogTitle" width="580px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-form-item label="收款单号" prop="receiptNo">
-          <el-input v-model="form.receiptNo" placeholder="输入收款单号" />
+          <el-input v-model="form.receiptNo" placeholder="请输入收款单号" />
         </el-form-item>
-        <el-form-item label="客户ID" prop="customerId">
-          <el-input v-model="form.customerId" :min="1" style="width: 100%" />
+        <el-form-item label="流水号" prop="serialNo">
+          <el-input v-model="form.serialNo" placeholder="银行流水号" />
         </el-form-item>
         <el-form-item label="金额" prop="amount">
-          <el-input v-model="form.amount" :min="0" :step="0.01" style="width: 100%" />
+          <el-input-number v-model="form.amount" :min="0" :precision="2" :step="0.01" style="width:100%" />
         </el-form-item>
         <el-form-item label="币种" prop="currency">
-          <el-input v-model="form.currency" placeholder="例如：USD" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">
-            <el-option label="未认领" :value="1" />
-            <el-option label="已认领" :value="2" />
+          <el-select v-model="form.currency" style="width:100%">
+            <el-option label="USD" value="USD" />
+            <el-option label="CNY" value="CNY" />
+            <el-option label="EUR" value="EUR" />
+            <el-option label="GBP" value="GBP" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="收款日期" prop="receiptDate">
+          <el-date-picker v-model="form.receiptDate" type="date" value-format="YYYY-MM-DD"
+            placeholder="选择收款日期" style="width:100%" />
+        </el-form-item>
+        <el-form-item label="收款银行" prop="receivingBank">
+          <el-input v-model="form.receivingBank" placeholder="请输入收款银行" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="formDialogVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 收款明细对话框 -->
+    <el-dialog v-model="detailDialogVisible" :title="`收款明细 - ${currentReceipt?.receiptNo}`"
+      width="800px" @close="currentReceipt = null">
+      <div v-if="currentReceipt" class="detail-info">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="收款单号">{{ currentReceipt.receiptNo }}</el-descriptions-item>
+          <el-descriptions-item label="流水号">{{ currentReceipt.serialNo }}</el-descriptions-item>
+          <el-descriptions-item label="收款金额">
+            <b>{{ currentReceipt.currency }}</b>&nbsp;{{ currentReceipt.amount }}
+          </el-descriptions-item>
+          <el-descriptions-item label="收款日期">{{ currentReceipt.receiptDate }}</el-descriptions-item>
+          <el-descriptions-item label="收款银行">{{ currentReceipt.receivingBank }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="statusTagType(currentReceipt.status)">{{ currentReceipt.statusLabel }}</el-tag>
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+
+      <div class="detail-toolbar" style="margin-top:16px;margin-bottom:8px">
+        <span style="font-weight:600;font-size:14px">收款明细</span>
+        <el-button type="primary" size="small" icon="Plus" style="margin-left:12px"
+          @click="handleAddDetail">新增认领</el-button>
+      </div>
+
+      <el-table :data="currentReceipt?.details || []" border stripe size="small">
+        <el-table-column type="index" label="序号" width="55" align="center" />
+        <el-table-column label="销售订单号" prop="salesOrderNo" min-width="150" />
+        <el-table-column label="绑定金额" prop="boundAmount" width="140" align="right">
+          <template #default="{ row }">
+            {{ currentReceipt?.currency }} {{ row.boundAmount }}
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" prop="createTime" width="160" />
+        <el-table-column label="操作" width="80" align="center">
+          <template #default="{ row }">
+            <el-button link type="danger" @click="handleRemoveDetail(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div style="margin-top:10px;text-align:right;color:#666;font-size:13px">
+        已绑定合计: <b>{{ currentReceipt?.currency }} {{ boundTotal }}</b>
+        &nbsp;/&nbsp;
+        收款总额: <b>{{ currentReceipt?.currency }} {{ currentReceipt?.amount }}</b>
+      </div>
+
+      <template #footer>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
+        <el-button type="primary" :loading="detailSubmitLoading" @click="handleSaveDetails">保存认领</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 新增认领明细行对话框 -->
+    <el-dialog v-model="addDetailVisible" title="新增认领" width="420px">
+      <el-form ref="detailFormRef" :model="detailForm" :rules="detailRules" label-width="110px">
+        <el-form-item label="销售订单号" prop="salesOrderNo">
+          <el-input v-model="detailForm.salesOrderNo" placeholder="请输入销售订单号" />
+        </el-form-item>
+        <el-form-item label="绑定金额" prop="boundAmount">
+          <el-input-number v-model="detailForm.boundAmount" :min="0.01" :precision="2"
+            :step="0.01" style="width:100%" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addDetailVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmAddDetail">确认</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
-import { getFinanceReceiptPage, saveFinanceReceipt } from '@/api/advancedModules'
+import {
+  getFinanceReceiptPage,
+  getFinanceReceiptById,
+  saveFinanceReceipt,
+  updateFinanceReceipt,
+  deleteFinanceReceipt
+} from '@/api/advancedModules'
 
 const loading = ref(false)
 const submitLoading = ref(false)
-const dataList = ref([])
+const detailSubmitLoading = ref(false)
+const dataList = ref<any[]>([])
 const total = ref(0)
-const dialogVisible = ref(false)
-const formRef = ref<FormInstance>()
+
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   receiptNo: '',
-  status: undefined
+  serialNo: '',
+  status: undefined as number | undefined
 })
 
-const form = reactive<any>({
-  receiptNo: '',
-  customerId: null,
-  amount: 0,
-  currency: '',
-  status: 1
-})
-
-const rules = {
-  receiptNo: [{ required: true, message: '请输入收款单号', trigger: 'blur' }],
-  customerId: [{ required: true, message: '请输入客户ID', trigger: 'change' }],
-  currency: [{ required: true, message: '请输入币种', trigger: 'blur' }]
-}
-
+// ---- 列表 ----
 const getList = async () => {
   loading.value = true
   try {
@@ -137,59 +215,178 @@ const handleQuery = () => {
   queryParams.pageNum = 1
   getList()
 }
+
 const resetQuery = () => {
   queryParams.receiptNo = ''
+  queryParams.serialNo = ''
   queryParams.status = undefined
   handleQuery()
 }
 
-const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '未认领', 2: '已认领' }
-  return map[status] || '未知'
-}
-const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'danger', 2: 'success' }
+const statusTagType = (status: number) => {
+  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'success' }
   return map[status] || ''
 }
 
+// ---- 新建/编辑收款单 ----
+const formDialogVisible = ref(false)
+const formDialogTitle = ref('新建收款单')
+const formRef = ref<FormInstance>()
+const form = reactive<any>({
+  id: null,
+  receiptNo: '',
+  serialNo: '',
+  amount: 0,
+  currency: 'USD',
+  receiptDate: '',
+  receivingBank: ''
+})
+
+const rules = {
+  receiptNo: [{ required: true, message: '请输入收款单号', trigger: 'blur' }],
+  amount: [{ required: true, message: '请输入金额', trigger: 'change' }],
+  currency: [{ required: true, message: '请选择币种', trigger: 'change' }],
+  receiptDate: [{ required: true, message: '请选择收款日期', trigger: 'change' }]
+}
+
 const resetForm = () => {
-  form.receiptNo = ''
-  form.customerId = null
-  form.amount = 0
-  form.currency = ''
-  form.status = 1
+  Object.assign(form, { id: null, receiptNo: '', serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '' })
   formRef.value?.clearValidate()
 }
 
 const handleAdd = () => {
   resetForm()
-  dialogVisible.value = true
+  formDialogTitle.value = '新建收款单'
+  formDialogVisible.value = true
+}
+
+const handleEdit = (row: any) => {
+  Object.assign(form, {
+    id: row.id,
+    receiptNo: row.receiptNo,
+    serialNo: row.serialNo,
+    amount: row.amount,
+    currency: row.currency,
+    receiptDate: row.receiptDate,
+    receivingBank: row.receivingBank
+  })
+  formDialogTitle.value = '编辑收款单'
+  formDialogVisible.value = true
 }
 
 const handleSubmit = async () => {
   await formRef.value?.validate()
   submitLoading.value = true
   try {
-    await saveFinanceReceipt({ ...form })
-    ElMessage.success('创建成功')
-    dialogVisible.value = false
+    if (form.id) {
+      await updateFinanceReceipt({ ...form })
+      ElMessage.success('更新成功')
+    } else {
+      await saveFinanceReceipt({ ...form })
+      ElMessage.success('创建成功')
+    }
+    formDialogVisible.value = false
     getList()
   } finally {
     submitLoading.value = false
   }
 }
 
+const handleDelete = async (row: any) => {
+  await ElMessageBox.confirm(`确认删除收款单 "${row.receiptNo}"?`, '提示', { type: 'warning' })
+  await deleteFinanceReceipt(row.id)
+  ElMessage.success('删除成功')
+  getList()
+}
+
+// ---- 收款明细 ----
+const detailDialogVisible = ref(false)
+const currentReceipt = ref<any>(null)
+
+const boundTotal = computed(() => {
+  if (!currentReceipt.value?.details) return '0.00'
+  const sum = currentReceipt.value.details.reduce((acc: number, d: any) => acc + Number(d.boundAmount || 0), 0)
+  return sum.toFixed(2)
+})
+
+const handleDetail = async (row: any) => {
+  const res = await getFinanceReceiptById(row.id)
+  currentReceipt.value = res.data
+  detailDialogVisible.value = true
+}
+
+const handleRemoveDetail = (row: any) => {
+  const details = currentReceipt.value.details
+  const idx = details.indexOf(row)
+  if (idx !== -1) details.splice(idx, 1)
+}
+
+// ---- 新增认领明细行 ----
+const addDetailVisible = ref(false)
+const detailFormRef = ref<FormInstance>()
+const detailForm = reactive({ salesOrderNo: '', boundAmount: 0 })
+const detailRules = {
+  salesOrderNo: [{ required: true, message: '请输入销售订单号', trigger: 'blur' }],
+  boundAmount: [{ required: true, message: '请输入绑定金额', trigger: 'change' }]
+}
+
+const handleAddDetail = () => {
+  detailForm.salesOrderNo = ''
+  detailForm.boundAmount = 0
+  detailFormRef.value?.clearValidate()
+  addDetailVisible.value = true
+}
+
+const confirmAddDetail = async () => {
+  await detailFormRef.value?.validate()
+  if (!currentReceipt.value.details) currentReceipt.value.details = []
+  currentReceipt.value.details.push({
+    salesOrderNo: detailForm.salesOrderNo,
+    boundAmount: detailForm.boundAmount
+  })
+  addDetailVisible.value = false
+}
+
+const handleSaveDetails = async () => {
+  detailSubmitLoading.value = true
+  try {
+    const payload = {
+      id: currentReceipt.value.id,
+      receiptNo: currentReceipt.value.receiptNo,
+      serialNo: currentReceipt.value.serialNo,
+      amount: currentReceipt.value.amount,
+      currency: currentReceipt.value.currency,
+      receiptDate: currentReceipt.value.receiptDate,
+      receivingBank: currentReceipt.value.receivingBank,
+      details: (currentReceipt.value.details || []).map((d: any) => ({
+        salesOrderNo: d.salesOrderNo,
+        boundAmount: d.boundAmount,
+        salesOrderId: d.salesOrderId || 0
+      }))
+    }
+    await updateFinanceReceipt(payload)
+    ElMessage.success('认领保存成功')
+    // Refresh receipt data
+    const res = await getFinanceReceiptById(currentReceipt.value.id)
+    currentReceipt.value = res.data
+    getList()
+  } finally {
+    detailSubmitLoading.value = false
+  }
+}
+
+// ---- 导出 ----
 const handleExport = async () => {
   const res = await getFinanceReceiptPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
-  exportToCsv('财务收据导出', rows, [
+  exportToCsv('财务收款单导出', rows, [
     { label: '收款单号', key: 'receiptNo' },
-    { label: '客户', key: 'customerName' },
-    { label: '客户ID', key: 'customerId' },
+    { label: '流水号', key: 'serialNo' },
     { label: '币种', key: 'currency' },
     { label: '金额', key: 'amount' },
-    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
-    { label: '认领时间', key: 'claimTime' },
+    { label: '收款日期', key: 'receiptDate' },
+    { label: '收款银行', key: 'receivingBank' },
+    { label: '状态', key: 'statusLabel' },
     { label: '创建时间', key: 'createTime' }
   ])
 }

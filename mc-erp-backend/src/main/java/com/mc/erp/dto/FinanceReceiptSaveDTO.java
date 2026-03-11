@@ -1,23 +1,20 @@
-package com.mc.erp.entity;
+package com.mc.erp.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@TableName("biz_finance_receipt")
-public class FinanceReceipt {
-    @TableId(type = IdType.AUTO)
+public class FinanceReceiptSaveDTO {
     private Long id;
 
     @NotBlank(message = "收款单号不能为空")
     private String receiptNo;
 
-    /** 银行流水号 */
     private String serialNo;
 
     @NotNull(message = "金额不能为空")
@@ -31,15 +28,6 @@ public class FinanceReceipt {
 
     private String receivingBank;
 
-    /** 状态: 1=新建, 2=认领中, 3=完成 */
-    private Integer status;
-
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    @TableField(fill = FieldFill.INSERT)
-    private Long createId;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long updateId;
-    @TableLogic
-    private Integer isDeleted;
+    @Valid
+    private List<FinanceReceiptDetailDTO> details;
 }

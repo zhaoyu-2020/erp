@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   `unit` varchar(20) DEFAULT 'PCS' COMMENT '计量单位',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除:0否 1是',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_id` (`id`)
@@ -27,6 +29,8 @@ CREATE TABLE IF NOT EXISTS `biz_product_type` (
   `type_name` varchar(100) NOT NULL COMMENT '产品类型名称',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_type_name` (`type_name`)
@@ -38,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `order_no` varchar(50) NOT NULL COMMENT '外销订单号(如 SO20231018001)',
   `customer_id` bigint(20) NOT NULL COMMENT '客户ID',
   `salesperson_id` bigint(20) NOT NULL COMMENT '业务员ID(归属人)',
-  `create_user_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
   `trade_term` varchar(20) NOT NULL COMMENT '贸易条款(FOB, CIF, EXW 等)',
   `currency` varchar(10) NOT NULL DEFAULT 'USD' COMMENT '结算币种',
   `deposit_exchange_rate` decimal(10,4) NOT NULL DEFAULT '0.0000' COMMENT '定金汇率',
@@ -61,6 +65,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2已审核待采购 3生产中 4已发货 5已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_order_no` (`order_no`),
@@ -76,6 +81,8 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order_item` (
   `unit_price` decimal(10,2) NOT NULL COMMENT '外币单价',
   `total_price` decimal(15,2) NOT NULL COMMENT '单品总价(外币)',
   `remark_en` varchar(500) DEFAULT NULL COMMENT '英文特殊要求/唛头等',
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   PRIMARY KEY (`id`),
   KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售订单明细表';
@@ -94,6 +101,8 @@ CREATE TABLE IF NOT EXISTS `biz_customer` (
   `level` varchar(20) DEFAULT 'NORMAL' COMMENT '级别(VIP/NORMAL)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客户档案表';
@@ -109,6 +118,8 @@ CREATE TABLE IF NOT EXISTS `biz_supplier` (
   `product_type` varchar(100) DEFAULT NULL COMMENT '产品类型(多个用英文逗号分隔)',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_supplier_code` (`supplier_code`)
@@ -126,6 +137,8 @@ CREATE TABLE IF NOT EXISTS `biz_supplier_account` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_supplier_id` (`supplier_id`)
@@ -138,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `supplier_id` bigint(20) NOT NULL COMMENT '供应商ID',
   `sales_order_no` varchar(50) DEFAULT NULL COMMENT '关联销售订单号',
   `salesperson_id` bigint(20) DEFAULT NULL COMMENT '业务员ID',
-  `create_user_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
   `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '订单金额',
   `actual_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '实际金额',
   `deposit_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT '定金比例(%)',
@@ -155,6 +168,7 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1已签合同 2已付定金 3生产完成 4待付尾款 5已发货 6已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_po_no` (`po_no`),
@@ -168,6 +182,8 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_item` (
   `amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '金额',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   PRIMARY KEY (`id`),
   KEY `idx_purchase_order` (`purchase_order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单加工项表';
@@ -204,6 +220,8 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_detail` (
   `actual_theoretical_weight` decimal(15,3) DEFAULT NULL COMMENT '实际理论重量',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_purchase_order_detail_order` (`purchase_order_id`)
@@ -219,6 +237,8 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`)
@@ -236,6 +256,8 @@ CREATE TABLE IF NOT EXISTS `biz_stock` (
   `locked_qty` int(11) NOT NULL DEFAULT '0' COMMENT '锁定库存',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_product_id` (`product_id`)
@@ -250,28 +272,50 @@ CREATE TABLE IF NOT EXISTS `biz_customs_doc` (
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1未申报 2申报中 3已放行',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_doc_no` (`doc_no`),
   KEY `idx_sales_order` (`sales_order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='报关单证表';
 
--- 10. 财务收款登记表 (Finance)
+-- 10. 财务收款单表 (Finance Receipt)
 CREATE TABLE IF NOT EXISTS `biz_finance_receipt` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `receipt_no` varchar(50) NOT NULL COMMENT '水单号',
-  `customer_id` bigint(20) NOT NULL COMMENT '付款客户ID',
-  `amount` decimal(15,2) NOT NULL COMMENT '定金收款金额',
+  `receipt_no` varchar(50) NOT NULL COMMENT '收款单号',
+  `serial_no` varchar(100) DEFAULT NULL COMMENT '银行流水号',
+  `amount` decimal(15,2) NOT NULL COMMENT '收款金额',
   `currency` varchar(10) NOT NULL DEFAULT 'USD' COMMENT '币种',
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1未认领 2已认领',
-  `claim_time` datetime DEFAULT NULL COMMENT '认领时间',
+  `receipt_date` date NOT NULL COMMENT '收款日期',
+  `receiving_bank` varchar(200) DEFAULT NULL COMMENT '收款银行',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1新建 2认领中 3完成',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_receipt_no` (`receipt_no`),
-  KEY `idx_customer` (`customer_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务水单表';
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务收款单表';
+
+-- 10b. 财务收款明细表 (Finance Receipt Detail)
+CREATE TABLE IF NOT EXISTS `biz_finance_receipt_detail` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `receipt_id` bigint(20) NOT NULL COMMENT '收款单ID',
+  `sales_order_id` bigint(20) NOT NULL COMMENT '销售订单ID',
+  `sales_order_no` varchar(50) NOT NULL COMMENT '销售订单号',
+  `bound_amount` decimal(15,2) NOT NULL COMMENT '绑定金额',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_receipt_id` (`receipt_id`),
+  KEY `idx_sales_order_id` (`sales_order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务收款明细表';
 
 -- 11. 角色表
 CREATE TABLE IF NOT EXISTS `sys_role` (
@@ -281,6 +325,8 @@ CREATE TABLE IF NOT EXISTS `sys_role` (
   `description` varchar(200) DEFAULT NULL COMMENT '描述',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_role_code` (`role_code`)
@@ -299,6 +345,8 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
   `sort` int(11) DEFAULT '0' COMMENT '排序',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统菜单权限表';
@@ -351,9 +399,70 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (
   
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售订单详情表';
 
 -- 插入默认角色和权限数据
+
+-- ========================================
+-- ALTER TABLE 语句 (用于已存在的数据库)
+-- ========================================
+ALTER TABLE `biz_product` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_product` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_product_type` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_product_type` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_sales_order` CHANGE COLUMN IF EXISTS `create_user_id` `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID';
+ALTER TABLE `biz_sales_order` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `salesperson_id`;
+ALTER TABLE `biz_sales_order` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `update_time`;
+
+ALTER TABLE `biz_sales_order_item` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID';
+ALTER TABLE `biz_sales_order_item` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID';
+
+ALTER TABLE `biz_customer` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_customer` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_supplier` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_supplier` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_supplier_account` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_supplier_account` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_purchase_order` CHANGE COLUMN IF EXISTS `create_user_id` `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID';
+ALTER TABLE `biz_purchase_order` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `salesperson_id`;
+ALTER TABLE `biz_purchase_order` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `update_time`;
+
+ALTER TABLE `biz_purchase_order_item` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_purchase_order_item` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_purchase_order_detail` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_purchase_order_detail` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `sys_user` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `sys_user` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_stock` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_stock` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_customs_doc` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_customs_doc` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_finance_receipt` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_finance_receipt` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_finance_receipt_detail` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_finance_receipt_detail` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `sys_role` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `sys_role` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `sys_menu` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `sys_menu` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;
+
+ALTER TABLE `biz_sales_order_detail` ADD COLUMN IF NOT EXISTS `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID' AFTER `update_time`;
+ALTER TABLE `biz_sales_order_detail` ADD COLUMN IF NOT EXISTS `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID' AFTER `create_id`;

@@ -15,8 +15,9 @@ public class PurchaseOrderVO {
 
     private Long salespersonId;
     private String salespersonName;
-    private Long createUserId;
+    private Long createId;
     private String createUserName;
+    private Long updateId;
     private BigDecimal totalAmount;
     private BigDecimal actualAmount;
     private BigDecimal depositRate;
