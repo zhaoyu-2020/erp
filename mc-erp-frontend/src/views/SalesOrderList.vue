@@ -72,6 +72,7 @@
         <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
         <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" />
         <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
+        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="损耗" prop="loss" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
@@ -200,7 +201,6 @@
               <el-select v-model="form.tradeTerm" placeholder="选择贸易条款">
                 <el-option label="FOB" value="FOB" />
                 <el-option label="CIF" value="CIF" />
-                <el-option label="EXW" value="EXW" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -223,6 +223,18 @@
           <el-col :span="12">
             <el-form-item label="目的港" prop="destinationPort">
               <el-input v-model="form.destinationPort" placeholder="输入目的港（英文）" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="交货期" prop="deliveryDate">
+              <el-date-picker
+                v-model="form.deliveryDate"
+                type="date"
+                placeholder="选择交货期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 100%"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -355,6 +367,7 @@
         <el-descriptions-item label="保险费用">{{ detailData.insuranceFee ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="保额">{{ detailData.insuranceAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="预计尾款日期">{{ detailData.expectedReceiptDays ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="交货期">{{ detailData.deliveryDate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="目的港">{{ detailData.destinationPort || '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输方式">{{ detailData.transportType || '-' }}</el-descriptions-item>
         <el-descriptions-item label="海运费(USD)">{{ detailData.seaFreight ?? '-' }}</el-descriptions-item>
@@ -426,6 +439,7 @@ const form = reactive<any>({
   insuranceFee: null,
   insuranceAmount: null,
   expectedReceiptDays: null,
+  deliveryDate: null,
   destinationPort: '',
   transportType: '',
   seaFreight: null,
@@ -453,6 +467,7 @@ const detailData = reactive<any>({
   insuranceFee: null,
   insuranceAmount: null,
   expectedReceiptDays: null,
+  deliveryDate: null,
   destinationPort: '',
   transportType: '',
   seaFreight: null,
@@ -569,6 +584,7 @@ const handleDetail = (row: any) => {
   insuranceFee: row.insuranceFee ?? null,
   insuranceAmount: row.insuranceAmount ?? null,
   expectedReceiptDays: row.expectedReceiptDays ?? null,
+  deliveryDate: row.deliveryDate ?? null,
   destinationPort: row.destinationPort ?? '',
   transportType: row.transportType ?? '',
   seaFreight: row.seaFreight ?? null,
@@ -601,6 +617,7 @@ const handleEdit = async (row: any) => {
     insuranceFee: row.insuranceFee ?? null,
     insuranceAmount: row.insuranceAmount ?? null,
     expectedReceiptDays: row.expectedReceiptDays ?? null,
+    deliveryDate: row.deliveryDate ?? null,
     destinationPort: row.destinationPort ?? '',
     transportType: row.transportType ?? '',
     seaFreight: row.seaFreight ?? null,
@@ -634,6 +651,7 @@ const resetForm = () => {
   form.insuranceFee = null
   form.insuranceAmount = null
   form.expectedReceiptDays = null
+  form.deliveryDate = null
   form.destinationPort = ''
   form.transportType = ''
   form.seaFreight = null
