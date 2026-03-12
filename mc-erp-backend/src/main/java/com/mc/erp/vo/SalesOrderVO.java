@@ -35,5 +35,8 @@ public class SalesOrderVO {
     private BigDecimal vat;
     private BigDecimal profit;
     private Integer status;
+    private BigDecimal loss;
+    private BigDecimal contractTotalQuantity;
+    private BigDecimal settlementTotalQuantity;
     private LocalDateTime createTime;
 }

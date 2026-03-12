@@ -75,6 +75,8 @@
         <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="损耗" prop="loss" width="120" align="right" />
+        <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
+        <el-table-column label="结算总数量" prop="settlementTotalQuantity" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
@@ -306,9 +308,22 @@
          
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">订单后</el-divider>
-
+        <el-divider content-position="left" class="group-divider">重量</el-divider>
+        
         <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="合同总数量" prop="contractTotalQuantity">
+              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结算总数量" prop="settlementTotalQuantity">
+              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-divider content-position="left" class="group-divider">订单后</el-divider>        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="利润" prop="profit">
               <el-input v-model="form.profit" placeholder="输入利润" />
@@ -375,6 +390,8 @@
         <el-descriptions-item label="增值税">{{ detailData.vat ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="利润">{{ detailData.profit ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="损耗">{{ detailData.loss ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="合同总数量">{{ detailData.contractTotalQuantity ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="结算总数量">{{ detailData.settlementTotalQuantity ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ detailData.createTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
       </el-descriptions>
@@ -447,6 +464,8 @@ const form = reactive<any>({
   vat: null,
   profit: null,
   loss: null,
+  contractTotalQuantity: null,
+  settlementTotalQuantity: null,
   status: 1
 })
 
@@ -475,6 +494,8 @@ const detailData = reactive<any>({
   vat: null,
   profit: null,
   loss: null,
+  contractTotalQuantity: null,
+  settlementTotalQuantity: null,
   status: 1,
   createTime: '',
   updateTime: ''
@@ -592,6 +613,8 @@ const handleDetail = (row: any) => {
   vat: row.vat ?? null,
   profit: row.profit ?? null,
   loss: row.loss ?? null,
+  contractTotalQuantity: row.contractTotalQuantity ?? null,
+  settlementTotalQuantity: row.settlementTotalQuantity ?? null,
     status: row.status ?? 1,
     createTime: row.createTime ?? '',
     updateTime: row.updateTime ?? ''
@@ -625,6 +648,8 @@ const handleEdit = async (row: any) => {
     vat: row.vat ?? null,
     loss: row.loss ?? null,
     profit: row.profit ?? null,
+    contractTotalQuantity: row.contractTotalQuantity ?? null,
+    settlementTotalQuantity: row.settlementTotalQuantity ?? null,
     status: row.status ?? 1
   })
   await loadCustomerOptionsBySalespersonId(form.salespersonId)
@@ -659,6 +684,8 @@ const resetForm = () => {
   form.vat = null
   form.loss = null
   form.profit = null
+  form.contractTotalQuantity = null
+  form.settlementTotalQuantity = null
   form.status = 1
   customerOptions.value = []
   formRef.value?.clearValidate()

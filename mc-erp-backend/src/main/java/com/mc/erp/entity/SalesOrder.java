@@ -69,6 +69,8 @@ public class SalesOrder {
     private BigDecimal vat;
     private BigDecimal profit;
     private BigDecimal loss;
+    private BigDecimal contractTotalQuantity;
+    private BigDecimal settlementTotalQuantity;
 
     private Integer status;
     private LocalDateTime createTime;

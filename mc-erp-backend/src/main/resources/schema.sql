@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `vat` decimal(15,2) DEFAULT '0.00' COMMENT '增值税',
   `profit` decimal(15,2) DEFAULT '0.00' COMMENT '利润',
   `loss` decimal(15,2) DEFAULT NULL COMMENT '损耗(定金+尾款-明细价格汇总之和)',
+  `contract_total_quantity` decimal(15,3) DEFAULT NULL COMMENT '合同总数量',
+  `settlement_total_quantity` decimal(15,3) DEFAULT NULL COMMENT '结算总数量',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2已审核待采购 3生产中 4已发货 5已完结',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
