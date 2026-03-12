@@ -77,14 +77,12 @@
           <el-input v-model="form.serialNo" placeholder="银行流水号" />
         </el-form-item>
         <el-form-item label="金额" prop="amount">
-          <el-input-number v-model="form.amount" :min="0" :precision="2" :step="0.01" style="width:100%" />
+          <el-input v-model="form.amount" placeholder="请输入金额" style="width:100%" />
         </el-form-item>
         <el-form-item label="币种" prop="currency">
           <el-select v-model="form.currency" style="width:100%">
             <el-option label="USD" value="USD" />
             <el-option label="CNY" value="CNY" />
-            <el-option label="EUR" value="EUR" />
-            <el-option label="GBP" value="GBP" />
           </el-select>
         </el-form-item>
         <el-form-item label="收款日期" prop="receiptDate">
