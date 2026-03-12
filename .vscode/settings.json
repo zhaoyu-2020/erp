@@ -1,4 +1,32 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.debug.settings.onBuildFailureProceed": true,
+
+    // 侧边栏 & 活动栏
+    "workbench.activityBar.location": "top",
+    "workbench.sideBar.location": "left",
+    "workbench.tree.indent": 8,
+    "workbench.tree.renderIndentGuides": "always",
+
+    // 缩小资源管理器文件树图标和字体
+    "workbench.iconTheme": "vs-seti",
+    "explorer.compactFolders": true,
+
+    // 编辑器字体和行高（让代码区更紧凑，显示更多内容）
+    "editor.fontSize": 12,
+    "editor.lineHeight": 18,
+    "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
+
+    // 整体 UI 字体缩放（影响侧边栏、菜单、标签等所有界面文字）
+    "window.zoomLevel": -0.5,
+
+    // 缩小面包屑 & Tab 大小
+    "breadcrumbs.enabled": true,
+    "workbench.editor.tabSizing": "shrink",
+
+    // 隐藏底部状态栏多余内容（可选）
+    "editor.minimap.enabled": false,
+
+    // 侧边栏宽度（通过减少默认值）
+    "workbench.sideBar.position": "left"
 }
