@@ -55,13 +55,13 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         wrapper.eq(query.getCustomerId() != null, SalesOrder::getCustomerId, query.getCustomerId());
         wrapper.eq(StringUtils.hasText(query.getTradeTerm()), SalesOrder::getTradeTerm, query.getTradeTerm());
         wrapper.eq(query.getStatus() != null, SalesOrder::getStatus, query.getStatus());
-        wrapper.eq(query.getCreateUserId() != null, SalesOrder::getCreateUserId, query.getCreateUserId());
+        wrapper.eq(query.getCreateId() != null, SalesOrder::getCreateId, query.getCreateId());
         wrapper.orderByDesc(SalesOrder::getCreateTime);
 
         Page<SalesOrder> resultPage = this.page(page, wrapper);
 
         Set<Long> userIds = resultPage.getRecords().stream()
-                .flatMap(order -> Stream.of(order.getSalespersonId(), order.getCreateUserId()))
+                .flatMap(order -> Stream.of(order.getSalespersonId(), order.getCreateId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, String> userNameMap = userIds.isEmpty()
@@ -77,7 +77,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             SalesOrderVO vo = new SalesOrderVO();
             BeanUtils.copyProperties(order, vo);
             vo.setSalespersonName(userNameMap.get(order.getSalespersonId()));
-            vo.setCreateUserName(userNameMap.get(order.getCreateUserId()));
+            vo.setCreateUserName(userNameMap.get(order.getCreateId()));
             vo.setCustomerName(customerNameMap.get(order.getCustomerId()));
             return vo;
         }).collect(Collectors.toList());

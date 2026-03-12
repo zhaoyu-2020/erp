@@ -46,6 +46,10 @@ public class SalesOrderDetail {
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private Long createId;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateId;
     @TableLogic
     private Integer isDeleted;
 }

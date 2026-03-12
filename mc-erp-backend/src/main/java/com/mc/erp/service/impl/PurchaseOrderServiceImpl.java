@@ -42,7 +42,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         wrapper.like(StringUtils.hasText(query.getSalesOrderNo()), PurchaseOrder::getSalesOrderNo, query.getSalesOrderNo());
         wrapper.eq(query.getStatus() != null, PurchaseOrder::getStatus, query.getStatus());
         wrapper.eq(query.getSalespersonId() != null, PurchaseOrder::getSalespersonId, query.getSalespersonId());
-        wrapper.eq(query.getCreateUserId() != null, PurchaseOrder::getCreateUserId, query.getCreateUserId());
+        wrapper.eq(query.getCreateId() != null, PurchaseOrder::getCreateId, query.getCreateId());
         wrapper.orderByDesc(PurchaseOrder::getCreateTime);
 
         Page<PurchaseOrder> resultPage = this.page(page, wrapper);
@@ -53,7 +53,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 : supplierService.listByIds(supplierIds).stream().collect(Collectors.toMap(Supplier::getId, Supplier::getName));
 
         Set<Long> userIds = resultPage.getRecords().stream()
-                .flatMap(po -> java.util.stream.Stream.of(po.getSalespersonId(), po.getCreateUserId()))
+                .flatMap(po -> java.util.stream.Stream.of(po.getSalespersonId(), po.getCreateId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, String> userNameMap = userIds.isEmpty()
@@ -65,7 +65,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
             BeanUtils.copyProperties(po, vo);
             vo.setSupplierName(supplierNameMap.get(po.getSupplierId()));
             vo.setSalespersonName(userNameMap.get(po.getSalespersonId()));
-            vo.setCreateUserName(userNameMap.get(po.getCreateUserId()));
+            vo.setCreateUserName(userNameMap.get(po.getCreateId()));
             return vo;
         }).collect(Collectors.toList());
 

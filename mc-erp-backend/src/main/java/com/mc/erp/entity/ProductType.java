@@ -1,9 +1,6 @@
 package com.mc.erp.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -16,6 +13,10 @@ public class ProductType {
     private String typeName;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    private Long createId;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Long updateId;
     @TableLogic
     private Integer isDeleted;
 }
