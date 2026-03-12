@@ -123,19 +123,9 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         if (qty == null) {
             return detail.getPriceTotal();
         }
-
-        String tradeTerm = null;
-        if (detail.getOrderId() != null) {
-            SalesOrder order = salesOrderMapper.selectById(detail.getOrderId());
-            tradeTerm = order != null ? order.getTradeTerm() : null;
-        }
-
-        // 先看贸易条款：FOB 用 FOB 价格，CIF 用 CIF 价格；其余保持现有值
-        if ("FOB".equalsIgnoreCase(tradeTerm) && detail.getFobPrice() != null) {
-            return detail.getFobPrice().multiply(qty);
-        }
-        if ("CIF".equalsIgnoreCase(tradeTerm) && detail.getCifPrice() != null) {
-            return detail.getCifPrice().multiply(qty);
+        // 使用结算价格计算
+        if (detail.getSettlementPrice() != null) {
+            return detail.getSettlementPrice().multiply(qty);
         }
         return detail.getPriceTotal();
     }

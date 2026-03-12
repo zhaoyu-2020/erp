@@ -47,8 +47,7 @@
         <el-table-column label="实际理论重量" prop="actualTheoreticalWeight" width="120" align="right" />
         <el-table-column label="体积" prop="volume" width="100" align="right" />
         <el-table-column label="货源地" prop="originPlace" width="120" show-overflow-tooltip />
-        <el-table-column label="FOB价格" prop="fobPrice" width="110" align="right" />
-        <el-table-column label="CIF价格" prop="cifPrice" width="110" align="right" />
+        <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
         <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
           <template #default="{ row }">
             <span class="price-total">{{ row.priceTotal ?? '-' }}</span>
@@ -210,20 +209,15 @@
         <el-divider content-position="left" class="group-divider">价格</el-divider>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="FOB价格" prop="fobPrice">
-              <el-input v-model="form.fobPrice" placeholder="输入FOB价格" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="CIF价格" prop="cifPrice">
-              <el-input v-model="form.cifPrice" placeholder="输入CIF价格" />
+            <el-form-item label="结算价格" prop="settlementPrice">
+              <el-input v-model="form.settlementPrice" placeholder="输入结算价格" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="价格汇总">
-              <el-input :model-value="computedPriceTotal" disabled placeholder="CIF价格 × 吨数（自动计算）" />
+              <el-input :model-value="computedPriceTotal" disabled placeholder="结算价格 × 吨数（自动计算）" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -322,8 +316,7 @@ const form = reactive<any>({
   actualTheoreticalWeight: null,
   volume: null,
   originPlace: '',
-  fobPrice: null,
-  cifPrice: null,
+  settlementPrice: null,
   packagingWeight: null,
   packaging: '',
   coilInnerDiameter: '',
@@ -343,10 +336,10 @@ const rules = {
 }
 
 const computedPriceTotal = computed(() => {
-  const cif = parseFloat(form.cifPrice)
+  const price = parseFloat(form.settlementPrice)
   const ton = parseFloat(form.quantityTon)
-  if (!isNaN(cif) && !isNaN(ton)) {
-    return (cif * ton).toFixed(2)
+  if (!isNaN(price) && !isNaN(ton)) {
+    return (price * ton).toFixed(2)
   }
   return ''
 })
@@ -439,8 +432,7 @@ const handleEdit = (row: any) => {
     actualTheoreticalWeight: row.actualTheoreticalWeight ?? null,
     volume: row.volume ?? null,
     originPlace: row.originPlace ?? '',
-    fobPrice: row.fobPrice ?? null,
-    cifPrice: row.cifPrice ?? null,
+    settlementPrice: row.settlementPrice ?? null,
     packagingWeight: row.packagingWeight ?? null,
     packaging: row.packaging ?? '',
     coilInnerDiameter: row.coilInnerDiameter ?? '',
@@ -479,8 +471,6 @@ const resetForm = () => {
   form.actualTheoreticalWeight = null
   form.volume = null
   form.originPlace = ''
-  form.fobPrice = null
-  form.cifPrice = null
   form.packagingWeight = null
   form.packaging = ''
   form.coilInnerDiameter = ''
@@ -538,8 +528,7 @@ const handleExport = async () => {
     { label: '实际理论重量', key: 'actualTheoreticalWeight' },
     { label: '体积', key: 'volume' },
     { label: '货源地', key: 'originPlace' },
-    { label: 'FOB价格', key: 'fobPrice' },
-    { label: 'CIF价格', key: 'cifPrice' },
+    { label: '结算价格', key: 'settlementPrice' },
     { label: '价格汇总', key: 'priceTotal' },
     { label: '包装重量', key: 'packagingWeight' },
     { label: '包装', key: 'packaging' },

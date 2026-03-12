@@ -24,8 +24,7 @@ public class SalesOrderDetail {
     private Integer quantityPc;
     private BigDecimal quantityMeter;
 
-    private BigDecimal fobPrice;
-    private BigDecimal cifPrice;
+    private BigDecimal settlementPrice;
     private BigDecimal priceTotal;
 
     private BigDecimal packagingWeight;
@@ -43,6 +42,7 @@ public class SalesOrderDetail {
     private BigDecimal volume;
     private String originPlace;
     private BigDecimal actualTheoreticalWeight;
+    private String measurementMethod;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

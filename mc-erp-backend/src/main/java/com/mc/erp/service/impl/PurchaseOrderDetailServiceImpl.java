@@ -120,9 +120,6 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
     }
 
     private BigDecimal computePriceTotal(PurchaseOrderDetail detail) {
-        if (detail.getCifPrice() != null && detail.getQuantityTon() != null) {
-            return detail.getCifPrice().multiply(detail.getQuantityTon());
-        }
         return detail.getPriceTotal();
     }
 
