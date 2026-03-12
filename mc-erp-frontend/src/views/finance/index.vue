@@ -70,7 +70,8 @@
           <el-input v-model="form.serialNo" placeholder="银行流水号" />
         </el-form-item>
         <el-form-item label="金额" prop="amount">
-          <el-input v-model="form.amount" placeholder="请输入金额" style="width:100%" />
+          <el-input v-model="form.amount" placeholder="请输入金额" style="width:100%"
+            :disabled="form.id && (form.status === 2 || form.status === 3)" />
         </el-form-item>
         <el-form-item label="币种" prop="currency">
           <el-select v-model="form.currency" style="width:100%">
@@ -97,12 +98,13 @@
       width="800px" @close="currentReceipt = null">
       <div v-if="currentReceipt" class="detail-info">
         <el-descriptions :column="3" border size="small">
-          <el-descriptions-item label="流水号">{{ currentReceipt.serialNo }}</el-descriptions-item>
+          <el-descriptions-item label="流水号" :span="3">{{ currentReceipt.serialNo }}</el-descriptions-item>
+          <el-descriptions-item label="收款银行" :span="3">{{ currentReceipt.receivingBank }}</el-descriptions-item>
           <el-descriptions-item label="收款金额">
             <b>{{ currentReceipt.currency }}</b>&nbsp;{{ currentReceipt.amount }}
           </el-descriptions-item>
           <el-descriptions-item label="收款日期">{{ currentReceipt.receiptDate }}</el-descriptions-item>
-          <el-descriptions-item label="收款银行">{{ currentReceipt.receivingBank }}</el-descriptions-item>
+          
           <el-descriptions-item label="状态">
             <el-tag :type="statusTagType(currentReceipt.status)">{{ currentReceipt.statusLabel }}</el-tag>
           </el-descriptions-item>
@@ -118,6 +120,13 @@
       <el-table :data="currentReceipt?.details || []" border stripe size="small">
         <el-table-column type="index" label="序号" width="55" align="center" />
         <el-table-column label="销售订单号" prop="salesOrderNo" min-width="150" />
+        <el-table-column label="绑定类型" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.bindType === 1 ? 'warning' : 'primary'" size="small">
+              {{ row.bindType === 1 ? '定金' : row.bindType === 2 ? '尾款' : '-' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="绑定金额" prop="boundAmount" width="140" align="right">
           <template #default="{ row }">
             {{ currentReceipt?.currency }} {{ row.boundAmount }}
@@ -126,7 +135,11 @@
         <el-table-column label="创建时间" prop="createTime" width="160" />
         <el-table-column label="操作" width="80" align="center">
           <template #default="{ row }">
-            <el-button link type="danger" @click="handleRemoveDetail(row)">删除</el-button>
+            <el-button
+              link type="danger"
+              :disabled="currentReceipt?.status === 3 && !isAdmin"
+              @click="handleRemoveDetail(row)"
+            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -149,9 +162,14 @@
         <el-form-item label="销售订单号" prop="salesOrderNo">
           <el-input v-model="detailForm.salesOrderNo" placeholder="请输入销售订单号" />
         </el-form-item>
+        <el-form-item label="绑定类型" prop="bindType">
+          <el-select v-model="detailForm.bindType" placeholder="请选择绑定类型" style="width:100%">
+            <el-option label="定金" :value="1" />
+            <el-option label="尾款" :value="2" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="绑定金额" prop="boundAmount">
-          <el-input-number v-model="detailForm.boundAmount" :min="0.01" :precision="2"
-            :step="0.01" style="width:100%" />
+          <el-input v-model="detailForm.boundAmount" placeholder="请输入绑定金额" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -174,12 +192,26 @@ import {
   updateFinanceReceipt,
   deleteFinanceReceipt
 } from '@/api/advancedModules'
+import { getUserListWithRoles } from '@/api/system'
 
 const loading = ref(false)
 const submitLoading = ref(false)
 const detailSubmitLoading = ref(false)
 const dataList = ref<any[]>([])
 const total = ref(0)
+const isAdmin = ref(false)
+
+const checkAdmin = async () => {
+  try {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    const res = await getUserListWithRoles()
+    const allUsers = res.data || []
+    const currentUser = allUsers.find((u: any) => u.id === userInfo.userId)
+    isAdmin.value = !!(currentUser && Array.isArray(currentUser.roleNames) && currentUser.roleNames.includes('管理员'))
+  } catch {
+    isAdmin.value = false
+  }
+}
 
 const queryParams = reactive({
   pageNum: 1,
@@ -226,7 +258,8 @@ const form = reactive<any>({
   amount: 0,
   currency: 'USD',
   receiptDate: '',
-  receivingBank: ''
+  receivingBank: '',
+  status: null
 })
 
 const rules = {
@@ -236,7 +269,7 @@ const rules = {
 }
 
 const resetForm = () => {
-  Object.assign(form, { id: null, serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '' })
+  Object.assign(form, { id: null, serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '', status: null })
   formRef.value?.clearValidate()
 }
 
@@ -253,7 +286,8 @@ const handleEdit = (row: any) => {
     amount: row.amount,
     currency: row.currency,
     receiptDate: row.receiptDate,
-    receivingBank: row.receivingBank
+    receivingBank: row.receivingBank,
+    status: row.status
   })
   formDialogTitle.value = '编辑收款单'
   formDialogVisible.value = true
@@ -301,6 +335,10 @@ const handleDetail = async (row: any) => {
 }
 
 const handleRemoveDetail = (row: any) => {
+  if (currentReceipt.value?.status === 3 && !isAdmin.value) {
+    ElMessage.warning('收款已完成，只有管理员可以删除明细')
+    return
+  }
   const details = currentReceipt.value.details
   const idx = details.indexOf(row)
   if (idx !== -1) details.splice(idx, 1)
@@ -309,14 +347,16 @@ const handleRemoveDetail = (row: any) => {
 // ---- 新增认领明细行 ----
 const addDetailVisible = ref(false)
 const detailFormRef = ref<FormInstance>()
-const detailForm = reactive({ salesOrderNo: '', boundAmount: 0 })
+const detailForm = reactive({ salesOrderNo: '', bindType: null as number | null, boundAmount: 0 })
 const detailRules = {
   salesOrderNo: [{ required: true, message: '请输入销售订单号', trigger: 'blur' }],
+  bindType: [{ required: true, message: '请选择绑定类型', trigger: 'change' }],
   boundAmount: [{ required: true, message: '请输入绑定金额', trigger: 'change' }]
 }
 
 const handleAddDetail = () => {
   detailForm.salesOrderNo = ''
+  detailForm.bindType = null
   detailForm.boundAmount = 0
   detailFormRef.value?.clearValidate()
   addDetailVisible.value = true
@@ -327,6 +367,7 @@ const confirmAddDetail = async () => {
   if (!currentReceipt.value.details) currentReceipt.value.details = []
   currentReceipt.value.details.push({
     salesOrderNo: detailForm.salesOrderNo,
+    bindType: detailForm.bindType,
     boundAmount: detailForm.boundAmount
   })
   addDetailVisible.value = false
@@ -344,6 +385,7 @@ const handleSaveDetails = async () => {
       receivingBank: currentReceipt.value.receivingBank,
       details: (currentReceipt.value.details || []).map((d: any) => ({
         salesOrderNo: d.salesOrderNo,
+        bindType: d.bindType,
         boundAmount: d.boundAmount,
         salesOrderId: d.salesOrderId || 0
       }))
@@ -376,6 +418,7 @@ const handleExport = async () => {
 
 onMounted(() => {
   getList()
+  checkAdmin()
 })
 </script>
 

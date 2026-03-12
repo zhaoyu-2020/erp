@@ -11,5 +11,7 @@ public class FinanceReceiptDetailVO {
     private Long salesOrderId;
     private String salesOrderNo;
     private BigDecimal boundAmount;
+    /** 绑定类型: 1=定金, 2=尾款 */
+    private Integer bindType;
     private LocalDateTime createTime;
 }

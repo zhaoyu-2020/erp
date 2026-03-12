@@ -24,6 +24,9 @@ public class FinanceReceiptDetail {
     @NotNull(message = "绑定金额不能为空")
     private BigDecimal boundAmount;
 
+    /** 绑定类型: 1=定金, 2=尾款 */
+    private Integer bindType;
+
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableField(fill = FieldFill.INSERT)
