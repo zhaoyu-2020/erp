@@ -57,7 +57,6 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
     public PageResult<FinanceReceiptVO> getPage(FinanceReceiptQuery query) {
         Page<FinanceReceipt> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<FinanceReceipt> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.hasText(query.getReceiptNo()), FinanceReceipt::getReceiptNo, query.getReceiptNo());
         wrapper.like(StringUtils.hasText(query.getSerialNo()), FinanceReceipt::getSerialNo, query.getSerialNo());
         wrapper.eq(query.getStatus() != null, FinanceReceipt::getStatus, query.getStatus());
         wrapper.orderByDesc(FinanceReceipt::getCreateTime);

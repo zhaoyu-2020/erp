@@ -284,7 +284,6 @@ CREATE TABLE IF NOT EXISTS `biz_customs_doc` (
 -- 10. 财务收款单表 (Finance Receipt)
 CREATE TABLE IF NOT EXISTS `biz_finance_receipt` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `receipt_no` varchar(50) NOT NULL COMMENT '收款单号',
   `serial_no` varchar(100) DEFAULT NULL COMMENT '银行流水号',
   `amount` decimal(15,2) NOT NULL COMMENT '收款金额',
   `currency` varchar(10) NOT NULL DEFAULT 'USD' COMMENT '币种',
@@ -297,7 +296,6 @@ CREATE TABLE IF NOT EXISTS `biz_finance_receipt` (
   `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_receipt_no` (`receipt_no`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务收款单表';
 

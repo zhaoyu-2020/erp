@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 public class FinanceReceiptVO {
     private Long id;
-    private String receiptNo;
     private String serialNo;
     private BigDecimal amount;
     private String currency;

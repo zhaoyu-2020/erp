@@ -12,9 +12,6 @@ import java.util.List;
 public class FinanceReceiptSaveDTO {
     private Long id;
 
-    @NotBlank(message = "收款单号不能为空")
-    private String receiptNo;
-
     private String serialNo;
 
     @NotNull(message = "金额不能为空")

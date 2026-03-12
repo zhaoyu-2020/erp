@@ -3,9 +3,6 @@
     <!-- 搜索栏 -->
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <el-form-item label="收款单号">
-          <el-input v-model="queryParams.receiptNo" placeholder="输入收款单号" clearable />
-        </el-form-item>
         <el-form-item label="流水号">
           <el-input v-model="queryParams.serialNo" placeholder="输入银行流水号" clearable />
         </el-form-item>
@@ -32,7 +29,6 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="收款单号" prop="receiptNo" width="150" />
         <el-table-column label="流水号" prop="serialNo" min-width="160" />
         <el-table-column label="金额" width="160" align="right">
           <template #default="{ row }">
@@ -70,9 +66,6 @@
     <!-- 新建/编辑收款单对话框 -->
     <el-dialog v-model="formDialogVisible" :title="formDialogTitle" width="580px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="收款单号" prop="receiptNo">
-          <el-input v-model="form.receiptNo" placeholder="请输入收款单号" />
-        </el-form-item>
         <el-form-item label="流水号" prop="serialNo">
           <el-input v-model="form.serialNo" placeholder="银行流水号" />
         </el-form-item>
@@ -100,11 +93,10 @@
     </el-dialog>
 
     <!-- 收款明细对话框 -->
-    <el-dialog v-model="detailDialogVisible" :title="`收款明细 - ${currentReceipt?.receiptNo}`"
+    <el-dialog v-model="detailDialogVisible" title="收款明细"
       width="800px" @close="currentReceipt = null">
       <div v-if="currentReceipt" class="detail-info">
         <el-descriptions :column="3" border size="small">
-          <el-descriptions-item label="收款单号">{{ currentReceipt.receiptNo }}</el-descriptions-item>
           <el-descriptions-item label="流水号">{{ currentReceipt.serialNo }}</el-descriptions-item>
           <el-descriptions-item label="收款金额">
             <b>{{ currentReceipt.currency }}</b>&nbsp;{{ currentReceipt.amount }}
@@ -192,7 +184,6 @@ const total = ref(0)
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
-  receiptNo: '',
   serialNo: '',
   status: undefined as number | undefined
 })
@@ -215,7 +206,6 @@ const handleQuery = () => {
 }
 
 const resetQuery = () => {
-  queryParams.receiptNo = ''
   queryParams.serialNo = ''
   queryParams.status = undefined
   handleQuery()
@@ -232,7 +222,6 @@ const formDialogTitle = ref('新建收款单')
 const formRef = ref<FormInstance>()
 const form = reactive<any>({
   id: null,
-  receiptNo: '',
   serialNo: '',
   amount: 0,
   currency: 'USD',
@@ -241,14 +230,13 @@ const form = reactive<any>({
 })
 
 const rules = {
-  receiptNo: [{ required: true, message: '请输入收款单号', trigger: 'blur' }],
   amount: [{ required: true, message: '请输入金额', trigger: 'change' }],
   currency: [{ required: true, message: '请选择币种', trigger: 'change' }],
   receiptDate: [{ required: true, message: '请选择收款日期', trigger: 'change' }]
 }
 
 const resetForm = () => {
-  Object.assign(form, { id: null, receiptNo: '', serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '' })
+  Object.assign(form, { id: null, serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '' })
   formRef.value?.clearValidate()
 }
 
@@ -261,7 +249,6 @@ const handleAdd = () => {
 const handleEdit = (row: any) => {
   Object.assign(form, {
     id: row.id,
-    receiptNo: row.receiptNo,
     serialNo: row.serialNo,
     amount: row.amount,
     currency: row.currency,
@@ -291,7 +278,7 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = async (row: any) => {
-  await ElMessageBox.confirm(`确认删除收款单 "${row.receiptNo}"?`, '提示', { type: 'warning' })
+  await ElMessageBox.confirm(`确认删除该收款单?`, '提示', { type: 'warning' })
   await deleteFinanceReceipt(row.id)
   ElMessage.success('删除成功')
   getList()
@@ -350,7 +337,6 @@ const handleSaveDetails = async () => {
   try {
     const payload = {
       id: currentReceipt.value.id,
-      receiptNo: currentReceipt.value.receiptNo,
       serialNo: currentReceipt.value.serialNo,
       amount: currentReceipt.value.amount,
       currency: currentReceipt.value.currency,
@@ -378,7 +364,6 @@ const handleExport = async () => {
   const res = await getFinanceReceiptPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
   exportToCsv('财务收款单导出', rows, [
-    { label: '收款单号', key: 'receiptNo' },
     { label: '流水号', key: 'serialNo' },
     { label: '币种', key: 'currency' },
     { label: '金额', key: 'amount' },

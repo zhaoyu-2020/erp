@@ -14,9 +14,6 @@ public class FinanceReceipt {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @NotBlank(message = "收款单号不能为空")
-    private String receiptNo;
-
     /** 银行流水号 */
     private String serialNo;
 
