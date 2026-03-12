@@ -41,6 +41,13 @@ public class GlobalExceptionHandler {
         return Result.error(400, e.getMessage());
     }
 
+    /** 业务规则校验失败（如金额超限）*/
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<Void> handleIllegalArgument(IllegalArgumentException e) {
+        return Result.error(400, e.getMessage());
+    }
+
     /** 业务异常（用 RuntimeException 承载） */
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.OK)

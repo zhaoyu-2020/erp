@@ -9,13 +9,18 @@ import com.mc.erp.dto.FinanceReceiptQuery;
 import com.mc.erp.dto.FinanceReceiptSaveDTO;
 import com.mc.erp.entity.FinanceReceipt;
 import com.mc.erp.entity.FinanceReceiptDetail;
+import com.mc.erp.entity.Role;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.FinanceReceiptService;
+import com.mc.erp.service.RoleService;
+import com.mc.erp.service.UserService;
+import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FinanceReceiptDetailVO;
 import com.mc.erp.vo.FinanceReceiptVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,6 +36,12 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
 
     @Autowired
     private FinanceReceiptDetailMapper detailMapper;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RoleService roleService;
 
     /** 状态标签 */
     private String statusLabel(Integer status) {
@@ -106,9 +117,37 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         return vo;
     }
 
+    /** 判断当前用户是否管理员（roleCode = admin） */
+    private boolean isCurrentUserAdmin() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        if (userId == null) return false;
+        List<Long> roleIds = userService.getRoleIds(userId);
+        if (roleIds == null || roleIds.isEmpty()) return false;
+        for (Long roleId : roleIds) {
+            Role role = roleService.getById(roleId);
+            if (role != null && "admin".equalsIgnoreCase(role.getRoleCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 校验明细绑定金额总和不超过收款金额 */
+    private void validateBoundSum(BigDecimal totalAmount, List<FinanceReceiptDetailDTO> details) {
+        if (details == null || details.isEmpty()) return;
+        BigDecimal boundSum = details.stream()
+                .map(d -> d.getBoundAmount() != null ? d.getBoundAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (boundSum.compareTo(totalAmount) > 0) {
+            throw new IllegalArgumentException(
+                    "明细绑定金额合计（" + boundSum.toPlainString() + "）超过收款金额（" + totalAmount.toPlainString() + "），请调整后重试");
+        }
+    }
+
     @Override
     @Transactional
     public void saveWithDetails(FinanceReceiptSaveDTO dto) {
+        validateBoundSum(dto.getAmount(), dto.getDetails());
         FinanceReceipt receipt = new FinanceReceipt();
         BeanUtils.copyProperties(dto, receipt);
         receipt.setStatus(calcStatus(dto.getAmount(), dto.getDetails()));
@@ -120,6 +159,12 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
     @Override
     @Transactional
     public void updateWithDetails(FinanceReceiptSaveDTO dto) {
+        // 收款已完成时，非管理员不允许修改认领明细
+        FinanceReceipt existing = this.getById(dto.getId());
+        if (existing != null && Integer.valueOf(3).equals(existing.getStatus()) && !isCurrentUserAdmin()) {
+            throw new AccessDeniedException("收款已完成，无权修改认领明细");
+        }
+        validateBoundSum(dto.getAmount(), dto.getDetails());
         FinanceReceipt receipt = new FinanceReceipt();
         BeanUtils.copyProperties(dto, receipt);
         receipt.setStatus(calcStatus(dto.getAmount(), dto.getDetails()));

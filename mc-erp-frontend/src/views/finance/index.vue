@@ -157,7 +157,9 @@
 
       <template #footer>
         <el-button @click="detailDialogVisible = false">关闭</el-button>
-        <el-button type="primary" :loading="detailSubmitLoading" @click="handleSaveDetails">保存认领</el-button>
+        <el-button type="primary" :loading="detailSubmitLoading"
+          :disabled="currentReceipt?.status === 3"
+          @click="handleSaveDetails">保存认领</el-button>
       </template>
     </el-dialog>
 
@@ -174,7 +176,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="绑定金额" prop="boundAmount">
-          <el-input v-model="detailForm.boundAmount" placeholder="请输入绑定金额" />
+          <el-input v-model="detailForm.boundAmount"
+            :placeholder="`最多可认领 ${remainingAmount}`" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -335,8 +338,14 @@ const currentReceipt = ref<any>(null)
 
 const boundTotal = computed(() => {
   if (!currentReceipt.value?.details) return '0.00'
-  const sum = currentReceipt.value.details.reduce((acc: number, d: any) => acc + Number(d.boundAmount || 0), 0)
+  const sum = currentReceipt.value.details.reduce((acc: number, d: any) => acc + (parseFloat(String(d.boundAmount)) || 0), 0)
   return sum.toFixed(2)
+})
+
+const remainingAmount = computed(() => {
+  const total = parseFloat(String(currentReceipt.value?.amount ?? 0)) || 0
+  const bound = parseFloat(boundTotal.value) || 0
+  return (total - bound).toFixed(2)
 })
 
 const handleDetail = async (row: any) => {
@@ -358,17 +367,35 @@ const handleRemoveDetail = (row: any) => {
 // ---- 新增认领明细行 ----
 const addDetailVisible = ref(false)
 const detailFormRef = ref<FormInstance>()
-const detailForm = reactive({ salesOrderNo: '', bindType: null as number | null, boundAmount: 0 })
+const detailForm = reactive({ salesOrderNo: '', bindType: null as number | null, boundAmount: null as number | null })
 const detailRules = {
   salesOrderNo: [{ required: true, message: '请输入销售订单号', trigger: 'blur' }],
   bindType: [{ required: true, message: '请选择绑定类型', trigger: 'change' }],
-  boundAmount: [{ required: true, message: '请输入绑定金额', trigger: 'change' }]
+  boundAmount: [
+    { required: true, message: '请输入绑定金额', trigger: 'change' },
+    {
+      validator: (_rule: any, value: any, callback: any) => {
+        const v = Number(value)
+        if (isNaN(v) || v <= 0) {
+          callback(new Error('绑定金额须大于0'))
+          return
+        }
+        const remaining = parseFloat(remainingAmount.value)
+        if (v > remaining) {
+          callback(new Error(`超出收款金额，最多还可认领 ${remainingAmount.value}`))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'change'
+    }
+  ]
 }
 
 const handleAddDetail = () => {
   detailForm.salesOrderNo = ''
   detailForm.bindType = null
-  detailForm.boundAmount = 0
+  detailForm.boundAmount = null
   detailFormRef.value?.clearValidate()
   addDetailVisible.value = true
 }
