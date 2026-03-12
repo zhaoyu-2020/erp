@@ -51,28 +51,42 @@
       </div>
 
       <el-table v-loading="loading" :data="orderList" border stripe>
-          <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="订单号" prop="orderNo" min-width="150" />
-        <el-table-column label="贸易条款" prop="tradeTerm" width="100" />
-        <el-table-column label="币种" prop="currency" width="100" />
-        <el-table-column label="合同金额" width="160" align="right">
+
+        <el-table-column label="日期" prop="createTime" min-width="120">
+          <template #default="{ row }">
+            {{ row.createTime ? row.createTime.slice(0, 10) : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="业务员" prop="salespersonName" width="120" />
+        <el-table-column label="操作**" prop="salespersonName" width="120" />
+        <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
+         <el-table-column label="合同金额" width="160" align="right">
           <template #default="{ row }">
             <span class="currency-text">{{ row.currency }} </span>
             <span>{{ row.contractAmount }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="贸易条款" prop="tradeTerm" width="100" />
+        <!-- <el-table-column label="币种" prop="currency" width="100" /> -->
+
+       
         <el-table-column label="总收款" width="160" align="right">
           <template #default="{ row }">
             <span class="currency-text">{{ row.currency }} </span>
             <span>{{ row.actualAmount }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
+        <el-table-column label="目的港" prop="destinationPort" width="120" align="center" />
+        <el-table-column label="运输方式" prop="transportType" width="120" />
+
         <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
         <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
-        <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
-        <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" />
+        <!-- <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
+        <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" /> -->
         <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
-        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
+        
         <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="损耗" prop="loss" width="120" align="right" />
         <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
@@ -203,6 +217,7 @@
               <el-select v-model="form.tradeTerm" placeholder="选择贸易条款">
                 <el-option label="FOB" value="FOB" />
                 <el-option label="CIF" value="CIF" />
+                <el-option label="CFR" value="CFR" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -239,7 +254,30 @@
               />
             </el-form-item>
           </el-col>
+
+
+
+          
         </el-row>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="合同总数量" prop="contractTotalQuantity">
+              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="运输方式" prop="transportType">
+              <el-select v-model="form.transportType" placeholder="选择运输方式">
+                <el-option label="20‘集装箱" value="20'集装箱" />
+                <el-option label="40‘集装箱" value="40'集装箱" />
+                <el-option label="散货" value="散货" />
+                <el-option label="铁路" value="铁路" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+
 
         <el-divider content-position="left" class="group-divider">尾款</el-divider>
 
@@ -248,22 +286,15 @@
             <el-form-item label="总收款" prop="actualAmount">
               <el-input v-model="form.actualAmount" placeholder="输入总收款" />
             </el-form-item>
+
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="运输方式" prop="transportType">
-              <el-select v-model="form.transportType" placeholder="选择运输方式">
-                <el-option label="集装箱" value="集装箱" />
-                <el-option label="散货" value="散货" />
-                <el-option label="铁路" value="铁路" />
-                <el-option label="汽运" value="汽运" />
-              </el-select>
+         <el-col :span="12">
+            <el-form-item label="结算总数量" prop="settlementTotalQuantity">
+              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量" />
             </el-form-item>
           </el-col>
-
-         
         </el-row>
-
-
+         
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="尾款金额" prop="finalPaymentAmount">
@@ -310,18 +341,7 @@
 
         <el-divider content-position="left" class="group-divider">重量</el-divider>
         
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="合同总数量" prop="contractTotalQuantity">
-              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="结算总数量" prop="settlementTotalQuantity">
-              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        
 
         <el-divider content-position="left" class="group-divider">订单后</el-divider>        <el-row :gutter="16">
           <el-col :span="12">
@@ -512,6 +532,9 @@ const rules = {
   contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
   receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
+  deliveryDate: [{ required: true, message: '请输入交货日期', trigger: 'blur' }],
+  contractTotalQuantity: [{ required: true, message: '请输入合同总数量', trigger: 'blur' }],
+  transportType: [{ required: true, message: '请选择运输方式', trigger: 'change' }],
   expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }]
 }
 
