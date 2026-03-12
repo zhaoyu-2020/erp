@@ -59,6 +59,19 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         LambdaQueryWrapper<FinanceReceipt> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(StringUtils.hasText(query.getSerialNo()), FinanceReceipt::getSerialNo, query.getSerialNo());
         wrapper.eq(query.getStatus() != null, FinanceReceipt::getStatus, query.getStatus());
+        wrapper.ge(query.getAmountMin() != null, FinanceReceipt::getAmount, query.getAmountMin());
+        wrapper.le(query.getAmountMax() != null, FinanceReceipt::getAmount, query.getAmountMax());
+        // 按销售订单号搜索：过滤存在关联明细的收款单
+        if (StringUtils.hasText(query.getSalesOrderNo())) {
+            LambdaQueryWrapper<FinanceReceiptDetail> subWrapper = new LambdaQueryWrapper<>();
+            subWrapper.like(FinanceReceiptDetail::getSalesOrderNo, query.getSalesOrderNo().trim());
+            List<Long> matchedReceiptIds = detailMapper.selectList(subWrapper)
+                    .stream().map(FinanceReceiptDetail::getReceiptId).distinct().collect(Collectors.toList());
+            if (matchedReceiptIds.isEmpty()) {
+                return new PageResult<>(0L, Collections.emptyList());
+            }
+            wrapper.in(FinanceReceipt::getId, matchedReceiptIds);
+        }
         wrapper.orderByDesc(FinanceReceipt::getCreateTime);
 
         Page<FinanceReceipt> resultPage = this.page(page, wrapper);

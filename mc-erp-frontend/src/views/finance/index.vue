@@ -3,8 +3,13 @@
     <!-- 搜索栏 -->
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <el-form-item label="流水号">
-          <el-input v-model="queryParams.serialNo" placeholder="输入银行流水号" clearable />
+        <el-form-item label="销售订单号">
+          <el-input v-model="queryParams.salesOrderNo" placeholder="输入销售订单号" clearable style="width:160px" />
+        </el-form-item>
+        <el-form-item label="金额">
+          <el-input v-model="queryParams.amountMin" placeholder="最小金额" clearable style="width:110px" />
+          <span style="margin:0 4px;color:#999">~</span>
+          <el-input v-model="queryParams.amountMax" placeholder="最大金额" clearable style="width:110px" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="选择状态" clearable style="width:120px">
@@ -217,7 +222,10 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   serialNo: '',
-  status: undefined as number | undefined
+  status: undefined as number | undefined,
+  salesOrderNo: '',
+  amountMin: undefined as number | undefined,
+  amountMax: undefined as number | undefined
 })
 
 // ---- 列表 ----
@@ -240,6 +248,9 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryParams.serialNo = ''
   queryParams.status = undefined
+  queryParams.salesOrderNo = ''
+  queryParams.amountMin = undefined
+  queryParams.amountMax = undefined
   handleQuery()
 }
 
