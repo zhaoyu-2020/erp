@@ -133,40 +133,39 @@
         </el-row>
 
         <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="实际金额(RMB)" prop="actualAmount">
-              <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
-            </el-form-item>
-          </el-col>
+          
           <el-col :span="12">
             <el-form-item label="定金比例(%)" prop="depositRate">
               <el-input v-model="form.depositRate" placeholder="输入定金比例" />
             </el-form-item>
           </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
+           <el-col :span="12">
             <el-form-item label="定金金额(RMB)" prop="depositAmount">
               <el-input v-model="form.depositAmount" placeholder="输入定金金额" />
             </el-form-item>
           </el-col>
         </el-row>
-
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="订单日期" prop="orderDate">
-              <el-date-picker v-model="form.orderDate" type="date" placeholder="选择订单日期" style="width: 100%" />
+              <el-date-picker v-model="form.orderDate" type="date" placeholder="选择订单日期" format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="交货日期" prop="deliveryDate">
-              <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" style="width: 100%" />
+              <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%" />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-divider content-position="left" class="group-divider">非必填信息</el-divider>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="实际金额(RMB)" prop="actualAmount">
+              <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-row :gutter="16">
           
           <el-col :span="12">
@@ -417,6 +416,7 @@ import { exportToCsv } from '@/utils/export'
 import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
+import { el } from 'element-plus/es/locales.mjs'
 
 const router = useRouter()
 const loading = ref(false)
@@ -502,7 +502,6 @@ const rules = {
   supplierId: [{ required: true, message: '请选择供应商', trigger: 'change' }],
   salesOrderNo: [{ required: true, message: '请输入关联销售单号', trigger: 'blur' }],
   totalAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
-  actualAmount: [{ required: true, message: '请输入实际金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
   depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }],
   orderDate: [{ required: true, message: '请选择订单日期', trigger: 'change' }],

@@ -64,7 +64,7 @@
           <el-input-number v-model="form.salesOrderId" :min="1" style="width: 100%" />
         </el-form-item>
         <el-form-item label="申报日期" prop="declareDate">
-          <el-date-picker v-model="form.declareDate" type="date" placeholder="选择日期" style="width: 100%" />
+          <el-date-picker v-model="form.declareDate" type="date" placeholder="选择日期" format="YYYY-MM-DD" value-format="YYYY-MM-DD" style="width: 100%" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="选择状态" style="width: 100%">

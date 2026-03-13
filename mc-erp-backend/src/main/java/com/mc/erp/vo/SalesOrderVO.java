@@ -31,6 +31,7 @@ public class SalesOrderVO {
     private BigDecimal insuranceFee;
     private BigDecimal insuranceAmount;
     private LocalDate expectedReceiptDays;
+    private LocalDate deliveryDate;
     private String destinationPort;
     private String transportType;
     private BigDecimal seaFreight;
@@ -42,4 +43,5 @@ public class SalesOrderVO {
     private BigDecimal contractTotalQuantity;
     private BigDecimal settlementTotalQuantity;
     private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }
