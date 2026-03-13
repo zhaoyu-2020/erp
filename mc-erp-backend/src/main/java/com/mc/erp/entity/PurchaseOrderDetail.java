@@ -1,12 +1,14 @@
 package com.mc.erp.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 @TableName("biz_purchase_order_detail")
 public class PurchaseOrderDetail {
     @TableId(type = IdType.AUTO)

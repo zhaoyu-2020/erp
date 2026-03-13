@@ -18,8 +18,8 @@ public class DashboardVO {
     
     // 订单统计
     private Integer totalOrders;                 // 订单总数
-    private Integer pendingOrders;               // 待处理订单
-    private Integer shippedOrders;               // 已发货订单
+    private Integer pendingOrders;               // 新建订单
+    private Integer shippedOrders;               // 已发运订单
     private Integer completedOrders;             // 已完成订单
     
     // 资金状况

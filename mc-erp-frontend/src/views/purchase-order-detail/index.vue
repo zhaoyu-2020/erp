@@ -491,7 +491,7 @@ const handleSubmit = async () => {
   }
   submitLoading.value = true
   try {
-    const payload = { ...form }
+    const { poNo: _poNo, ...payload } = { ...form }
     if (payload.id) {
       await updatePurchaseOrderDetail(payload)
     } else {

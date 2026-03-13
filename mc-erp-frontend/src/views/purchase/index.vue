@@ -30,9 +30,10 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
-            <el-option label="待处理" :value="1" />
+            <el-option label="新建" :value="1" />
             <el-option label="生产中" :value="2" />
-            <el-option label="已入库" :value="3" />
+            <el-option label="待发货" :value="3" />
+            <el-option label="已完成" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -324,9 +325,10 @@
           <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
-                <el-option label="待处理" :value="1" />
+                <el-option label="新建" :value="1" />
                 <el-option label="生产中" :value="2" />
-                <el-option label="已入库" :value="3" />
+                <el-option label="待发货" :value="3" />
+                <el-option label="已完成" :value="4" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -576,11 +578,11 @@ const onSalespersonSelect = (item: any) => {
 }
 
 const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '待处理', 2: '生产中', 3: '已入库' }
+  const map: Record<number, string> = { 1: '新建', 2: '生产中', 3: '待发货', 4: '已完成' }
   return map[status] || '未知'
 }
 const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'warning', 2: 'primary', 3: 'success' }
+  const map: Record<number, string> = { 1: 'info', 2: 'primary', 3: 'warning', 4: 'success' }
   return map[status] || ''
 }
 

@@ -30,11 +30,12 @@
 
         <el-form-item label="订单状态" prop="status">
           <el-select v-model="queryParams.status" placeholder="选择订单状态" clearable style="width: 120px">
-            <el-option label="待处理" :value="1" />
-            <el-option label="采购中" :value="2" />
-            <el-option label="生产中" :value="3" />
-            <el-option label="已发货" :value="4" />
-            <el-option label="已完成" :value="5" />
+            <el-option label="新建" :value="1" />
+            <el-option label="已收定金" :value="2" />
+            <el-option label="已采购" :value="3" />
+            <el-option label="已发运" :value="4" />
+            <el-option label="已收款" :value="5" />
+            <el-option label="已完成" :value="6" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -398,11 +399,12 @@
            <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
-                <el-option label="待处理" :value="1" />
-                <el-option label="采购中" :value="2" />
-                <el-option label="生产中" :value="3" />
-                <el-option label="已发货" :value="4" />
-                <el-option label="已完成" :value="5" />
+                <el-option label="新建" :value="1" />
+                <el-option label="已收定金" :value="2" />
+                <el-option label="已采购" :value="3" />
+                <el-option label="已发运" :value="4" />
+                <el-option label="已收款" :value="5" />
+                <el-option label="已完成" :value="6" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -850,11 +852,11 @@ const onSalespersonChange = async (salespersonId: number | null) => {
 
 // Status dictionary
 const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '待处理', 2: '采购中', 3: '生产中', 4: '已发货', 5: '已完成' }
+  const map: Record<number, string> = { 1: '新建', 2: '已收定金', 3: '已采购', 4: '已发运', 5: '已收款', 6: '已完成' }
   return map[status] || '未知'
 }
 const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'warning', 2: 'primary', 3: 'info', 4: 'success', 5: 'info' }
+  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'primary', 4: '', 5: 'success', 6: 'success' }
   return map[status] || ''
 }
 

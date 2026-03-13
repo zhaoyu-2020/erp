@@ -89,11 +89,11 @@ public class ReportServiceImpl implements ReportService {
         dashboard.setTotalOrders(allOrders.size());
         dashboard.setPendingOrders((int) allOrders.stream().filter(o -> o.getStatus() == 1).count());
         dashboard.setShippedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 4).count());
-        dashboard.setCompletedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 5).count());
+        dashboard.setCompletedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 6).count());
         
         // 应收应付统计
         BigDecimal totalReceivables = allOrders.stream()
-                .filter(o -> o.getStatus() != 5) // 未完成订单
+                .filter(o -> o.getStatus() != 6) // 未完成订单
                 .map(o -> {
                     BigDecimal actual = o.getActualAmount() != null ? o.getActualAmount() : BigDecimal.ZERO;
                     BigDecimal received = o.getReceivedAmount() != null ? o.getReceivedAmount() : BigDecimal.ZERO;
@@ -105,7 +105,7 @@ public class ReportServiceImpl implements ReportService {
         
         List<PurchaseOrder> allPurchaseOrders = purchaseOrderService.list();
         BigDecimal totalPayables = allPurchaseOrders.stream()
-                .filter(p -> p.getStatus() != 6) // 未完结
+                .filter(p -> p.getStatus() != 4) // 未完结
                 .map(p -> {
                     BigDecimal actual = p.getActualAmount() != null ? p.getActualAmount() : BigDecimal.ZERO;
                     BigDecimal deposit = p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO;

@@ -81,11 +81,11 @@
               <div class="stat-value">{{ dashboard.totalOrders }}</div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">待处理</div>
+              <div class="stat-label">新建</div>
               <div class="stat-value warning">{{ dashboard.pendingOrders }}</div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">已发货</div>
+              <div class="stat-label">已发运</div>
               <div class="stat-value success">{{ dashboard.shippedOrders }}</div>
             </div>
             <div class="stat-item">

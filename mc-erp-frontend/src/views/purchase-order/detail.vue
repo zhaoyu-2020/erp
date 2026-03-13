@@ -328,6 +328,7 @@ const queryProductType = (queryString: string, cb: (results: { value: string }[]
 
 const handleAdd = () => {
   resetForm()
+  form.detailSeq = detailList.value.length + 1
   dialogTitle.value = '新增明细'
   dialogVisible.value = true
 }

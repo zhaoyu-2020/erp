@@ -42,10 +42,10 @@ public class SalesOrderController {
         // 更新订单
         boolean success = salesOrderService.updateById(salesOrder);
         
-        // 如果状态变更为已完成（5），自动计算利润和损耗
-        if (success && salesOrder.getStatus() != null && salesOrder.getStatus() == 5) {
+        // 如果状态变更为已完成（6），自动计算利润和损耗
+        if (success && salesOrder.getStatus() != null && salesOrder.getStatus() == 6) {
             // 检查是否是状态发生变更
-            if (oldOrder == null || !Integer.valueOf(5).equals(oldOrder.getStatus())) {
+            if (oldOrder == null || !Integer.valueOf(6).equals(oldOrder.getStatus())) {
                 salesOrderService.calculateAndUpdateProfit(salesOrder.getId());
                 salesOrderService.calculateAndUpdateLoss(salesOrder.getId());
             }
