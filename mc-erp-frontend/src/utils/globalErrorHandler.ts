@@ -22,7 +22,9 @@ interface ErrorHandlerOptions {
 const DEFAULT_IGNORED_PATTERNS: Array<string | RegExp> = [
   'ResizeObserver loop limit exceeded',
   'ResizeObserver loop completed with undelivered notifications',
-  /Script error\.?/i
+  /Script error\.?/i,
+  // axios HTTP 错误已由 request.ts 拦截器通过 ElMessage 处理，无需再弹窗
+  /Request failed with status code \d+/i
 ]
 
 const DEDUPE_WINDOW_MS = 2500
@@ -37,6 +39,10 @@ function normalizeMessage(input: unknown): string {
   } catch {
     return String(input)
   }
+}
+
+function isHandledError(input: unknown): boolean {
+  return !!(input && typeof input === 'object' && (input as any).__handled === true)
 }
 
 function shouldIgnore(message: string, patterns: Array<string | RegExp>): boolean {
@@ -175,6 +181,11 @@ export function setupGlobalErrorHandler(options?: ErrorHandlerOptions): void {
   window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
     // 捕获所有未被 catch 的 Promise 异常。
     const reason = event.reason
+    // 已由 request.ts 拦截器处理过的 HTTP 错误，直接忽略，不重复弹窗
+    if (isHandledError(reason)) {
+      event.preventDefault()
+      return
+    }
     reportError(
       {
         type: 'PROMISE_ERROR',
@@ -193,6 +204,9 @@ export function setupVueErrorHandler(app: App, options?: ErrorHandlerOptions): v
   setupGlobalErrorHandler(options)
 
   app.config.errorHandler = (err, instance, info) => {
+    // 已由 request.ts 拦截器处理过的 HTTP 错误，直接忽略，不重复弹窗
+    if (isHandledError(err)) return
+
     const message = normalizeMessage(err)
     const componentName =
       (instance as { type?: { name?: string } } | null)?.type?.name || 'AnonymousComponent'

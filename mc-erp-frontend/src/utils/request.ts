@@ -45,16 +45,20 @@ request.interceptors.response.use(
             localStorage.removeItem('token')
             localStorage.removeItem('userInfo')
             window.location.href = '/login'
+            // 标记为已处理，避免 globalErrorHandler 重复弹窗
+            error.__handled = true
             return Promise.reject(error)
         }
 
         // 已登录但无权限：只提示，不强制退出
         if (status === 403) {
             ElMessage.error(msg || '无操作权限')
+            error.__handled = true
             return Promise.reject(error)
         }
 
         ElMessage.error(msg || '请求失败')
+        error.__handled = true
         return Promise.reject(error)
     }
 )
