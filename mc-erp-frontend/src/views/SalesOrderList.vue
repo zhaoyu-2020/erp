@@ -419,9 +419,9 @@
       <el-descriptions :column="2" border>
         <el-descriptions-item label="订单号">{{ detailData.orderNo || '-' }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
-        <el-descriptions-item label="客户ID">{{ detailData.customerId ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="业务员ID">{{ detailData.salespersonId ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="操作员ID">{{ detailData.operatorId ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="客户">{{ detailData.customerName || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="业务员">{{ detailData.salespersonName || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="操作员">{{ detailData.operatorName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="贸易条款">{{ detailData.tradeTerm || '-' }}</el-descriptions-item>
         <el-descriptions-item label="付款方式">{{ detailData.paymentMethod || '-' }}</el-descriptions-item>
         <el-descriptions-item label="币种">{{ detailData.currency || '-' }}</el-descriptions-item>
@@ -662,8 +662,11 @@ const handleDetail = (row: any) => {
     id: row.id,
     orderNo: row.orderNo,
     customerId: row.customerId,
+    customerName: row.customerName,
     salespersonId: row.salespersonId,
+    salespersonName: row.salespersonName,
     operatorId: row.operatorId,
+    operatorName: row.operatorName,
     tradeTerm: row.tradeTerm,
     paymentMethod: row.paymentMethod,
     currency: row.currency,
