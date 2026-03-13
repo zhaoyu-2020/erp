@@ -25,7 +25,6 @@ public class SalesOrderDetailVO {
     private String coilInnerDiameter;
     private String processingItems;
     private String remark;
-    private Integer detailSeq;
     private BigDecimal orderedQuantity;
     private BigDecimal actualQuantity;
     private Integer bundleCount;

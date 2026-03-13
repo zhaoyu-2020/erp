@@ -70,8 +70,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         if (StringUtils.hasText(query.getMaterial())) {
             wrapper.like(SalesOrderDetail::getMaterial, query.getMaterial().trim());
         }
-        wrapper.orderByAsc(SalesOrderDetail::getOrderId).orderByAsc(SalesOrderDetail::getDetailSeq)
-               .orderByAsc(SalesOrderDetail::getId);
+        wrapper.orderByAsc(SalesOrderDetail::getOrderId).orderByAsc(SalesOrderDetail::getId);
 
         Page<SalesOrderDetail> resultPage = this.page(page, wrapper);
 

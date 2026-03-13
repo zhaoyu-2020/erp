@@ -34,7 +34,6 @@
         <el-table-column label="包装重量" prop="packagingWeight" width="110" align="right" />
         <el-table-column label="包装" prop="packaging" width="120" />
         <el-table-column label="卷内径(mm)" prop="coilInnerDiameter" width="110" align="center" />
-        <el-table-column label="详情序号" prop="detailSeq" width="90" align="center" />
         <el-table-column label="订货数量" prop="orderedQuantity" width="100" align="right" />
         <el-table-column label="实际数量" prop="actualQuantity" width="100" align="right" />
         <el-table-column label="捆数" prop="bundleCount" width="80" align="right" />
@@ -133,11 +132,6 @@
 
         <el-divider content-position="left" class="group-divider">数量明细 / 重量 / 体积</el-divider>
         <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="详情序号" prop="detailSeq">
-              <el-input v-model="form.detailSeq" placeholder="输入序号" />
-            </el-form-item>
-          </el-col>
           <el-col :span="8">
             <el-form-item label="订货数量" prop="orderedQuantity">
               <el-input v-model="form.orderedQuantity" placeholder="输入订货数量" />
@@ -442,7 +436,6 @@ const handleExport = async () => {
     { label: '卷内径(mm)', key: 'coilInnerDiameter' },
     { label: '加工项', key: 'processingItems' },
     { label: '备注', key: 'remark' },
-    { label: '详情序号', key: 'detailSeq' },
     { label: '订货数量', key: 'orderedQuantity' },
     { label: '实际数量', key: 'actualQuantity' },
     { label: '捆数', key: 'bundleCount' },

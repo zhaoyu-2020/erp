@@ -32,7 +32,6 @@
       <el-table v-loading="loading" :data="detailList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="订单号" prop="orderNo" width="160" />
-        <el-table-column label="详情序号" prop="detailSeq" width="90" align="center" />
         <el-table-column label="产品规格" prop="spec" min-width="120" />
         <el-table-column label="产品类型" prop="productType" width="120" />
         <el-table-column label="材质" prop="material" width="100" />
@@ -95,11 +94,6 @@
                 style="width: 100%"
                 @select="onOrderNoSelect"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="详情序号" prop="detailSeq">
-              <el-input v-model="form.detailSeq" placeholder="输入序号" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -534,7 +528,6 @@ const handleExport = async () => {
   const res = await getDetailPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   exportToCsv('销售订单明细导出', res.data.list || [], [
     { label: '订单号', key: 'orderNo' },
-    { label: '详情序号', key: 'detailSeq' },
     { label: '产品规格', key: 'spec' },
     { label: '产品类型', key: 'productType' },
     { label: '材质', key: 'material' },

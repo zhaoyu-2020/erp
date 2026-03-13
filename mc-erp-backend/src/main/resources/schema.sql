@@ -215,7 +215,6 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_detail` (
   `coil_inner_diameter` varchar(50) DEFAULT NULL COMMENT '卷内径',
   `processing_items` varchar(500) DEFAULT NULL COMMENT '加工项',
   `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  `detail_seq` int(11) DEFAULT NULL COMMENT '详情序号',
   `ordered_quantity` decimal(15,3) DEFAULT NULL COMMENT '订货数量',
   `actual_quantity` decimal(15,3) DEFAULT NULL COMMENT '实际数量',
   `bundle_count` int(11) DEFAULT NULL COMMENT '捆数',
@@ -374,7 +373,6 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
 CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `order_id` bigint(20) NOT NULL COMMENT '销售订单ID',
-  `detail_seq` int(11) DEFAULT NULL COMMENT '详情序号',
   `product_id` bigint(20) DEFAULT NULL COMMENT '关联产品ID',
   `spec` varchar(100) DEFAULT NULL COMMENT '产品规格',
   `product_type` varchar(100) DEFAULT NULL COMMENT '产品类型',

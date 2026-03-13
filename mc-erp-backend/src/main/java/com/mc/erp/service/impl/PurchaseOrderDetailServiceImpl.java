@@ -66,7 +66,6 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
             wrapper.like(PurchaseOrderDetail::getMaterial, query.getMaterial().trim());
         }
         wrapper.orderByAsc(PurchaseOrderDetail::getPurchaseOrderId)
-                .orderByAsc(PurchaseOrderDetail::getDetailSeq)
                 .orderByAsc(PurchaseOrderDetail::getId);
 
         Page<PurchaseOrderDetail> resultPage = this.page(page, wrapper);
