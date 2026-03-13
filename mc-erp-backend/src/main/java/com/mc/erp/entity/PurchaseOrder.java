@@ -48,6 +48,10 @@ public class PurchaseOrder {
     @NotNull(message = "定金金额不能为空")
     private BigDecimal depositAmount;
 
+    @NotNull(message = "订单日期不能为空")
+    private LocalDate orderDate;
+
+    @NotNull(message = "交货日期不能为空")
     private LocalDate deliveryDate;
     private String transportRemark;
     private BigDecimal totalFreight;

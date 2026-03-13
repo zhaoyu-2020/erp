@@ -374,10 +374,6 @@
          
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">重量</el-divider>
-        
-        
-
         <el-divider content-position="left" class="group-divider">订单后</el-divider>        <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="利润" prop="profit">

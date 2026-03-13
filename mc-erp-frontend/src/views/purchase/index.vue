@@ -51,6 +51,7 @@
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="采购单号" prop="poNo" width="140" />
+        <el-table-column label="订单日期" prop="orderDate" width="120" />
         <el-table-column label="供应商ID" prop="supplierId" width="120" />
         <el-table-column label="供应商" prop="supplierName" width="140" />
         <el-table-column label="关联销售单号" prop="salesOrderNo" width="160" />
@@ -152,13 +153,22 @@
           </el-col>
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">非必填信息</el-divider>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="交货日期" prop="deliveryDate">
-              <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" />
+            <el-form-item label="订单日期" prop="orderDate">
+              <el-date-picker v-model="form.orderDate" type="date" placeholder="选择订单日期" style="width: 100%" />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="交货日期" prop="deliveryDate">
+              <el-date-picker v-model="form.deliveryDate" type="date" placeholder="选择交货日期" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-divider content-position="left" class="group-divider">非必填信息</el-divider>
+        <el-row :gutter="16">
+          
           <el-col :span="12">
             <el-form-item label="运输备注" prop="transportRemark">
               <el-input v-model="form.transportRemark" placeholder="输入运输备注" />
@@ -342,6 +352,7 @@
         <el-descriptions-item label="实际金额(RMB)">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金金额(RMB)">{{ detailData.depositAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="订单日期">{{ detailData.orderDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="交货日期">{{ detailData.deliveryDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输备注">{{ detailData.transportRemark || '-' }}</el-descriptions-item>
         <el-descriptions-item label="总运费(RMB)">{{ detailData.totalFreight ?? '-' }}</el-descriptions-item>
@@ -448,6 +459,7 @@ const form = reactive<any>({
   actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
+  orderDate: null,
   deliveryDate: null,
   transportRemark: '',
   totalFreight: 0,
@@ -470,6 +482,7 @@ const detailData = reactive<any>({
   actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
+  orderDate: null,
   deliveryDate: null,
   transportRemark: '',
   totalFreight: 0,
@@ -491,7 +504,9 @@ const rules = {
   totalAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
   actualAmount: [{ required: true, message: '请输入实际金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
-  depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }]
+  depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }],
+  orderDate: [{ required: true, message: '请选择订单日期', trigger: 'change' }],
+  deliveryDate: [{ required: true, message: '请选择交货日期', trigger: 'change' }]
 }
 
 
@@ -630,6 +645,7 @@ const resetForm = () => {
   form.actualAmount = 0
   form.depositRate = 0
   form.depositAmount = 0
+  form.orderDate = null
   form.deliveryDate = null
   form.transportRemark = ''
   form.totalFreight = 0
@@ -667,6 +683,7 @@ const handleDetail = (row: any) => {
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
+    orderDate: row.orderDate ?? null,
     deliveryDate: row.deliveryDate ?? null,
     transportRemark: row.transportRemark ?? '',
     totalFreight: row.totalFreight ?? 0,
@@ -701,6 +718,7 @@ const handleEdit = (row: any) => {
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
+    orderDate: row.orderDate ?? null,
     deliveryDate: row.deliveryDate ?? null,
     transportRemark: row.transportRemark ?? '',
     totalFreight: row.totalFreight ?? 0,
@@ -774,6 +792,7 @@ const handleExport = async () => {
     { label: '实际金额(RMB)', key: 'actualAmount' },
     { label: '定金比例(%)', key: 'depositRate' },
     { label: '定金金额(RMB)', key: 'depositAmount' },
+    { label: '订单日期', key: 'orderDate' },
     { label: '交货日期', key: 'deliveryDate' },
     { label: '运输备注', key: 'transportRemark' },
     { label: '总运费(RMB)', key: 'totalFreight' },

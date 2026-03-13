@@ -22,6 +22,7 @@ public class PurchaseOrderVO {
     private BigDecimal actualAmount;
     private BigDecimal depositRate;
     private BigDecimal depositAmount;
+    private LocalDate orderDate;
     private LocalDate deliveryDate;
     private String transportRemark;
     private BigDecimal totalFreight;

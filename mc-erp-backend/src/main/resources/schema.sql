@@ -161,6 +161,7 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `actual_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '实际金额',
   `deposit_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT '定金比例(%)',
   `deposit_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '定金金额',
+  `order_date` date DEFAULT NULL COMMENT '订单日期',
   `delivery_date` date DEFAULT NULL COMMENT '交货期',
   `transport_remark` varchar(500) DEFAULT NULL COMMENT '运输备注(车辆信息)',
   `total_freight` decimal(15,2) DEFAULT '0.00' COMMENT '总运费',
