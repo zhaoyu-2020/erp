@@ -207,6 +207,8 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_detail` (
   `quantity_ton` decimal(15,3) DEFAULT NULL COMMENT '数量(吨)',
   `quantity_pc` int(11) DEFAULT NULL COMMENT '数量(pc)',
   `quantity_meter` decimal(15,3) DEFAULT NULL COMMENT '数量(米)',
+  `settlement_price` decimal(15,2) DEFAULT NULL COMMENT '结算价格',
+  `measurement_method` varchar(50) DEFAULT NULL COMMENT '计量方式',
   `price_total` decimal(15,2) DEFAULT NULL COMMENT '价格汇总',
   `packaging_weight` decimal(15,3) DEFAULT NULL COMMENT '包装重量',
   `packaging` varchar(200) DEFAULT NULL COMMENT '包装',

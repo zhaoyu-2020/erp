@@ -25,6 +25,8 @@ public class PurchaseOrderDetail {
     private Integer quantityPc;
     private BigDecimal quantityMeter;
 
+    private BigDecimal settlementPrice;
+    private String measurementMethod;
     private BigDecimal priceTotal;
 
     private BigDecimal packagingWeight;

@@ -19,6 +19,8 @@ public class PurchaseOrderDetailVO {
     private BigDecimal quantityTon;
     private Integer quantityPc;
     private BigDecimal quantityMeter;
+    private BigDecimal settlementPrice;
+    private String measurementMethod;
     private BigDecimal priceTotal;
     private BigDecimal packagingWeight;
     private String packaging;
