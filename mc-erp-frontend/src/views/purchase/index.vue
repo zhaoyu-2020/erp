@@ -52,7 +52,6 @@
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="采购单号" prop="poNo" width="140" />
         <el-table-column label="订单日期" prop="orderDate" width="120" />
-        <el-table-column label="供应商ID" prop="supplierId" width="120" />
         <el-table-column label="供应商" prop="supplierName" width="140" />
         <el-table-column label="关联销售单号" prop="salesOrderNo" width="160" />
         <el-table-column label="总金额(RMB)" prop="totalAmount" width="160" align="right" />
@@ -344,7 +343,6 @@
       <el-descriptions :column="2" border>
         <el-descriptions-item label="采购单号">{{ detailData.poNo || '-' }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
-        <el-descriptions-item label="供应商ID">{{ detailData.supplierId ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="供应商">{{ detailData.supplierName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="关联销售单号">{{ detailData.salesOrderNo || '-' }}</el-descriptions-item>
         <el-descriptions-item label="总金额(RMB)">{{ detailData.totalAmount ?? '-' }}</el-descriptions-item>
@@ -416,7 +414,6 @@ import { exportToCsv } from '@/utils/export'
 import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
-import { el } from 'element-plus/es/locales.mjs'
 
 const router = useRouter()
 const loading = ref(false)
@@ -784,7 +781,6 @@ const handleExport = async () => {
   const rows = res.data.list || []
   exportToCsv('采购订单导出', rows, [
     { label: '采购单号', key: 'poNo' },
-    { label: '供应商ID', key: 'supplierId' },
     { label: '供应商', key: 'supplierName' },
     { label: '关联销售单号', key: 'salesOrderNo' },
     { label: '总金额(RMB)', key: 'totalAmount' },
