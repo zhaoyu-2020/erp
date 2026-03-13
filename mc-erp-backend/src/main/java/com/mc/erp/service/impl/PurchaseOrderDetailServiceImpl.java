@@ -15,6 +15,7 @@ import com.mc.erp.mapper.PurchaseOrderDetailMapper;
 import com.mc.erp.mapper.PurchaseOrderMapper;
 import com.mc.erp.service.PurchaseOrderDetailService;
 import com.mc.erp.vo.PurchaseOrderDetailVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,17 +28,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDetailMapper, PurchaseOrderDetail>
         implements PurchaseOrderDetailService {
 
-    @Autowired
-    private ProductMapper productMapper;
-
-    @Autowired
-    private ProductTypeMapper productTypeMapper;
-
-    @Autowired
-    private PurchaseOrderMapper purchaseOrderMapper;
+    private final ProductMapper productMapper;
+    private final ProductTypeMapper productTypeMapper;
+    private final PurchaseOrderMapper purchaseOrderMapper;
 
     @Override
     public PageResult<PurchaseOrderDetailVO> getPage(PurchaseOrderDetailQuery query) {

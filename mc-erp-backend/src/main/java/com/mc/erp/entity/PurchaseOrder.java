@@ -39,7 +39,6 @@ public class PurchaseOrder {
     private BigDecimal totalAmount;
 
     // 实际金额
-    @NotNull(message = "实际金额不能为空")
     private BigDecimal actualAmount;
 
     @NotNull(message = "定金比例不能为空")
