@@ -1,10 +1,15 @@
 package com.mc.erp.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
+import com.mc.erp.dto.ImportResult;
+import com.mc.erp.dto.SalesOrderDetailImportRow;
+import com.mc.erp.dto.SalesOrderImportRow;
 import com.mc.erp.dto.SalesOrderQuery;
+import com.mc.erp.entity.Customer;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.SalesOrderDetail;
@@ -20,13 +25,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.mc.erp.enums.SalesOrderStatus;
@@ -181,5 +184,163 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             calculateAndUpdateProfit(id);
             calculateAndUpdateLoss(id);
         }
+    }
+
+    @Override
+    public ImportResult importContracts(MultipartFile file) throws Exception {
+        List<SalesOrderImportRow> rows = EasyExcel.read(file.getInputStream())
+                .head(SalesOrderImportRow.class)
+                .sheet()
+                .doReadSync();
+
+        // 预加载用户和客户，建立name->id映射
+        Map<String, Long> userNameToId = userService.list().stream()
+                .filter(u -> StringUtils.hasText(u.getRealName()))
+                .collect(Collectors.toMap(User::getRealName, User::getId, (a, b) -> a));
+        Map<String, Long> customerNameToId = customerService.list().stream()
+                .filter(c -> StringUtils.hasText(c.getName()))
+                .collect(Collectors.toMap(Customer::getName, Customer::getId, (a, b) -> a));
+
+        ImportResult result = new ImportResult();
+        for (int i = 0; i < rows.size(); i++) {
+            int rowNum = i + 2; // Excel第1行是表头，数据从第2行开始
+            SalesOrderImportRow row = rows.get(i);
+            try {
+                if (!StringUtils.hasText(row.getOrderNo())) {
+                    result.addError(rowNum, "订单号不能为空");
+                    continue;
+                }
+                SalesOrder order = new SalesOrder();
+                order.setOrderNo(row.getOrderNo().trim());
+                // 业务员
+                if (StringUtils.hasText(row.getSalespersonName())) {
+                    Long uid = userNameToId.get(row.getSalespersonName().trim());
+                    if (uid == null) {
+                        result.addError(rowNum, "业务员姓名不存在: " + row.getSalespersonName());
+                        continue;
+                    }
+                    order.setSalespersonId(uid);
+                } else {
+                    result.addError(rowNum, "业务员姓名不能为空");
+                    continue;
+                }
+                // 操作员（可选，默认用业务员）
+                if (StringUtils.hasText(row.getOperatorName())) {
+                    Long uid = userNameToId.get(row.getOperatorName().trim());
+                    if (uid == null) {
+                        result.addError(rowNum, "操作员姓名不存在: " + row.getOperatorName());
+                        continue;
+                    }
+                    order.setOperatorId(uid);
+                } else {
+                    order.setOperatorId(order.getSalespersonId());
+                }
+                // 客户
+                if (StringUtils.hasText(row.getCustomerName())) {
+                    Long cid = customerNameToId.get(row.getCustomerName().trim());
+                    if (cid == null) {
+                        result.addError(rowNum, "客户名称不存在: " + row.getCustomerName());
+                        continue;
+                    }
+                    order.setCustomerId(cid);
+                } else {
+                    result.addError(rowNum, "客户名称不能为空");
+                    continue;
+                }
+                order.setTradeTerm(row.getTradeTerm());
+                order.setPaymentMethod(row.getPaymentMethod());
+                order.setCurrency(row.getCurrency());
+                order.setDepositExchangeRate(parseBD(row.getDepositExchangeRate()));
+                order.setFinalExchangeRate(parseBD(row.getFinalExchangeRate()));
+                order.setContractAmount(parseBD(row.getContractAmount()));
+                order.setDepositRate(parseBD(row.getDepositRate()));
+                order.setReceivedAmount(parseBD(row.getReceivedAmount()));
+                order.setDestinationPort(StringUtils.hasText(row.getDestinationPort()) ? row.getDestinationPort() : "");
+                order.setTransportType(row.getTransportType());
+                order.setSeaFreight(parseBD(row.getSeaFreight()));
+                order.setPortFee(parseBD(row.getPortFee()));
+                if (StringUtils.hasText(row.getExpectedReceiptDays())) {
+                    order.setExpectedReceiptDays(LocalDate.parse(row.getExpectedReceiptDays().trim()));
+                }
+                if (StringUtils.hasText(row.getDeliveryDate())) {
+                    order.setDeliveryDate(LocalDate.parse(row.getDeliveryDate().trim()));
+                }
+                order.setStatus(1); // 新建
+                this.save(order);
+                result.setSuccessCount(result.getSuccessCount() + 1);
+            } catch (Exception e) {
+                result.addError(rowNum, e.getMessage());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public ImportResult importDetails(MultipartFile file) throws Exception {
+        List<SalesOrderDetailImportRow> rows = EasyExcel.read(file.getInputStream())
+                .head(SalesOrderDetailImportRow.class)
+                .sheet()
+                .doReadSync();
+
+        // 预加载销售订单，建立orderNo->id映射
+        Map<String, Long> orderNoToId = this.list().stream()
+                .collect(Collectors.toMap(SalesOrder::getOrderNo, SalesOrder::getId, (a, b) -> a));
+
+        ImportResult result = new ImportResult();
+        for (int i = 0; i < rows.size(); i++) {
+            int rowNum = i + 2;
+            SalesOrderDetailImportRow row = rows.get(i);
+            try {
+                if (!StringUtils.hasText(row.getOrderNo())) {
+                    result.addError(rowNum, "订单号不能为空");
+                    continue;
+                }
+                Long orderId = orderNoToId.get(row.getOrderNo().trim());
+                if (orderId == null) {
+                    result.addError(rowNum, "订单号不存在: " + row.getOrderNo());
+                    continue;
+                }
+                SalesOrderDetail detail = new SalesOrderDetail();
+                detail.setOrderId(orderId);
+                detail.setSpec(row.getSpec());
+                detail.setProductType(row.getProductType());
+                detail.setMaterial(row.getMaterial());
+                detail.setLength(row.getLength());
+                detail.setTolerance(row.getTolerance());
+                detail.setQuantityTon(parseBD(row.getQuantityTon()));
+                detail.setQuantityPc(parseInteger(row.getQuantityPc()));
+                detail.setQuantityMeter(parseBD(row.getQuantityMeter()));
+                detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
+                detail.setMeasurementMethod(row.getMeasurementMethod());
+                detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
+                detail.setPackaging(row.getPackaging());
+                detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
+                detail.setProcessingItems(row.getProcessingItems());
+                detail.setRemark(row.getRemark());
+                detail.setOrderedQuantity(parseBD(row.getOrderedQuantity()));
+                detail.setActualQuantity(parseBD(row.getActualQuantity()));
+                detail.setBundleCount(parseInteger(row.getBundleCount()));
+                detail.setNetWeight(parseBD(row.getNetWeight()));
+                detail.setGrossWeight(parseBD(row.getGrossWeight()));
+                detail.setVolume(parseBD(row.getVolume()));
+                detail.setOriginPlace(row.getOriginPlace());
+                detail.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight()));
+                salesOrderDetailService.save(detail);
+                result.setSuccessCount(result.getSuccessCount() + 1);
+            } catch (Exception e) {
+                result.addError(rowNum, e.getMessage());
+            }
+        }
+        return result;
+    }
+
+    private BigDecimal parseBD(String val) {
+        if (!StringUtils.hasText(val)) return null;
+        try { return new BigDecimal(val.trim()); } catch (NumberFormatException e) { return null; }
+    }
+
+    private Integer parseInteger(String val) {
+        if (!StringUtils.hasText(val)) return null;
+        try { return Integer.parseInt(val.trim()); } catch (NumberFormatException e) { return null; }
     }
 }

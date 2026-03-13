@@ -28,6 +28,10 @@ request.interceptors.request.use(
 
 request.interceptors.response.use(
     ((response: any) => {
+        // Blob responses (e.g. file downloads) are returned as-is so callers can access response.data directly
+        if (response.config?.responseType === 'blob') {
+            return response
+        }
         const res = response.data as ApiResult<any>
         if (res.code !== 200) {
             ElMessage.error(res.message || '请求失败')

@@ -45,6 +45,13 @@
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新建订单</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-divider direction="vertical" />
+        <el-button type="warning" icon="Upload" @click="triggerContractUpload">上传销售合同</el-button>
+        <el-button type="warning" icon="Upload" @click="triggerDetailsUpload">上传销售明细</el-button>
+        <el-button link type="primary" @click="downloadSalesContractTemplate()">[合同模板]</el-button>
+        <el-button link type="primary" @click="downloadSalesDetailsTemplate()">[明细模板]</el-button>
+        <input ref="contractFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handleContractFile" />
+        <input ref="detailsFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handleDetailsFile" />
       </div>
 
       <el-table v-loading="loading" :data="orderList" border stripe>
@@ -470,7 +477,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
-import { getOrderPage, saveSalesOrder, updateSalesOrder } from '@/api/salesOrder'
+import { getOrderPage, saveSalesOrder, updateSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
 import { getUserListWithRoles } from '@/api/system'
 import { getCustomerPage } from '@/api/customer'
 import { useOrderStatus } from '@/composables/useOrderStatus'
@@ -824,6 +831,58 @@ const handleExport = async () => {
     { label: '创建时间', key: 'createTime' }
   ])
 }
+
+// ---- Excel 导入 ----
+const contractFileRef = ref<HTMLInputElement>()
+const detailsFileRef = ref<HTMLInputElement>()
+
+const triggerContractUpload = () => contractFileRef.value?.click()
+const triggerDetailsUpload = () => detailsFileRef.value?.click()
+
+const handleContractFile = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const res = await importSalesOrderContract(file)
+    const r = res.data
+    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
+    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    getList()
+  } catch (err) {
+    ElMessage.error('导入失败')
+  } finally {
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+const handleDetailsFile = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const res = await importSalesOrderDetails(file)
+    const r = res.data
+    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
+    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    getList()
+  } catch (err) {
+    ElMessage.error('导入失败')
+  } finally {
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+const downloadTemplate = async (apiFn: () => Promise<any>, filename: string) => {
+  const res = await apiFn()
+  const url = URL.createObjectURL(new Blob([res.data]))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const downloadSalesContractTemplate = () => downloadTemplate(apiDownloadSalesContract, '销售订单合同导入模板.xlsx')
+const downloadSalesDetailsTemplate = () => downloadTemplate(apiDownloadSalesDetails, '销售订单明细导入模板.xlsx')
 
 const loadSalespersonOptions = async () => {
   const res = await getUserListWithRoles()

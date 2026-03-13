@@ -44,6 +44,13 @@
       <div class="table-toolbar">
         <el-button type="primary" icon="Plus" @click="handleAdd">新增采购单</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-divider direction="vertical" />
+        <el-button type="warning" icon="Upload" @click="triggerPoContractUpload">上传采购合同</el-button>
+        <el-button type="warning" icon="Upload" @click="triggerPoDetailsUpload">上传采购明细</el-button>
+        <el-button link type="primary" @click="handleDownloadPoContractTpl">[合同模板]</el-button>
+        <el-button link type="primary" @click="handleDownloadPoDetailsTpl">[明细模板]</el-button>
+        <input ref="poContractFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handlePoContractFile" />
+        <input ref="poDetailsFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handlePoDetailsFile" />
       </div>
 
       <el-table v-loading="loading" :data="dataList" border stripe>
@@ -425,7 +432,7 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { exportToCsv } from '@/utils/export'
-import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
+import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles, importPurchaseOrderContract, importPurchaseOrderDetails, downloadPurchaseContractTemplate as apiDownloadPoContract, downloadPurchaseDetailsTemplate as apiDownloadPoDetails } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
 import { useOrderStatus } from '@/composables/useOrderStatus'
@@ -805,6 +812,58 @@ const handleExport = async () => {
     { label: '创建时间', key: 'createTime' }
   ])
 }
+
+// ---- Excel 导入 ----
+const poContractFileRef = ref<HTMLInputElement>()
+const poDetailsFileRef = ref<HTMLInputElement>()
+
+const triggerPoContractUpload = () => poContractFileRef.value?.click()
+const triggerPoDetailsUpload = () => poDetailsFileRef.value?.click()
+
+const handlePoContractFile = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const res = await importPurchaseOrderContract(file)
+    const r = res.data
+    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
+    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    getList()
+  } catch (err) {
+    ElMessage.error('导入失败')
+  } finally {
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+const handlePoDetailsFile = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const res = await importPurchaseOrderDetails(file)
+    const r = res.data
+    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
+    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    getList()
+  } catch (err) {
+    ElMessage.error('导入失败')
+  } finally {
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+const downloadTpl = async (apiFn: () => Promise<any>, filename: string) => {
+  const res = await apiFn()
+  const url = URL.createObjectURL(new Blob([res.data]))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const handleDownloadPoContractTpl = () => downloadTpl(apiDownloadPoContract, '采购订单合同导入模板.xlsx')
+const handleDownloadPoDetailsTpl = () => downloadTpl(apiDownloadPoDetails, '采购订单明细导入模板.xlsx')
 
 onMounted(() => {
   loadUserOptions()

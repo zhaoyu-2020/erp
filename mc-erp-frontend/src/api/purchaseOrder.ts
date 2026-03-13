@@ -25,3 +25,23 @@ export function updatePurchaseOrder(data: any) {
 export function deletePurchaseOrder(id: number) {
     return request({ url: `/purchase-orders/${id}`, method: 'delete' })
 }
+
+export function importPurchaseOrderContract(file: File) {
+    const form = new FormData()
+    form.append('file', file)
+    return request({ url: '/purchase-orders/import/contract', method: 'post', data: form })
+}
+
+export function importPurchaseOrderDetails(file: File) {
+    const form = new FormData()
+    form.append('file', file)
+    return request({ url: '/purchase-orders/import/details', method: 'post', data: form })
+}
+
+export function downloadPurchaseContractTemplate() {
+    return request({ url: '/purchase-orders/import/contract/template', method: 'get', responseType: 'blob' })
+}
+
+export function downloadPurchaseDetailsTemplate() {
+    return request({ url: '/purchase-orders/import/details/template', method: 'get', responseType: 'blob' })
+}
