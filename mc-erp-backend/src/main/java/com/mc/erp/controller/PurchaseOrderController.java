@@ -39,6 +39,17 @@ public class PurchaseOrderController {
         return Result.success(purchaseOrderService.updateById(purchaseOrder));
     }
 
+    /**
+     * 专用状态流转接口：PATCH /api/v1/purchase-orders/{id}/status
+     * body: { "status": 2 }
+     */
+    @PatchMapping("/{id}/status")
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Integer> body) {
+        Integer targetStatus = body.get("status");
+        purchaseOrderService.updateStatus(id, targetStatus);
+        return Result.success(null);
+    }
+
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(purchaseOrderService.removeById(id));

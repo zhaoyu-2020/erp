@@ -30,10 +30,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
-            <el-option label="新建" :value="1" />
-            <el-option label="生产中" :value="2" />
-            <el-option label="待发货" :value="3" />
-            <el-option label="已完成" :value="4" />
+            <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -61,15 +58,32 @@
         <el-table-column label="定金金额(RMB)" prop="depositAmount" width="160" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
+            <el-tag :type="getTagType(row.status)">{{ getLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="150" fixed="right" align="center">
+        <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="primary" @click="goToDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-dropdown
+              v-if="getAllowedNextStatuses(scope.row.status).length > 0"
+              @command="(code: number) => changeStatus(scope.row.id, code, getList)"
+            >
+              <el-button link type="primary">
+                变更状态<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="s in getAllowedNextStatuses(scope.row.status)"
+                    :key="s.code"
+                    :command="s.code"
+                  >{{ s.label }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -325,10 +339,7 @@
           <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
-                <el-option label="新建" :value="1" />
-                <el-option label="生产中" :value="2" />
-                <el-option label="待发货" :value="3" />
-                <el-option label="已完成" :value="4" />
+                <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -344,7 +355,7 @@
     <el-dialog v-model="detailDialogVisible" title="采购订单详情" width="900px">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="采购单号">{{ detailData.poNo || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getLabel(detailData.status) }}</el-descriptions-item>
         <el-descriptions-item label="供应商">{{ detailData.supplierName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="关联销售单号">{{ detailData.salesOrderNo || '-' }}</el-descriptions-item>
         <el-descriptions-item label="总金额(RMB)">{{ detailData.totalAmount ?? '-' }}</el-descriptions-item>
@@ -412,10 +423,14 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { exportToCsv } from '@/utils/export'
 import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
+import { useOrderStatus } from '@/composables/useOrderStatus'
+
+const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('purchase')
 
 const router = useRouter()
 const loading = ref(false)
@@ -577,14 +592,6 @@ const onSalespersonSelect = (item: any) => {
   queryParams.salespersonId = item.id
 }
 
-const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '新建', 2: '生产中', 3: '待发货', 4: '已完成' }
-  return map[status] || '未知'
-}
-const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'info', 2: 'primary', 3: 'warning', 4: 'success' }
-  return map[status] || ''
-}
 
 type FileListKey = 'photosFileList' | 'materialFileList' | 'invoiceFileList' | 'depositSlipFileList' | 'finalPaymentSlipFileList' | 'freightSlipFileList'
 
@@ -794,7 +801,7 @@ const handleExport = async () => {
     { label: '运输备注', key: 'transportRemark' },
     { label: '总运费(RMB)', key: 'totalFreight' },
     { label: '发票', key: 'invoice' },
-    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '状态', value: (r: any) => getLabel(r.status) },
     { label: '创建时间', key: 'createTime' }
   ])
 }

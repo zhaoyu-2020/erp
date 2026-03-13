@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.mc.erp.enums.SalesOrderStatus;
 
 @Service
 public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOrder> implements SalesOrderService {
@@ -159,5 +160,26 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         salesOrder.setLoss(loss);
         this.updateById(salesOrder);
+    }
+
+    @Override
+    public void updateStatus(Long id, Integer targetStatus) {
+        SalesOrder order = this.getById(id);
+        if (order == null) {
+            throw new RuntimeException("销售订单不存在: " + id);
+        }
+        // 状态机校验：非法流转直接抛异常，由 GlobalExceptionHandler 统一返回 400
+        SalesOrderStatus.validateTransition(order.getStatus(), targetStatus);
+
+        SalesOrder update = new SalesOrder();
+        update.setId(id);
+        update.setStatus(targetStatus);
+        this.updateById(update);
+
+        // 流转到「已完成」时自动计算利润和损耗
+        if (SalesOrderStatus.COMPLETED.getCode() == targetStatus) {
+            calculateAndUpdateProfit(id);
+            calculateAndUpdateLoss(id);
+        }
     }
 }

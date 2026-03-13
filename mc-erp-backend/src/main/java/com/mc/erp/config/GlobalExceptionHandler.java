@@ -48,6 +48,13 @@ public class GlobalExceptionHandler {
         return Result.error(400, e.getMessage());
     }
 
+    /** 状态机流转校验失败 */
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<Void> handleIllegalState(IllegalStateException e) {
+        return Result.error(400, e.getMessage());
+    }
+
     /** 业务异常（用 RuntimeException 承载） */
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.OK)

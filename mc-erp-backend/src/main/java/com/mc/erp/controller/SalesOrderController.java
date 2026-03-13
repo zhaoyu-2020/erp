@@ -58,4 +58,10 @@ public class SalesOrderController {
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(salesOrderService.removeById(id));
     }
+
+    @PatchMapping("/{id}/status")
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Integer> body) {
+        salesOrderService.updateStatus(id, body.get("status"));
+        return Result.success(null);
+    }
 }

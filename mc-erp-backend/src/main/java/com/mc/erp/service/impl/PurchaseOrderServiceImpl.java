@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import com.mc.erp.enums.PurchaseOrderStatus;
 
 @Service
 public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, PurchaseOrder>
@@ -70,5 +71,19 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         }).collect(Collectors.toList());
 
         return new PageResult<>(resultPage.getTotal(), voList);
+    }
+
+    @Override
+    public void updateStatus(Long id, Integer targetStatus) {
+        PurchaseOrder order = this.getById(id);
+        if (order == null) {
+            throw new RuntimeException("采购订单不存在: " + id);
+        }
+        PurchaseOrderStatus.validateTransition(order.getStatus(), targetStatus);
+
+        PurchaseOrder update = new PurchaseOrder();
+        update.setId(id);
+        update.setStatus(targetStatus);
+        this.updateById(update);
     }
 }

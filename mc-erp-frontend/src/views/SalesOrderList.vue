@@ -30,13 +30,7 @@
 
         <el-form-item label="订单状态" prop="status">
           <el-select v-model="queryParams.status" placeholder="选择订单状态" clearable style="width: 120px">
-            <el-option label="新建" :value="1" />
-            <el-option label="已收定金" :value="2" />
-            <el-option label="已采购" :value="3" />
-            <el-option label="待发运" :value="4" />
-            <el-option label="已发运" :value="5" />
-            <el-option label="已收款" :value="6" />
-            <el-option label="已完成" :value="7" />
+            <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -99,17 +93,34 @@
         <el-table-column label="损耗" prop="loss" width="120" align="right" />
         <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
         <el-table-column label="结算总数量" prop="settlementTotalQuantity" width="120" align="right" />
-        <el-table-column label="状态" prop="status" width="120" align="center">
+        <el-table-column label="状态" prop="status" width="150" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusLabel(row.status) }}</el-tag>
+            <el-tag :type="getTagType(row.status)">{{ getLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="220" fixed="right" align="center">
+        <el-table-column label="操作" width="260" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="success" @click="handleGoDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
+            <!-- 状态流转下拉 -->
+            <el-dropdown
+              v-if="getAllowedNextStatuses(scope.row.status).length > 0"
+              @command="(targetCode: number) => changeStatus(scope.row.id, targetCode, getList)"
+              trigger="click"
+            >
+              <el-button link type="warning">变更状态<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="next in getAllowedNextStatuses(scope.row.status)"
+                    :key="next.code"
+                    :command="next.code"
+                  >{{ next.label }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -400,13 +411,7 @@
            <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-select v-model="form.status" placeholder="选择状态">
-                <el-option label="新建" :value="1" />
-                <el-option label="已收定金" :value="2" />
-                <el-option label="已采购" :value="3" />
-                <el-option label="待发运" :value="4" />
-                <el-option label="已发运" :value="5" />
-                <el-option label="已收款" :value="6" />
-                <el-option label="已完成" :value="7" />
+                <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -422,7 +427,7 @@
     <el-dialog v-model="detailDialogVisible" title="订单详情" width="900px">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="订单号">{{ detailData.orderNo || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ getLabel(detailData.status) }}</el-descriptions-item>
         <el-descriptions-item label="客户">{{ detailData.customerName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="业务员">{{ detailData.salespersonName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="操作员">{{ detailData.operatorName || '-' }}</el-descriptions-item>
@@ -468,6 +473,9 @@ import { exportToCsv } from '@/utils/export'
 import { getOrderPage, saveSalesOrder, updateSalesOrder } from '@/api/salesOrder'
 import { getUserListWithRoles } from '@/api/system'
 import { getCustomerPage } from '@/api/customer'
+import { useOrderStatus } from '@/composables/useOrderStatus'
+
+const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('sales')
 
 // Data definitions
 const loading = ref(false)
@@ -812,7 +820,7 @@ const handleExport = async () => {
     { label: '目的地', key: 'destinationPort' },
     { label: '运输方式', key: 'transportType' },
     { label: '操作人员', key: 'operatorName' },
-    { label: '状态', value: (r: any) => getStatusLabel(r.status) },
+    { label: '状态', value: (r: any) => getLabel(r.status) },
     { label: '创建时间', key: 'createTime' }
   ])
 }
@@ -850,16 +858,6 @@ const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null |
 const onSalespersonChange = async (salespersonId: number | null) => {
   form.customerId = null
   await loadCustomerOptionsBySalespersonId(salespersonId)
-}
-
-// Status dictionary
-const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '新建', 2: '已收定金', 3: '已采购', 4: '待发运', 5: '已发运', 6: '已收款', 7: '已完成' }
-  return map[status] || '未知'
-}
-const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'primary', 4: '', 5: '', 6: 'success', 7: 'success' }
-  return map[status] || ''
 }
 
 // Init
