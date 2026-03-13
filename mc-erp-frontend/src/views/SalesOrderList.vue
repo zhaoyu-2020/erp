@@ -818,17 +818,13 @@ const loadSalespersonOptions = async () => {
   // 业务人员：角色名称包含"业务"的用户
   businessUsers.value = list.filter((user: any) =>
     user.roleNames?.some((name: string) => name.includes('业务'))
-  )
+  ) 
   // 操作人员：角色名称包含"操作"的用户
-  operatorUsers.value = list.filter((user: any) =>
-    user.roleNames?.some((name: string) => name.includes('操作'))
-  )
+  operatorUsers.value = list
   // 供新建/编辑表单的业务员下拉
   salespersonOptions.value = list
   // 供新建/编辑表单的操作员下拉
-  operatorOptions.value = list.filter((user: any) =>
-    user.roleNames?.some((name: string) => name.includes('操作'))
-  )
+  operatorOptions.value = list
 }
 
 const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null | undefined) => {
