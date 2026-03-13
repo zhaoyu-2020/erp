@@ -33,9 +33,10 @@
             <el-option label="新建" :value="1" />
             <el-option label="已收定金" :value="2" />
             <el-option label="已采购" :value="3" />
-            <el-option label="已发运" :value="4" />
-            <el-option label="已收款" :value="5" />
-            <el-option label="已完成" :value="6" />
+            <el-option label="待发运" :value="4" />
+            <el-option label="已发运" :value="5" />
+            <el-option label="已收款" :value="6" />
+            <el-option label="已完成" :value="7" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -402,9 +403,10 @@
                 <el-option label="新建" :value="1" />
                 <el-option label="已收定金" :value="2" />
                 <el-option label="已采购" :value="3" />
-                <el-option label="已发运" :value="4" />
-                <el-option label="已收款" :value="5" />
-                <el-option label="已完成" :value="6" />
+                <el-option label="待发运" :value="4" />
+                <el-option label="已发运" :value="5" />
+                <el-option label="已收款" :value="6" />
+                <el-option label="已完成" :value="7" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -852,11 +854,11 @@ const onSalespersonChange = async (salespersonId: number | null) => {
 
 // Status dictionary
 const getStatusLabel = (status: number) => {
-  const map: Record<number, string> = { 1: '新建', 2: '已收定金', 3: '已采购', 4: '已发运', 5: '已收款', 6: '已完成' }
+  const map: Record<number, string> = { 1: '新建', 2: '已收定金', 3: '已采购', 4: '待发运', 5: '已发运', 6: '已收款', 7: '已完成' }
   return map[status] || '未知'
 }
 const getStatusType = (status: number) => {
-  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'primary', 4: '', 5: 'success', 6: 'success' }
+  const map: Record<number, string> = { 1: 'info', 2: 'warning', 3: 'primary', 4: '', 5: '', 6: 'success', 7: 'success' }
   return map[status] || ''
 }
 

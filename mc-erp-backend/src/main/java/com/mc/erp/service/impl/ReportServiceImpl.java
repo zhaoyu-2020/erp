@@ -88,12 +88,12 @@ public class ReportServiceImpl implements ReportService {
         // 订单统计
         dashboard.setTotalOrders(allOrders.size());
         dashboard.setPendingOrders((int) allOrders.stream().filter(o -> o.getStatus() == 1).count());
-        dashboard.setShippedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 4).count());
-        dashboard.setCompletedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 6).count());
+        dashboard.setShippedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 5).count());
+        dashboard.setCompletedOrders((int) allOrders.stream().filter(o -> o.getStatus() == 7).count());
         
         // 应收应付统计
         BigDecimal totalReceivables = allOrders.stream()
-                .filter(o -> o.getStatus() != 6) // 未完成订单
+                .filter(o -> o.getStatus() != 7) // 未完成订单
                 .map(o -> {
                     BigDecimal actual = o.getActualAmount() != null ? o.getActualAmount() : BigDecimal.ZERO;
                     BigDecimal received = o.getReceivedAmount() != null ? o.getReceivedAmount() : BigDecimal.ZERO;
