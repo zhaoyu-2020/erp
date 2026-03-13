@@ -8,8 +8,11 @@ public class SalesOrderQuery {
     private Integer pageSize = 10;
     private String orderNo;
     private Long salespersonId;
+    private Long operatorId;
+    private String operatorName;
     private Long customerId;
     private String tradeTerm;
+    private String paymentMethod;
     private Integer status;
     private Long createId;
 }

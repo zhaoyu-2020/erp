@@ -19,6 +19,9 @@ public class SalesOrder {
     @NotNull(message = "业务员ID不能为空")
     private Long salespersonId;
 
+    @NotNull(message = "操作员ID不能为空")
+    private Long operatorId;
+
     @TableField(fill = FieldFill.INSERT)
     private Long createId;
 
@@ -29,6 +32,7 @@ public class SalesOrder {
     private Long customerId;
 
     private String tradeTerm;
+    private String paymentMethod;
     private String currency;
 
     @NotNull(message = "定金汇率不能为空")

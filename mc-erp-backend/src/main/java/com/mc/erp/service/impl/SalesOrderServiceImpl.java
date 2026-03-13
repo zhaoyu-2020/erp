@@ -52,8 +52,10 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         wrapper.like(StringUtils.hasText(query.getOrderNo()), SalesOrder::getOrderNo, query.getOrderNo());
         wrapper.eq(query.getSalespersonId() != null, SalesOrder::getSalespersonId, query.getSalespersonId());
+        wrapper.eq(query.getOperatorId() != null, SalesOrder::getOperatorId, query.getOperatorId());
         wrapper.eq(query.getCustomerId() != null, SalesOrder::getCustomerId, query.getCustomerId());
         wrapper.eq(StringUtils.hasText(query.getTradeTerm()), SalesOrder::getTradeTerm, query.getTradeTerm());
+        wrapper.eq(StringUtils.hasText(query.getPaymentMethod()), SalesOrder::getPaymentMethod, query.getPaymentMethod());
         wrapper.eq(query.getStatus() != null, SalesOrder::getStatus, query.getStatus());
         wrapper.eq(query.getCreateId() != null, SalesOrder::getCreateId, query.getCreateId());
         wrapper.orderByDesc(SalesOrder::getCreateTime);
@@ -61,7 +63,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         Page<SalesOrder> resultPage = this.page(page, wrapper);
 
         Set<Long> userIds = resultPage.getRecords().stream()
-                .flatMap(order -> Stream.of(order.getSalespersonId(), order.getCreateId()))
+                .flatMap(order -> Stream.of(order.getSalespersonId(), order.getCreateId(), order.getOperatorId()))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Map<Long, String> userNameMap = userIds.isEmpty()
@@ -77,6 +79,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             SalesOrderVO vo = new SalesOrderVO();
             BeanUtils.copyProperties(order, vo);
             vo.setSalespersonName(userNameMap.get(order.getSalespersonId()));
+            vo.setOperatorName(userNameMap.get(order.getOperatorId()));
             vo.setCreateUserName(userNameMap.get(order.getCreateId()));
             vo.setCustomerName(customerNameMap.get(order.getCustomerId()));
             return vo;

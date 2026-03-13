@@ -11,12 +11,15 @@ public class SalesOrderVO {
     private String orderNo;
     private Long salespersonId;
     private String salespersonName;
+    private Long operatorId;
+    private String operatorName;
     private Long createId;
     private String createUserName;
     private Long updateId;
     private Long customerId;
     private String customerName;
     private String tradeTerm;
+    private String paymentMethod;
     private String currency;
     private BigDecimal depositExchangeRate;
     private BigDecimal finalExchangeRate;

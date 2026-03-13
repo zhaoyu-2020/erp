@@ -7,14 +7,14 @@
           <el-input v-model="queryParams.orderNo" placeholder="输入订单号" clearable />
         </el-form-item>
        
-        <el-form-item label="创建人" prop="createUserName">
+        <el-form-item label="操作人员" prop="operatorName">
           <el-autocomplete
-            v-model="queryParams.createUserName"
-            :fetch-suggestions="queryCreateUser"
-            placeholder="输入或选择创建人"
+            v-model="queryParams.operatorName"
+            :fetch-suggestions="queryOperator"
+            placeholder="输入或选择操作人员"
             clearable
             style="width: 160px"
-            @select="onCreateUserSelect"
+            @select="onOperatorSelect"
           />
         </el-form-item>
         <el-form-item label="业务人员" prop="salespersonName">
@@ -27,6 +27,7 @@
             @select="onSalespersonSelect"
           />
         </el-form-item>
+
         <el-form-item label="订单状态" prop="status">
           <el-select v-model="queryParams.status" placeholder="选择订单状态" clearable style="width: 120px">
             <el-option label="待处理" :value="1" />
@@ -59,27 +60,32 @@
           </template>
         </el-table-column>
         <el-table-column label="业务员" prop="salespersonName" width="120" />
-        <el-table-column label="操作**" prop="salespersonName" width="120" />
+        <el-table-column label="操作人员" prop="operatorName" width="120" />
         <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
-         <el-table-column label="合同金额" width="160" align="right">
+        <el-table-column label="合同金额" width="160" align="right">
           <template #default="{ row }">
             <span class="currency-text">{{ row.currency }} </span>
             <span>{{ row.contractAmount }}</span>
           </template>
         </el-table-column>
         <el-table-column label="贸易条款" prop="tradeTerm" width="100" />
+        <el-table-column label="付款方式" prop="paymentMethod" width="100" />
         <!-- <el-table-column label="币种" prop="currency" width="100" /> -->
 
-       
+        <el-table-column label="目的港" prop="destinationPort" width="120" align="center" />
+        <el-table-column label="运输方式" prop="transportType" width="120" />
+        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
         <el-table-column label="总收款" width="160" align="right">
           <template #default="{ row }">
             <span class="currency-text">{{ row.currency }} </span>
             <span>{{ row.actualAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
-        <el-table-column label="目的港" prop="destinationPort" width="120" align="center" />
-        <el-table-column label="运输方式" prop="transportType" width="120" />
+       
+
+        
+       
+       
 
         <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
         <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
@@ -156,12 +162,41 @@
               </el-select>
             </el-form-item>
           </el-col>
-          
-           <el-col :span="12">
+         <el-col :span="12">
             <el-form-item label="定金比例(%)" prop="depositRate">
               <el-input v-model="form.depositRate" placeholder="输入定金比例" />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+           <el-col :span="12">
+            <el-form-item label="操作员" prop="operatorId">
+              <el-select
+                v-model="form.operatorId"
+                placeholder="选择操作员"
+                filterable
+                clearable
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in operatorOptions"
+                  :key="item.id"
+                  :label="item.realName || item.username"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="付款方式" prop="paymentMethod">
+              <el-select v-model="form.paymentMethod" placeholder="选择付款方式" clearable>
+                <el-option label="TT" value="TT" />
+                <el-option label="LC" value="LC" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+           
         </el-row>
 
         <el-row :gutter="16">
@@ -221,7 +256,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-         
+          
             <el-col :span="12">
             <el-form-item label="预计尾款日期" prop="expectedReceiptDays">
               <el-date-picker
@@ -390,7 +425,9 @@
         <el-descriptions-item label="状态">{{ getStatusLabel(detailData.status) }}</el-descriptions-item>
         <el-descriptions-item label="客户ID">{{ detailData.customerId ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="业务员ID">{{ detailData.salespersonId ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="操作员ID">{{ detailData.operatorId ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="贸易条款">{{ detailData.tradeTerm || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="付款方式">{{ detailData.paymentMethod || '-' }}</el-descriptions-item>
         <el-descriptions-item label="币种">{{ detailData.currency || '-' }}</el-descriptions-item>
         <el-descriptions-item label="合同金额">{{ detailData.contractAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="总收款">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
@@ -443,9 +480,11 @@ const dialogTitle = ref('')
 const detailDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const salespersonOptions = ref<any[]>([])
+const operatorOptions = ref<any[]>([])
 const customerOptions = ref<any[]>([])
 const allUsers = ref<any[]>([])
 const businessUsers = ref<any[]>([])
+const operatorUsers = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -455,6 +494,8 @@ const queryParams = reactive({
   createId: null as number | null,
   salespersonName: '',
   salespersonId: null as number | null,
+  operatorName: '',
+  operatorId: null as number | null,
   status: null as number | null
 })
 
@@ -463,8 +504,10 @@ const form = reactive<any>({
   orderNo: '',
   customerId: null,
   salespersonId: null,
+  operatorId: null,
   createId: null,
   tradeTerm: '',
+  paymentMethod: '',
   currency: '',
   depositExchangeRate: null,
   finalExchangeRate: null,
@@ -494,7 +537,9 @@ const detailData = reactive<any>({
   orderNo: '',
   customerId: null,
   salespersonId: null,
+  operatorId: null,
   tradeTerm: '',
+  paymentMethod: '',
   currency: '',
   depositExchangeRate: null,
   finalExchangeRate: null,
@@ -526,6 +571,7 @@ const rules = {
   customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
   tradeTerm: [{ required: true, message: '请选择贸易条款', trigger: 'change' }],
   salespersonId: [{ required: true, message: '请选择业务员', trigger: 'change' }],
+  operatorId: [{ required: true, message: '请选择操作员', trigger: 'change' }],
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
   destinationPort: [{ required: true, message: '请输入目的港', trigger: 'blur' }],
   depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
@@ -535,7 +581,8 @@ const rules = {
   deliveryDate: [{ required: true, message: '请输入交货日期', trigger: 'blur' }],
   contractTotalQuantity: [{ required: true, message: '请输入合同总数量', trigger: 'blur' }],
   transportType: [{ required: true, message: '请选择运输方式', trigger: 'change' }],
-  expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }]
+  expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }],
+  paymentMethod: [{ required: true, message: '请选择付款方式', trigger: 'change' }]
 }
 
 // Fetch logic
@@ -562,13 +609,6 @@ const queryCurrency = (queryString: string, cb: (results: { value: string }[]) =
 }
 
 // User autocomplete methods
-const queryCreateUser = (queryString: string, cb: (results: { value: string; data: any }[]) => void) => {
-  const users = allUsers.value
-  const results = queryString
-    ? users.filter(user => user.realName?.toLowerCase().includes(queryString.toLowerCase())).map(user => ({ value: user.realName, data: user }))
-    : users.map(user => ({ value: user.realName, data: user }))
-  cb(results)
-}
 
 const querySalesperson = (queryString: string, cb: (results: { value: string; data: any }[]) => void) => {
   const users = businessUsers.value
@@ -578,12 +618,21 @@ const querySalesperson = (queryString: string, cb: (results: { value: string; da
   cb(results)
 }
 
-const onCreateUserSelect = (item: { value: string; data: any }) => {
-  queryParams.createId = item.data.id
+const queryOperator = (queryString: string, cb: (results: { value: string; data: any }[]) => void) => {
+  const users = operatorUsers.value
+  const results = queryString
+    ? users.filter(user => user.realName?.toLowerCase().includes(queryString.toLowerCase())).map(user => ({ value: user.realName, data: user }))
+    : users.map(user => ({ value: user.realName, data: user }))
+  cb(results)
 }
+
 
 const onSalespersonSelect = (item: { value: string; data: any }) => {
   queryParams.salespersonId = item.data.id
+}
+
+const onOperatorSelect = (item: { value: string; data: any }) => {
+  queryParams.operatorId = item.data.id
 }
 
 // Search and reset
@@ -598,6 +647,8 @@ const resetQuery = () => {
   queryParams.createId = null
   queryParams.salespersonName = ''
   queryParams.salespersonId = null
+  queryParams.operatorName = ''
+  queryParams.operatorId = null
   queryParams.status = null
   handleQuery()
 }
@@ -616,7 +667,9 @@ const handleDetail = (row: any) => {
     orderNo: row.orderNo,
     customerId: row.customerId,
     salespersonId: row.salespersonId,
+    operatorId: row.operatorId,
     tradeTerm: row.tradeTerm,
+    paymentMethod: row.paymentMethod,
     currency: row.currency,
   depositExchangeRate: row.depositExchangeRate ?? null,
   finalExchangeRate: row.finalExchangeRate ?? null,
@@ -651,7 +704,9 @@ const handleEdit = async (row: any) => {
     orderNo: row.orderNo,
     customerId: row.customerId,
     salespersonId: row.salespersonId,
+    operatorId: row.operatorId,
     tradeTerm: row.tradeTerm,
+    paymentMethod: row.paymentMethod,
     currency: row.currency,
     depositExchangeRate: row.depositExchangeRate ?? null,
     finalExchangeRate: row.finalExchangeRate ?? null,
@@ -686,8 +741,10 @@ const resetForm = () => {
   form.orderNo = ''
   form.customerId = null
   form.salespersonId = null
+  form.operatorId = null
   form.createId = userInfo.userId || null
   form.tradeTerm = ''
+  form.paymentMethod = ''
   form.currency = ''
   form.depositExchangeRate = null
   form.finalExchangeRate = null
@@ -739,6 +796,7 @@ const handleExport = async () => {
   exportToCsv('销售订单导出', rows, [
     { label: '订单号', key: 'orderNo' },
     { label: '贸易条款', key: 'tradeTerm' },
+    { label: '付款方式', key: 'paymentMethod' },
     { label: '币种', key: 'currency' },
     { label: '合同金额', key: 'contractAmount' },
     { label: '总收款', key: 'actualAmount' },
@@ -748,8 +806,9 @@ const handleExport = async () => {
     { label: '保险费用', key: 'insuranceFee' },
     { label: '保额', key: 'insuranceAmount' },
     { label: '预计尾款日期', key: 'expectedReceiptDays' },
-    { label: '目的港', key: 'destinationPort' },
+    { label: '目的地', key: 'destinationPort' },
     { label: '运输方式', key: 'transportType' },
+    { label: '操作人员', key: 'operatorName' },
     { label: '状态', value: (r: any) => getStatusLabel(r.status) },
     { label: '创建时间', key: 'createTime' }
   ])
@@ -764,8 +823,16 @@ const loadSalespersonOptions = async () => {
   businessUsers.value = list.filter((user: any) =>
     user.roleNames?.some((name: string) => name.includes('业务'))
   )
+  // 操作人员：角色名称包含"操作"的用户
+  operatorUsers.value = list.filter((user: any) =>
+    user.roleNames?.some((name: string) => name.includes('操作'))
+  )
   // 供新建/编辑表单的业务员下拉
   salespersonOptions.value = list
+  // 供新建/编辑表单的操作员下拉
+  operatorOptions.value = list.filter((user: any) =>
+    user.roleNames?.some((name: string) => name.includes('操作'))
+  )
 }
 
 const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null | undefined) => {
