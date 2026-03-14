@@ -3,7 +3,7 @@
     "java.debug.settings.onBuildFailureProceed": true,
 
     // 侧边栏 & 活动栏
-    "workbench.activityBar.location": "top",
+    "workbench.activityBar.location": "default",
     "workbench.sideBar.location": "left",
     "workbench.tree.indent": 8,
     "workbench.tree.renderIndentGuides": "always",
