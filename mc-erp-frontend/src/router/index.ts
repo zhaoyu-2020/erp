@@ -81,6 +81,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '仓储管理(WMS)', icon: 'Box' }
             },
             {
+                path: 'freight-orders',
+                name: 'FreightOrderList',
+                component: () => import('@/views/freight-order/index.vue'),
+                meta: { title: '货代订单', icon: 'Ship' }
+            },
+            {
                 path: 'documents',
                 name: 'CustomsDocList',
                 component: () => import('@/views/documents/index.vue'),

@@ -369,6 +369,83 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
+-- ========== 货代订单模块 ==========
+
+-- 货代订单主表
+CREATE TABLE IF NOT EXISTS `erp_freight_order` (
+  `order_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '货代订单唯一ID',
+  `order_code` varchar(32) NOT NULL COMMENT '货代订单编号(HD+年月日+6位流水号)',
+  `sale_order_code` varchar(50) NOT NULL COMMENT '关联销售订单号',
+  `supplier_id` bigint(20) NOT NULL COMMENT '关联供应商ID(货代类型)',
+  `supplier_name` varchar(64) NOT NULL COMMENT '供应商名称',
+  `transport_type` tinyint(4) NOT NULL COMMENT '运输类型:1-集装箱船,2-散货船',
+  `container_type` varchar(16) DEFAULT NULL COMMENT '柜型:20GP/40GP/40HQ/45HQ等',
+  `container_qty` int(11) DEFAULT 0 COMMENT '柜数量',
+  `is_lcl` tinyint(1) DEFAULT NULL COMMENT '是否拼柜:0-否,1-是',
+  `container_no` varchar(128) DEFAULT NULL COMMENT '柜号(多个用逗号分隔)',
+  `bulk_weight` decimal(18,2) DEFAULT '0.00' COMMENT '散货重量(吨)',
+  `bulk_volume` decimal(18,2) DEFAULT '0.00' COMMENT '散货体积(CBM)',
+  `shipping_space` varchar(64) DEFAULT NULL COMMENT '舱位/船名航次',
+  `need_insurance` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否购买保险:0-否,1-是',
+  `insured_amount` decimal(18,2) DEFAULT '0.00' COMMENT '保额',
+  `premium` decimal(18,2) DEFAULT '0.00' COMMENT '保费',
+  `insurance_currency` varchar(8) DEFAULT NULL COMMENT '保险币种',
+  `insurance_remark` varchar(255) DEFAULT NULL COMMENT '保险备注',
+  `order_status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '订单状态:0-草稿,1-已提交,2-已结算,3-已作废',
+  `total_ocean_freight` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT '海运费总金额',
+  `total_ground_fee` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT '地面费用总金额',
+  `total_amount` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT '订单总费用',
+  `order_currency` varchar(8) NOT NULL DEFAULT 'USD' COMMENT '订单主币种',
+  `departure_port` varchar(64) DEFAULT NULL COMMENT '起运港',
+  `destination_port` varchar(64) DEFAULT NULL COMMENT '目的港',
+  `ship_date` datetime DEFAULT NULL COMMENT '发货日期',
+  `estimated_arrival_date` datetime DEFAULT NULL COMMENT '预计到港日期',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_user` varchar(32) DEFAULT NULL COMMENT '创建人',
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `remark` varchar(500) DEFAULT NULL COMMENT '订单备注',
+  `cancel_reason` varchar(500) DEFAULT NULL COMMENT '作废原因',
+  `is_deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除:0否 1是',
+  PRIMARY KEY (`order_id`),
+  UNIQUE KEY `uk_order_code` (`order_code`),
+  KEY `idx_sale_order_code` (`sale_order_code`),
+  KEY `idx_supplier_id` (`supplier_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代订单主表';
+
+-- 货代费用明细表
+CREATE TABLE IF NOT EXISTS `erp_freight_fee_item` (
+  `item_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '费用明细ID',
+  `order_id` bigint(20) NOT NULL COMMENT '关联货代订单ID',
+  `fee_type` tinyint(4) NOT NULL COMMENT '费用类型:1-海运费,2-地面费用',
+  `fee_name` varchar(64) NOT NULL COMMENT '费用名称',
+  `fee_amount` decimal(18,2) NOT NULL COMMENT '费用金额',
+  `currency` varchar(8) NOT NULL DEFAULT 'USD' COMMENT '费用币种',
+  `billing_method` varchar(32) DEFAULT NULL COMMENT '计费方式',
+  `remark` varchar(255) DEFAULT NULL COMMENT '费用备注',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`item_id`),
+  KEY `idx_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代费用明细表';
+
+-- 货代订单操作日志表
+CREATE TABLE IF NOT EXISTS `erp_freight_order_log` (
+  `log_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+  `order_id` bigint(20) NOT NULL COMMENT '关联货代订单ID',
+  `order_code` varchar(32) DEFAULT NULL COMMENT '关联货代订单编号',
+  `operator` varchar(32) DEFAULT NULL COMMENT '操作人',
+  `operator_id` bigint(20) DEFAULT NULL COMMENT '操作人ID',
+  `operate_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
+  `operate_type` varchar(32) NOT NULL COMMENT '操作类型(CREATE/UPDATE/SUBMIT/SETTLE/CANCEL/DELETE)',
+  `before_content` text DEFAULT NULL COMMENT '修改前内容(JSON)',
+  `after_content` text DEFAULT NULL COMMENT '修改后内容(JSON)',
+  `operate_remark` varchar(500) DEFAULT NULL COMMENT '操作备注',
+  PRIMARY KEY (`log_id`),
+  KEY `idx_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代订单操作日志表';
+
 -- 15. 销售订单详情表
 CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

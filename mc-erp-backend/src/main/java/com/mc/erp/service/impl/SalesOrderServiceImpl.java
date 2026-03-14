@@ -174,6 +174,29 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         // 状态机校验：非法流转直接抛异常，由 GlobalExceptionHandler 统一返回 400
         SalesOrderStatus.validateTransition(order.getStatus(), targetStatus);
 
+        // 当状态被更改为收定金时，校验收款单必须大于0
+        if (SalesOrderStatus.DEPOSIT_RECEIVED.getCode() == targetStatus) {
+            if (order.getReceivedAmount() == null || order.getReceivedAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("订单 " + order.getOrderNo() + " 的收款金额必须大于0，才能流转到「收定金」状态");
+            }
+        }
+        // 当状态被更改为已采购时，校验至少有一条关联的采购合同
+        if (SalesOrderStatus.PURCHASED.getCode() == targetStatus) {
+            LambdaQueryWrapper<PurchaseOrder> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(PurchaseOrder::getSalesOrderNo, order.getOrderNo());
+            if (purchaseOrderService.count(wrapper) == 0) {
+                throw new RuntimeException("订单 " + order.getOrderNo() + " 必须至少有一条关联的采购合同，才能流转到「已采购」状态");
+            }
+        }
+        // 当状态被更改为已收款时，校验尾款金额必须大于0
+        if (SalesOrderStatus.PAYMENT_RECEIVED.getCode() == targetStatus) {
+            if (order.getFinalPaymentAmount() == null || order.getFinalPaymentAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("订单 " + order.getOrderNo() + " 的尾款金额必须大于0，才能流转到「收尾款」状态");
+            }
+        }
+
+
+
         SalesOrder update = new SalesOrder();
         update.setId(id);
         update.setStatus(targetStatus);

@@ -46,6 +46,10 @@
             <el-icon><Box /></el-icon>
             <template #title>仓储管理(WMS)</template>
           </el-menu-item>
+          <el-menu-item index="/freight-orders">
+            <el-icon><Ship /></el-icon>
+            <template #title>货代订单</template>
+          </el-menu-item>
           <el-menu-item index="/documents">
             <el-icon><DocumentCopy /></el-icon>
             <template #title>报关单证</template>
