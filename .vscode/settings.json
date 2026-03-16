@@ -32,12 +32,4 @@
 
 
 
-      "http.proxy": "http://127.0.0.1:7890",
-  "https.proxy": "http://127.0.0.1:7890",
-  // 关闭严格 SSL 验证（避免证书报错）
-  "http.proxyStrictSSL": false,
-  // 强制 VS Code 使用此代理（覆盖系统代理）
-  "http.proxySupport": "override",
-  // 本地地址不走代理
-  "http.proxyBypass": "localhost,127.0.0.1,.local"
 }
