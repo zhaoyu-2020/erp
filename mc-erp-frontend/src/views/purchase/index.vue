@@ -116,7 +116,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="供应商ID" prop="supplierId">
+            <el-form-item label="供应商" prop="supplierId">
               <el-select
                 v-model="form.supplierId"
                 filterable

@@ -35,9 +35,9 @@
         <el-table-column label="材质" prop="material" width="100" />
         <el-table-column label="长度(m)" prop="length" width="100" align="center" />
         <el-table-column label="公差" prop="tolerance" width="100" />
-        <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
+        <!-- <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
         <el-table-column label="数量(pc)" prop="quantityPc" width="100" align="right" />
-        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" />
+        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" /> -->
         <el-table-column label="订货数量" prop="orderedQuantity" width="100" align="right" />
         <el-table-column label="实际数量" prop="actualQuantity" width="100" align="right" />
         <el-table-column label="捆数" prop="bundleCount" width="80" align="right" />
@@ -133,7 +133,7 @@
           </el-col>
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">数量</el-divider>
+        <!-- <el-divider content-position="left" class="group-divider">数量</el-divider>
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="数量（t）" prop="quantityTon">
@@ -150,7 +150,7 @@
               <el-input v-model="form.quantityMeter" placeholder="米数" />
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
         <el-divider content-position="left" class="group-divider">数量明细 / 重量 / 体积</el-divider>
         <el-row :gutter="16">

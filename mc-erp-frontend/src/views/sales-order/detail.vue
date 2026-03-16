@@ -22,9 +22,9 @@
         <el-table-column label="材质" prop="material" width="100" />
         <el-table-column label="长度(m)" prop="length" width="100" align="center" />
         <el-table-column label="公差" prop="tolerance" width="100" />
-        <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
+        <!-- <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
         <el-table-column label="数量(pc)" prop="quantityPc" width="100" align="right" />
-        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" />
+        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" /> -->
         <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
         <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
           <template #default="{ row }">
@@ -95,7 +95,7 @@
           </el-col>
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">数量</el-divider>
+        <!-- <el-divider content-position="left" class="group-divider">数量</el-divider>
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="数量（t）" prop="quantityTon">
@@ -112,7 +112,7 @@
               <el-input v-model="form.quantityMeter" placeholder="米数" />
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
         <el-divider content-position="left" class="group-divider">价格</el-divider>
         <el-row :gutter="16">
@@ -281,13 +281,12 @@ const rules = {
   productType: [{ required: true, message: '请输入产品类型', trigger: 'blur' }],
   material: [{ required: true, message: '请输入材质', trigger: 'blur' }],
   length: [{ required: true, message: '请输入长度', trigger: 'blur' }],
-  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }],
-  quantityTon: [{ required: true, message: '请输入吨数', trigger: 'blur' }]
+  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }]
 }
 
 const computedPriceTotal = computed(() => {
   const price = parseFloat(form.settlementPrice)
-  const ton = parseFloat(form.quantityTon)
+  const ton = parseFloat(form.orderedQuantity) // Assuming orderedQuantity is in tons for price calculation
   if (!isNaN(price) && !isNaN(ton)) {
     return (price * ton).toFixed(2)
   }
@@ -426,9 +425,10 @@ const handleExport = async () => {
     { label: '材质', key: 'material' },
     { label: '长度(m)', key: 'length' },
     { label: '公差', key: 'tolerance' },
-    { label: '数量(t)', key: 'quantityTon' },
-    { label: '数量(pc)', key: 'quantityPc' },
-    { label: '数量(m)', key: 'quantityMeter' },
+    // { label: '数量(t)', key: 'quantityTon' },
+    // { label: '数量(pc)', key: 'quantityPc' },
+    
+    // { label: '数量(m)', key: 'quantityMeter' },
     { label: '结算价格', key: 'settlementPrice' },
     { label: '价格汇总', key: 'priceTotal' },
     { label: '包装重量', key: 'packagingWeight' },

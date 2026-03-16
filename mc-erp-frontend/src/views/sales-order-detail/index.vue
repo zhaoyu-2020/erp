@@ -137,7 +137,7 @@
           </el-col>
         </el-row>
 
-        <el-divider content-position="left" class="group-divider">数量</el-divider>
+        <!-- <el-divider content-position="left" class="group-divider">数量</el-divider>
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="数量（t）" prop="quantityTon">
@@ -154,7 +154,7 @@
               <el-input v-model="form.quantityMeter" placeholder="米数" />
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
         <el-divider content-position="left" class="group-divider">数量明细 / 重量 / 体积</el-divider>
         <el-row :gutter="16">

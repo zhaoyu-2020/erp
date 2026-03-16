@@ -367,7 +367,7 @@ const loadAccountList = async () => {
 
 const handleAccount = async (row: any) => {
   if (!row.id) {
-    ElMessage.error('供应商ID无效')
+    ElMessage.error('供应商无效')
     return
   }
   currentSupplierId.value = row.id
