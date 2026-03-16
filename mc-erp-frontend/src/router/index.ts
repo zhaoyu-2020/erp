@@ -57,6 +57,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '供应商管理', icon: 'Van' }
             },
             {
+                path: 'freight-forwarders',
+                name: 'FreightForwarderList',
+                component: () => import('@/views/freight-forwarder/index.vue'),
+                meta: { title: '货代管理', icon: 'Ship' }
+            },
+            {
                 path: 'purchase-orders',
                 name: 'PurchaseOrderList',
                 component: () => import('@/views/purchase/index.vue'),

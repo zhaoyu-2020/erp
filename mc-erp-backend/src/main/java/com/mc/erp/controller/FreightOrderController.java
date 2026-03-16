@@ -3,6 +3,7 @@ package com.mc.erp.controller;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FreightOrderQuery;
+import com.mc.erp.dto.FreightOrderRequest;
 import com.mc.erp.entity.FreightFeeItem;
 import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.entity.FreightOrderLog;
@@ -11,11 +12,12 @@ import com.mc.erp.service.FreightFeeItemService;
 import com.mc.erp.service.FreightOrderLogService;
 import com.mc.erp.service.FreightOrderService;
 import com.mc.erp.vo.FreightOrderVO;
+import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -51,23 +53,20 @@ public class FreightOrderController {
 
     /**
      * 创建货代订单
-     * 请求体：{ order: {...}, feeItems: [...] }
      */
     @PostMapping
-    public Result<Long> create(@RequestBody Map<String, Object> body) {
-        FreightOrder order = mapToFreightOrder(body);
-        List<FreightFeeItem> feeItems = mapToFeeItems(body);
-        return Result.success(freightOrderService.createOrder(order, feeItems));
+    public Result<Long> create(@Valid @RequestBody FreightOrderRequest request) {
+        FreightOrder order = toOrder(request);
+        return Result.success(freightOrderService.createOrder(order, request.getFeeItems()));
     }
 
     /**
      * 修改货代订单
      */
     @PutMapping
-    public Result<Boolean> update(@RequestBody Map<String, Object> body) {
-        FreightOrder order = mapToFreightOrder(body);
-        List<FreightFeeItem> feeItems = mapToFeeItems(body);
-        return Result.success(freightOrderService.updateOrder(order, feeItems));
+    public Result<Boolean> update(@Valid @RequestBody FreightOrderRequest request) {
+        FreightOrder order = toOrder(request);
+        return Result.success(freightOrderService.updateOrder(order, request.getFeeItems()));
     }
 
     /**
@@ -143,73 +142,9 @@ public class FreightOrderController {
         return Result.success(FreightOrderStatus.toMetaList());
     }
 
-    // ============ 工具方法：将Map转为实体 ============
-
-    @SuppressWarnings("unchecked")
-    private FreightOrder mapToFreightOrder(Map<String, Object> body) {
-        Map<String, Object> orderMap = (Map<String, Object>) body.getOrDefault("order", body);
+    private FreightOrder toOrder(FreightOrderRequest request) {
         FreightOrder order = new FreightOrder();
-
-        if (orderMap.get("orderId") != null) order.setOrderId(toLong(orderMap.get("orderId")));
-        order.setSaleOrderCode((String) orderMap.get("saleOrderCode"));
-        if (orderMap.get("supplierId") != null) order.setSupplierId(toLong(orderMap.get("supplierId")));
-        order.setSupplierName((String) orderMap.get("supplierName"));
-        if (orderMap.get("transportType") != null) order.setTransportType(toInt(orderMap.get("transportType")));
-        order.setContainerType((String) orderMap.get("containerType"));
-        if (orderMap.get("containerQty") != null) order.setContainerQty(toInt(orderMap.get("containerQty")));
-        if (orderMap.get("isLcl") != null) order.setIsLcl(toInt(orderMap.get("isLcl")));
-        order.setContainerNo((String) orderMap.get("containerNo"));
-        if (orderMap.get("bulkWeight") != null) order.setBulkWeight(toBigDecimal(orderMap.get("bulkWeight")));
-        if (orderMap.get("bulkVolume") != null) order.setBulkVolume(toBigDecimal(orderMap.get("bulkVolume")));
-        order.setShippingSpace((String) orderMap.get("shippingSpace"));
-        if (orderMap.get("needInsurance") != null) order.setNeedInsurance(toInt(orderMap.get("needInsurance")));
-        if (orderMap.get("insuredAmount") != null) order.setInsuredAmount(toBigDecimal(orderMap.get("insuredAmount")));
-        if (orderMap.get("premium") != null) order.setPremium(toBigDecimal(orderMap.get("premium")));
-        order.setInsuranceCurrency((String) orderMap.get("insuranceCurrency"));
-        order.setInsuranceRemark((String) orderMap.get("insuranceRemark"));
-        order.setOrderCurrency((String) orderMap.get("orderCurrency"));
-        order.setDeparturePort((String) orderMap.get("departurePort"));
-        order.setDestinationPort((String) orderMap.get("destinationPort"));
-        order.setRemark((String) orderMap.get("remark"));
-        order.setCreateUser((String) orderMap.get("createUser"));
-
+        BeanUtils.copyProperties(request, order);
         return order;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<FreightFeeItem> mapToFeeItems(Map<String, Object> body) {
-        Object feeItemsObj = body.get("feeItems");
-        if (feeItemsObj == null) return null;
-        List<Map<String, Object>> list = (List<Map<String, Object>>) feeItemsObj;
-        return list.stream().map(m -> {
-            FreightFeeItem item = new FreightFeeItem();
-            if (m.get("itemId") != null) item.setItemId(toLong(m.get("itemId")));
-            if (m.get("orderId") != null) item.setOrderId(toLong(m.get("orderId")));
-            if (m.get("feeType") != null) item.setFeeType(toInt(m.get("feeType")));
-            item.setFeeName((String) m.get("feeName"));
-            if (m.get("feeAmount") != null) item.setFeeAmount(toBigDecimal(m.get("feeAmount")));
-            item.setCurrency((String) m.get("currency"));
-            item.setBillingMethod((String) m.get("billingMethod"));
-            item.setRemark((String) m.get("remark"));
-            return item;
-        }).toList();
-    }
-
-    private Long toLong(Object val) {
-        if (val instanceof Number) return ((Number) val).longValue();
-        if (val instanceof String) return Long.parseLong((String) val);
-        return null;
-    }
-
-    private Integer toInt(Object val) {
-        if (val instanceof Number) return ((Number) val).intValue();
-        if (val instanceof String) return Integer.parseInt((String) val);
-        return null;
-    }
-
-    private java.math.BigDecimal toBigDecimal(Object val) {
-        if (val instanceof Number) return new java.math.BigDecimal(val.toString());
-        if (val instanceof String) return new java.math.BigDecimal((String) val);
-        return null;
     }
 }

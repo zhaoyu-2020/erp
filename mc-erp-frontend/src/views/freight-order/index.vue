@@ -9,8 +9,8 @@
         <el-form-item label="销售订单号">
           <el-input v-model="queryParams.saleOrderCode" placeholder="输入销售订单号" clearable style="width: 160px" />
         </el-form-item>
-        <el-form-item label="供应商">
-          <el-input v-model="queryParams.supplierName" placeholder="输入供应商名称" clearable style="width: 160px" />
+        <el-form-item label="货代">
+          <el-input v-model="queryParams.forwarderName" placeholder="输入货代名称" clearable style="width: 160px" />
         </el-form-item>
         <el-form-item label="运输类型">
           <el-select v-model="queryParams.transportType" clearable placeholder="全部" style="width: 130px">
@@ -44,7 +44,7 @@
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="订单编号" prop="orderCode" width="180" />
         <el-table-column label="销售订单号" prop="saleOrderCode" width="150" />
-        <el-table-column label="供应商" prop="supplierName" min-width="140" show-overflow-tooltip />
+        <el-table-column label="货代" prop="forwarderName" min-width="140" show-overflow-tooltip />
         <el-table-column label="运输类型" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.transportType === 1 ? 'primary' : 'warning'" size="small">
@@ -119,10 +119,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="供应商" prop="supplierId">
-              <el-select v-model="form.supplierId" filterable placeholder="选择货代供应商" style="width: 100%"
-                @change="onSupplierChange" :disabled="isEditingSubmitted">
-                <el-option v-for="s in supplierList" :key="s.id" :label="s.name" :value="s.id" />
+            <el-form-item label="货代" prop="forwarderId">
+              <el-select v-model="form.forwarderId" filterable placeholder="选择货代" style="width: 100%"
+                @change="onForwarderChange" :disabled="isEditingSubmitted">
+                <el-option v-for="s in forwarderList" :key="s.id" :label="s.name" :value="s.id" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -387,7 +387,7 @@
         <el-descriptions :column="3" border size="small">
           <el-descriptions-item label="订单编号">{{ detailData.orderCode }}</el-descriptions-item>
           <el-descriptions-item label="销售订单号">{{ detailData.saleOrderCode }}</el-descriptions-item>
-          <el-descriptions-item label="供应商">{{ detailData.supplierName }}</el-descriptions-item>
+          <el-descriptions-item label="货代">{{ detailData.forwarderName }}</el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag :type="statusTagType(detailData.orderStatus)" size="small">{{ statusLabel(detailData.orderStatus)
               }}</el-tag>
@@ -508,7 +508,7 @@ import {
   cancelFreightOrder
 } from '@/api/freightOrder'
 import { getOrderPage } from '@/api/salesOrder'
-import { getSupplierPage } from '@/api/supplier'
+import { getFreightForwarderPage } from '@/api/freightForwarder'
 
 // ============ 状态映射 ============
 const statusMap: Record<number, { label: string; tagType: string }> = {
@@ -534,7 +534,7 @@ const queryParams = reactive({
   pageSize: 10,
   orderCode: '',
   saleOrderCode: '',
-  supplierName: '',
+  forwarderName: '',
   transportType: undefined as number | undefined,
   orderStatus: undefined as number | undefined
 })
@@ -554,7 +554,7 @@ const handleQuery = () => { queryParams.pageNum = 1; getList() }
 const resetQuery = () => {
   queryParams.orderCode = ''
   queryParams.saleOrderCode = ''
-  queryParams.supplierName = ''
+  queryParams.forwarderName = ''
   queryParams.transportType = undefined
   queryParams.orderStatus = undefined
   handleQuery()
@@ -562,7 +562,7 @@ const resetQuery = () => {
 
 // ============ 下拉数据 ============
 const salesOrderList = ref<any[]>([])
-const supplierList = ref<any[]>([])
+const forwarderList = ref<any[]>([])
 
 const searchSalesOrders = async (keyword: string) => {
   if (!keyword) return
@@ -570,14 +570,14 @@ const searchSalesOrders = async (keyword: string) => {
   salesOrderList.value = res.data.list || []
 }
 
-const loadSuppliers = async () => {
-  const res = await getSupplierPage({ pageNum: 1, pageSize: 1000 })
-  supplierList.value = res.data.list || []
+const loadForwarders = async () => {
+  const res = await getFreightForwarderPage({ pageNum: 1, pageSize: 1000 })
+  forwarderList.value = res.data.list || []
 }
 
-const onSupplierChange = (id: number) => {
-  const s = supplierList.value.find((i: any) => i.id === id)
-  if (s) form.supplierName = s.name
+const onForwarderChange = (id: number) => {
+  const s = forwarderList.value.find((i: any) => i.id === id)
+  if (s) form.forwarderName = s.name
 }
 
 // ============ 表单 ============
@@ -593,8 +593,8 @@ const isSettled = computed(() => editingOrder.value?.orderStatus === 2)
 const form = reactive<any>({
   orderId: null,
   saleOrderCode: '',
-  supplierId: null,
-  supplierName: '',
+  forwarderId: null,
+  forwarderName: '',
   transportType: 1,
   containerType: '40HQ',
   containerQty: 1,
@@ -641,15 +641,15 @@ const removeFeeItem = (type: number, index: number) => {
 
 const rules = {
   saleOrderCode: [{ required: true, message: '请选择销售订单号', trigger: 'change' }],
-  supplierId: [{ required: true, message: '请选择供应商', trigger: 'change' }],
+  forwarderId: [{ required: true, message: '请选择货代', trigger: 'change' }],
   transportType: [{ required: true, message: '请选择运输类型', trigger: 'change' }]
 }
 
 const resetForm = () => {
   form.orderId = null
   form.saleOrderCode = ''
-  form.supplierId = null
-  form.supplierName = ''
+  form.forwarderId = null
+  form.forwarderName = ''
   form.transportType = 1
   form.containerType = '40HQ'
   form.containerQty = 1
@@ -686,8 +686,8 @@ const handleEdit = async (row: any) => {
   Object.assign(form, {
     orderId: d.orderId,
     saleOrderCode: d.saleOrderCode,
-    supplierId: d.supplierId,
-    supplierName: d.supplierName,
+    forwarderId: d.forwarderId,
+    forwarderName: d.forwarderName,
     transportType: d.transportType,
     containerType: d.containerType,
     containerQty: d.containerQty,
@@ -812,7 +812,7 @@ const handleExport = async () => {
   exportToCsv('货代订单导出', rows, [
     { label: '订单编号', key: 'orderCode' },
     { label: '销售订单号', key: 'saleOrderCode' },
-    { label: '供应商', key: 'supplierName' },
+    { label: '货代', key: 'forwarderName' },
     { label: '运输类型', key: 'transportTypeLabel' },
     { label: '海运费', key: 'totalOceanFreight' },
     { label: '地面费用', key: 'totalGroundFee' },
@@ -826,7 +826,7 @@ const handleExport = async () => {
 // ============ 初始化 ============
 onMounted(() => {
   getList()
-  loadSuppliers()
+  loadForwarders()
 })
 </script>
 

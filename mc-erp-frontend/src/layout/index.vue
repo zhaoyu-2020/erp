@@ -42,6 +42,10 @@
             <el-icon><Van /></el-icon>
             <template #title>供应商管理</template>
           </el-menu-item>
+          <el-menu-item index="/freight-forwarders">
+            <el-icon><Ship /></el-icon>
+            <template #title>货代管理</template>
+          </el-menu-item>
           <el-menu-item index="/wms">
             <el-icon><Box /></el-icon>
             <template #title>仓储管理(WMS)</template>

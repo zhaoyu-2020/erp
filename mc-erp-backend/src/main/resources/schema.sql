@@ -149,6 +149,25 @@ CREATE TABLE IF NOT EXISTS `biz_supplier_account` (
   KEY `idx_supplier_id` (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='供应商账户信息表';
 
+-- 5-2. 货代档案表
+CREATE TABLE IF NOT EXISTS `biz_freight_forwarder` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `forwarder_code` varchar(50) NOT NULL COMMENT '货代编码',
+  `name` varchar(200) NOT NULL COMMENT '货代名称',
+  `freight_type` varchar(50) DEFAULT NULL COMMENT '货代类型(集装箱/散货)',
+  `market_advantage` varchar(255) DEFAULT NULL COMMENT '优势市场(多个用英文逗号分隔)',
+  `contact_person` varchar(100) DEFAULT NULL COMMENT '联系人',
+  `phone` varchar(50) DEFAULT NULL COMMENT '电话',
+  `address` varchar(500) DEFAULT NULL COMMENT '地址',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_forwarder_code` (`forwarder_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代档案表';
+
 -- 6. 采购订单表
 CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

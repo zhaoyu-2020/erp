@@ -1,30 +1,24 @@
-package com.mc.erp.entity;
+package com.mc.erp.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.mc.erp.entity.FreightFeeItem;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@TableName("erp_freight_order")
-public class FreightOrder {
-    @TableId(value = "order_id", type = IdType.AUTO)
-    private Long orderId;
+public class FreightOrderRequest {
 
-    private String orderCode;
+    private Long orderId;
 
     @NotBlank(message = "销售订单号不能为空")
     private String saleOrderCode;
 
     @NotNull(message = "货代ID不能为空")
-    @TableField("supplier_id")
     private Long forwarderId;
-
-    @TableField("supplier_name")
-    private String forwarderName;
 
     @NotNull(message = "运输类型不能为空")
     private Integer transportType;
@@ -43,24 +37,12 @@ public class FreightOrder {
     private String insuranceCurrency;
     private String insuranceRemark;
 
-    private Integer orderStatus;
-    private BigDecimal totalOceanFreight;
-    private BigDecimal totalGroundFee;
-    private BigDecimal totalAmount;
     private String orderCurrency;
     private String departurePort;
     private String destinationPort;
     private LocalDateTime shipDate;
     private LocalDateTime estimatedArrivalDate;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private String createUser;
-    @TableField(fill = FieldFill.INSERT)
-    private Long createId;
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Long updateId;
     private String remark;
-    private String cancelReason;
-    @TableLogic
-    private Integer isDeleted;
+
+    private List<FreightFeeItem> feeItems;
 }

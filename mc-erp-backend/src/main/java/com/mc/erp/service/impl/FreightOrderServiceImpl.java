@@ -35,7 +35,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     private FreightOrderLogService logService;
 
     @Autowired
-    private SupplierService supplierService;
+    private FreightForwarderService freightForwarderService;
 
     @Autowired
     private SalesOrderService salesOrderService;
@@ -55,8 +55,8 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
         wrapper.like(StringUtils.hasText(query.getOrderCode()), FreightOrder::getOrderCode, query.getOrderCode());
         wrapper.like(StringUtils.hasText(query.getSaleOrderCode()), FreightOrder::getSaleOrderCode, query.getSaleOrderCode());
-        wrapper.eq(query.getSupplierId() != null, FreightOrder::getSupplierId, query.getSupplierId());
-        wrapper.like(StringUtils.hasText(query.getSupplierName()), FreightOrder::getSupplierName, query.getSupplierName());
+        wrapper.eq(query.getForwarderId() != null, FreightOrder::getForwarderId, query.getForwarderId());
+        wrapper.like(StringUtils.hasText(query.getForwarderName()), FreightOrder::getForwarderName, query.getForwarderName());
         wrapper.eq(query.getTransportType() != null, FreightOrder::getTransportType, query.getTransportType());
         wrapper.eq(StringUtils.hasText(query.getContainerType()), FreightOrder::getContainerType, query.getContainerType());
         wrapper.eq(query.getIsLcl() != null, FreightOrder::getIsLcl, query.getIsLcl());
@@ -71,12 +71,12 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
             wrapper.le(FreightOrder::getCreateTime, query.getCreateTimeEnd() + " 23:59:59");
         }
 
-        // 模糊搜索：订单号 / 销售订单号 / 供应商名称
+        // 模糊搜索：订单号 / 销售订单号 / 货代名称
         if (StringUtils.hasText(query.getKeyword())) {
             wrapper.and(w -> w
                     .like(FreightOrder::getOrderCode, query.getKeyword())
                     .or().like(FreightOrder::getSaleOrderCode, query.getKeyword())
-                    .or().like(FreightOrder::getSupplierName, query.getKeyword()));
+                    .or().like(FreightOrder::getForwarderName, query.getKeyword()));
         }
 
         wrapper.orderByDesc(FreightOrder::getCreateTime);
@@ -108,15 +108,15 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public Long createOrder(FreightOrder order, List<FreightFeeItem> feeItems) {
         // 校验销售订单
         validateSaleOrderCode(order.getSaleOrderCode());
-        // 校验供应商
-        Supplier supplier = validateSupplier(order.getSupplierId());
-        order.setSupplierName(supplier.getName());
+        // 校验货代
+        FreightForwarder forwarder = validateForwarder(order.getForwarderId());
+        order.setForwarderName(forwarder.getName());
         // 校验运输类型
         validateTransportType(order);
         // 校验保险
         validateInsurance(order);
         // 校验是否重复创建
-        validateDuplicateOrder(order.getSaleOrderCode(), order.getSupplierId(), null);
+        validateDuplicateOrder(order.getSaleOrderCode(), order.getForwarderId(), null);
 
         // 生成订单编号
         order.setOrderCode(generateOrderCode());
@@ -207,10 +207,10 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
             validateSaleOrderCode(order.getSaleOrderCode());
             existing.setSaleOrderCode(order.getSaleOrderCode());
         }
-        if (order.getSupplierId() != null) {
-            Supplier supplier = validateSupplier(order.getSupplierId());
-            existing.setSupplierId(order.getSupplierId());
-            existing.setSupplierName(supplier.getName());
+        if (order.getForwarderId() != null) {
+            FreightForwarder forwarder = validateForwarder(order.getForwarderId());
+            existing.setForwarderId(order.getForwarderId());
+            existing.setForwarderName(forwarder.getName());
         }
         if (order.getTransportType() != null) {
             existing.setTransportType(order.getTransportType());
@@ -251,7 +251,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
         validateTransportType(existing);
         validateInsurance(existing);
-        validateDuplicateOrder(existing.getSaleOrderCode(), existing.getSupplierId(), existing.getOrderId());
+        validateDuplicateOrder(existing.getSaleOrderCode(), existing.getForwarderId(), existing.getOrderId());
 
         existing.setUpdateTime(LocalDateTime.now());
         this.updateById(existing);
@@ -432,15 +432,15 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         }
     }
 
-    private Supplier validateSupplier(Long supplierId) {
-        if (supplierId == null) {
-            throw new IllegalArgumentException("供应商ID不能为空");
+    private FreightForwarder validateForwarder(Long forwarderId) {
+        if (forwarderId == null) {
+            throw new IllegalArgumentException("货代ID不能为空");
         }
-        Supplier supplier = supplierService.getById(supplierId);
-        if (supplier == null) {
-            throw new IllegalArgumentException("供应商不存在");
+        FreightForwarder forwarder = freightForwarderService.getById(forwarderId);
+        if (forwarder == null) {
+            throw new IllegalArgumentException("货代不存在");
         }
-        return supplier;
+        return forwarder;
     }
 
     private void validateTransportType(FreightOrder order) {
@@ -476,16 +476,16 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         }
     }
 
-    private void validateDuplicateOrder(String saleOrderCode, Long supplierId, Long excludeOrderId) {
+    private void validateDuplicateOrder(String saleOrderCode, Long forwarderId, Long excludeOrderId) {
         LambdaQueryWrapper<FreightOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FreightOrder::getSaleOrderCode, saleOrderCode);
-        wrapper.eq(FreightOrder::getSupplierId, supplierId);
+        wrapper.eq(FreightOrder::getForwarderId, forwarderId);
         if (excludeOrderId != null) {
             wrapper.ne(FreightOrder::getOrderId, excludeOrderId);
         }
         long count = this.count(wrapper);
         if (count > 0) {
-            throw new IllegalArgumentException("该销售订单已关联此供应商的货代订单，不允许重复创建");
+            throw new IllegalArgumentException("该销售订单已关联此货代的订单，不允许重复创建");
         }
     }
 
@@ -493,8 +493,8 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         if (!StringUtils.hasText(order.getSaleOrderCode())) {
             throw new IllegalArgumentException("提交失败：销售订单号缺失");
         }
-        if (order.getSupplierId() == null) {
-            throw new IllegalArgumentException("提交失败：供应商ID缺失");
+        if (order.getForwarderId() == null) {
+            throw new IllegalArgumentException("提交失败：货代ID缺失");
         }
         if (order.getTransportType() == null) {
             throw new IllegalArgumentException("提交失败：运输类型缺失");

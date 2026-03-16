@@ -13,8 +13,8 @@ public class FreightOrderVO {
     private Long orderId;
     private String orderCode;
     private String saleOrderCode;
-    private Long supplierId;
-    private String supplierName;
+    private Long forwarderId;
+    private String forwarderName;
     private Integer transportType;
     private String transportTypeLabel;
     private String containerType;
