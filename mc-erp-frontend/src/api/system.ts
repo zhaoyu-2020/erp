@@ -51,6 +51,14 @@ export function updateUserRoles(userId: number, roleIds: number[]) {
     return request({ url: `/users/${userId}/roles`, method: 'put', data: { roleIds } })
 }
 
+// Role-Menu API（权限配置）
+export function getRoleMenuIds(roleId: number) {
+    return request({ url: `/roles/${roleId}/menus`, method: 'get' })
+}
+export function updateRoleMenus(roleId: number, menuIds: number[]) {
+    return request({ url: `/roles/${roleId}/menus`, method: 'put', data: menuIds })
+}
+
 // Menu API
 export function getMenuTree() {
     return request({ url: '/menus/tree', method: 'get' })

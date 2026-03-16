@@ -27,9 +27,10 @@
         <el-table-column label="角色名称" prop="roleName" width="150" />
         <el-table-column label="描述" prop="description" min-width="200" show-overflow-tooltip />
         <el-table-column label="创建时间" prop="createTime" width="180" />
-        <el-table-column label="操作" width="200" fixed="right" align="center">
+        <el-table-column label="操作" width="240" fixed="right" align="center">
           <template #default="scope">
             <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="warning" @click="handleAssignMenus(scope.row)">分配权限</el-button>
             <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -46,7 +47,7 @@
       />
     </el-card>
 
-    <!-- Add/Edit Dialog -->
+    <!-- 新增/编辑 Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="角色编码" prop="roleCode">
@@ -64,6 +65,43 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
       </template>
     </el-dialog>
+
+    <!-- 分配权限 Dialog -->
+    <el-dialog
+      v-model="permDialogVisible"
+      :title="`分配权限 — ${currentRoleName}`"
+      width="480px"
+      @open="loadPermTree"
+    >
+      <div v-loading="permLoading" class="perm-tree-wrap">
+        <div class="perm-tree-actions">
+          <el-button size="small" @click="checkAll">全选</el-button>
+          <el-button size="small" @click="uncheckAll">清空</el-button>
+        </div>
+        <el-tree
+          ref="menuTreeRef"
+          :data="menuTreeData"
+          show-checkbox
+          node-key="id"
+          :default-checked-keys="checkedMenuIds"
+          :default-expand-all="true"
+          :props="treeProps"
+        >
+          <template #default="{ node, data }">
+            <span class="tree-node-label">
+              {{ node.label }}
+              <el-tag v-if="data.permission" size="small" type="info" class="perm-tag">
+                {{ data.permission }}
+              </el-tag>
+            </span>
+          </template>
+        </el-tree>
+      </div>
+      <template #footer>
+        <el-button @click="permDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="permSaving" @click="handleSaveMenus">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,9 +109,14 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import { getRolePage, saveRole, updateRole, deleteRole } from '@/api/system'
+import type { ElTree } from 'element-plus'
+import {
+  getRolePage, saveRole, updateRole, deleteRole,
+  getMenuTree, getRoleMenuIds, updateRoleMenus
+} from '@/api/system'
 import { exportToCsv } from '@/utils/export'
 
+// ── 列表 ─────────────────────────────────────────────
 const loading = ref(false)
 const submitLoading = ref(false)
 const dataList = ref([])
@@ -159,7 +202,6 @@ const handleSubmit = async () => {
   submitLoading.value = true
   try {
     if (form.id) {
-      // 注意：后端是 updateById，若缺字段可能会把数据库字段更新为 null
       await updateRole({ id: form.id, roleCode: form.roleCode, roleName: form.roleName, description: form.description })
     } else {
       await saveRole({ roleCode: form.roleCode, roleName: form.roleName, description: form.description })
@@ -183,6 +225,91 @@ const handleExport = async () => {
   ])
 }
 
+// ── 分配权限 ──────────────────────────────────────────
+const permDialogVisible = ref(false)
+const permLoading = ref(false)
+const permSaving = ref(false)
+const currentRoleId = ref<number | null>(null)
+const currentRoleName = ref('')
+const menuTreeData = ref<any[]>([])
+const checkedMenuIds = ref<number[]>([])
+const menuTreeRef = ref<InstanceType<typeof ElTree>>()
+
+const treeProps = { label: 'menuName', children: 'children' }
+
+/** 将后端返回的平铺菜单列表转为树结构 */
+function buildMenuTree(flatList: any[]): any[] {
+  const map = new Map<number, any>()
+  flatList.forEach(item => map.set(item.id, { ...item, children: [] }))
+  const roots: any[] = []
+  flatList.forEach(item => {
+    const node = map.get(item.id)!
+    if (item.parentId && map.has(item.parentId)) {
+      map.get(item.parentId)!.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  })
+  return roots
+}
+
+const handleAssignMenus = (row: any) => {
+  currentRoleId.value = row.id
+  currentRoleName.value = row.roleName
+  checkedMenuIds.value = []
+  menuTreeData.value = []
+  permDialogVisible.value = true
+}
+
+/** 弹窗打开后并行加载菜单树 + 该角色已勾选的菜单 */
+const loadPermTree = async () => {
+  if (!currentRoleId.value) return
+  permLoading.value = true
+  try {
+    const [treeRes, checkedRes] = await Promise.all([
+      getMenuTree(),
+      getRoleMenuIds(currentRoleId.value)
+    ])
+    menuTreeData.value = buildMenuTree(treeRes.data || [])
+    checkedMenuIds.value = checkedRes.data || []
+  } finally {
+    permLoading.value = false
+  }
+}
+
+const checkAll = () => {
+  menuTreeRef.value?.setCheckedNodes(getAllNodes(menuTreeData.value))
+}
+
+const uncheckAll = () => {
+  menuTreeRef.value?.setCheckedKeys([])
+}
+
+function getAllNodes(nodes: any[]): any[] {
+  const result: any[] = []
+  nodes.forEach(n => {
+    result.push(n)
+    if (n.children?.length) result.push(...getAllNodes(n.children))
+  })
+  return result
+}
+
+const handleSaveMenus = async () => {
+  if (!currentRoleId.value) return
+  permSaving.value = true
+  try {
+    const checkedKeys = (menuTreeRef.value?.getCheckedKeys() as number[]) || []
+    const halfCheckedKeys = (menuTreeRef.value?.getHalfCheckedKeys() as number[]) || []
+    // 全选节点 + 半选父节点一并保存，确保父目录页面也被记录
+    const allKeys = [...new Set([...checkedKeys, ...halfCheckedKeys])]
+    await updateRoleMenus(currentRoleId.value, allKeys)
+    ElMessage.success('权限保存成功')
+    permDialogVisible.value = false
+  } finally {
+    permSaving.value = false
+  }
+}
+
 onMounted(() => {
   getList()
 })
@@ -193,4 +320,8 @@ onMounted(() => {
 .search-wrap { margin-bottom: 16px; }
 .table-toolbar { margin-bottom: 16px; }
 .pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
+.perm-tree-wrap { max-height: 480px; overflow-y: auto; }
+.perm-tree-actions { margin-bottom: 8px; }
+.tree-node-label { display: flex; align-items: center; gap: 6px; }
+.perm-tag { font-size: 11px; font-family: monospace; }
 </style>

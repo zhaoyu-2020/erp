@@ -2,16 +2,20 @@ package com.mc.erp.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mc.erp.entity.Customer;
+import com.mc.erp.entity.Menu;
 import com.mc.erp.entity.ProductType;
 import com.mc.erp.entity.PurchaseOrderDetail;
 import com.mc.erp.entity.Role;
+import com.mc.erp.entity.RoleMenu;
 import com.mc.erp.entity.Supplier;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.CustomerMapper;
 import com.mc.erp.mapper.PurchaseOrderDetailMapper;
 import com.mc.erp.mapper.SupplierMapper;
 import com.mc.erp.service.CustomerService;
+import com.mc.erp.service.MenuService;
 import com.mc.erp.service.ProductTypeService;
+import com.mc.erp.service.RoleMenuService;
 import com.mc.erp.service.RoleService;
 import com.mc.erp.service.SupplierService;
 import com.mc.erp.entity.SalesOrder;
@@ -40,6 +44,12 @@ public class InitAdminRunner implements ApplicationRunner {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private MenuService menuService;
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     @Autowired
     private CustomerService customerService;
@@ -84,7 +94,73 @@ public class InitAdminRunner implements ApplicationRunner {
         }
 
         userService.updateUserRoles(admin.getId(), List.of(adminRole.getId()));
+        initPermissions(adminRole.getId());
         initSeedData();
+    }
+
+    /**
+     * 初始化系统菜单权限定义，并将所有权限绑定给 admin 角色。
+     * 每行 = 一个可被角色勾选的权限按钮，permission 字段对应 @PreAuthorize 中的权限字符串。
+     *
+     * type: 0=目录, 1=菜单页面, 2=按钮/操作权限
+     */
+    private void initPermissions(Long adminRoleId) {
+        // ── 系统管理 目录 ───────────────────────────────────
+        Long sysDir = getOrCreateMenu(0L, "系统管理", "/system", null, "Setting", 0, null, 1);
+
+        // 用户管理 页面
+        Long userMenu = getOrCreateMenu(sysDir, "用户管理", "/system/user", "system/user/index", "User", 1, null, 1);
+        Long pUserList = getOrCreateMenu(userMenu, "查看用户",   null, null, null, 2, "system:user:list", 1);
+        Long pUserEdit = getOrCreateMenu(userMenu, "编辑用户",   null, null, null, 2, "system:user:edit", 2);
+
+        // 角色管理 页面
+        Long roleMenu = getOrCreateMenu(sysDir, "角色管理", "/system/role", "system/role/index", "UserFilled", 1, null, 2);
+        Long pRoleList = getOrCreateMenu(roleMenu, "查看角色",   null, null, null, 2, "system:role:list", 1);
+        Long pRoleEdit = getOrCreateMenu(roleMenu, "编辑角色",   null, null, null, 2, "system:role:edit", 2);
+
+        // 菜单管理 页面
+        Long menuMgr = getOrCreateMenu(sysDir, "菜单管理", "/system/menu", "system/menu/index", "Menu", 1, null, 3);
+        Long pMenuList = getOrCreateMenu(menuMgr, "查看菜单",   null, null, null, 2, "system:menu:list", 1);
+        Long pMenuEdit = getOrCreateMenu(menuMgr, "编辑菜单",   null, null, null, 2, "system:menu:edit", 2);
+
+        // ── admin 角色绑定所有权限菜单 ──────────────────────
+        // 只追加 admin 尚未拥有的菜单，避免重复添加
+        List<Long> existing = roleMenuService.getMenuIdsByRoleId(adminRoleId);
+        List<Long> allPermMenus = List.of(
+                sysDir, userMenu, pUserList, pUserEdit,
+                roleMenu, pRoleList, pRoleEdit,
+                menuMgr, pMenuList, pMenuEdit
+        );
+        allPermMenus.stream()
+                .filter(id -> id != null && !existing.contains(id))
+                .forEach(menuId -> {
+                    RoleMenu rm = new RoleMenu();
+                    rm.setRoleId(adminRoleId);
+                    rm.setMenuId(menuId);
+                    roleMenuService.getBaseMapper().insert(rm);
+                });
+    }
+
+    /**
+     * 按 menuName + parentId 幂等地创建菜单，已存在则返回现有 ID。
+     */
+    private Long getOrCreateMenu(Long parentId, String menuName, String path, String component,
+                                  String icon, int type, String permission, int sort) {
+        Menu exists = menuService.getOne(new LambdaQueryWrapper<Menu>()
+                .eq(Menu::getParentId, parentId)
+                .eq(Menu::getMenuName, menuName));
+        if (exists != null) return exists.getId();
+        Menu menu = new Menu();
+        menu.setParentId(parentId);
+        menu.setMenuName(menuName);
+        menu.setPath(path);
+        menu.setComponent(component);
+        menu.setIcon(icon);
+        menu.setType(type);
+        menu.setPermission(permission);
+        menu.setSort(sort);
+        menuService.save(menu);
+        return menu.getId();
     }
 
     private void initSeedData() {
