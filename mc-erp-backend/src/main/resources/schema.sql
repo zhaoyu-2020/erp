@@ -190,6 +190,7 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order_item` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
   `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `is_deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除:0否 1是',
   PRIMARY KEY (`id`),
   KEY `idx_purchase_order` (`purchase_order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='采购订单加工项表';
