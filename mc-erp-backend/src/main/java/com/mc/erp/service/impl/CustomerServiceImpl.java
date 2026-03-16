@@ -6,11 +6,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.CustomerQuery;
 import com.mc.erp.entity.Customer;
-import com.mc.erp.entity.Role;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.CustomerMapper;
 import com.mc.erp.service.CustomerService;
-import com.mc.erp.service.RoleService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.CustomerVO;
@@ -34,9 +32,6 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private RoleService roleService;
-
     @Override
     public PageResult<CustomerVO> getPage(CustomerQuery query) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
@@ -48,7 +43,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
 
         // 只有管理员可以查看所有客户；普通用户仅查看归属自己的客户
-        if (!isAdmin(currentUserId)) {
+        if (!SecurityUtil.isAdmin()) {
             wrapper.eq(Customer::getSalesUserId, currentUserId);
         }
 
@@ -81,7 +76,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         if (currentUserId == null) {
             throw new AccessDeniedException("无操作权限");
         }
-        if (!isAdmin(currentUserId)) {
+        if (!SecurityUtil.isAdmin()) {
             // 普通用户只能创建属于自己的客户
             entity.setSalesUserId(currentUserId);
         }
@@ -99,11 +94,11 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         if (exist == null) {
             return false;
         }
-        if (!isAdmin(currentUserId) && !currentUserId.equals(exist.getSalesUserId())) {
+        if (!SecurityUtil.isAdmin() && !currentUserId.equals(exist.getSalesUserId())) {
             throw new AccessDeniedException("无操作权限");
         }
         // 普通用户只能修改属于自己的客户
-        if (!isAdmin(currentUserId)) {
+        if (!SecurityUtil.isAdmin()) {
             entity.setSalesUserId(currentUserId);
         }
         return super.updateById(entity);
@@ -119,7 +114,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         if (exist == null) {
             return false;
         }
-        if (!isAdmin(currentUserId) && !currentUserId.equals(exist.getSalesUserId())) {
+        if (!SecurityUtil.isAdmin() && !currentUserId.equals(exist.getSalesUserId())) {
             throw new AccessDeniedException("无操作权限");
         }
         return super.removeById(id);
@@ -137,7 +132,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             return null;
         }
 
-        if (!isAdmin(currentUserId) && !currentUserId.equals(cust.getSalesUserId())) {
+        if (!SecurityUtil.isAdmin() && !currentUserId.equals(cust.getSalesUserId())) {
             throw new AccessDeniedException("无操作权限");
         }
 
@@ -150,20 +145,6 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             }
         }
         return vo;
-    }
-
-    private boolean isAdmin(Long userId) {
-        List<Long> roleIds = userService.getRoleIds(userId);
-        if (roleIds == null || roleIds.isEmpty()) {
-            return false;
-        }
-        for (Long roleId : roleIds) {
-            Role role = roleService.getById(roleId);
-            if (role != null && "admin".equalsIgnoreCase(role.getRoleCode())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

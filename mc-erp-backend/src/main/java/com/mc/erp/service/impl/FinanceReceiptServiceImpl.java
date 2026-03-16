@@ -9,12 +9,9 @@ import com.mc.erp.dto.FinanceReceiptQuery;
 import com.mc.erp.dto.FinanceReceiptSaveDTO;
 import com.mc.erp.entity.FinanceReceipt;
 import com.mc.erp.entity.FinanceReceiptDetail;
-import com.mc.erp.entity.Role;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.FinanceReceiptService;
-import com.mc.erp.service.RoleService;
-import com.mc.erp.service.UserService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FinanceReceiptDetailVO;
 import com.mc.erp.vo.FinanceReceiptVO;
@@ -36,12 +33,6 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
 
     @Autowired
     private FinanceReceiptDetailMapper detailMapper;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private RoleService roleService;
 
     /** 状态标签 */
     private String statusLabel(Integer status) {
@@ -117,21 +108,6 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         return vo;
     }
 
-    /** 判断当前用户是否管理员（roleCode = admin） */
-    private boolean isCurrentUserAdmin() {
-        Long userId = SecurityUtil.getCurrentUserId();
-        if (userId == null) return false;
-        List<Long> roleIds = userService.getRoleIds(userId);
-        if (roleIds == null || roleIds.isEmpty()) return false;
-        for (Long roleId : roleIds) {
-            Role role = roleService.getById(roleId);
-            if (role != null && "admin".equalsIgnoreCase(role.getRoleCode())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /** 校验明细绑定金额总和不超过收款金额 */
     private void validateBoundSum(BigDecimal totalAmount, List<FinanceReceiptDetailDTO> details) {
         if (details == null || details.isEmpty()) return;
@@ -161,7 +137,7 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
     public void updateWithDetails(FinanceReceiptSaveDTO dto) {
         // 收款已完成时，非管理员不允许修改认领明细
         FinanceReceipt existing = this.getById(dto.getId());
-        if (existing != null && Integer.valueOf(3).equals(existing.getStatus()) && !isCurrentUserAdmin()) {
+        if (existing != null && Integer.valueOf(3).equals(existing.getStatus()) && !SecurityUtil.isAdmin()) {
             throw new AccessDeniedException("收款已完成，无权修改认领明细");
         }
         validateBoundSum(dto.getAmount(), dto.getDetails());

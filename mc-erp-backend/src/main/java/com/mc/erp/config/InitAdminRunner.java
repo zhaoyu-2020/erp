@@ -88,7 +88,9 @@ public class InitAdminRunner implements ApplicationRunner {
     }
 
     private void initSeedData() {
-        Role salesRole = getOrCreateRole("sales", "业务员", "销售业务角色");
+        Role salesRole = getOrCreateRole("sales", "业务", "销售业务角色");
+        getOrCreateRole("operator", "操作", "操作角色");
+        getOrCreateRole("purchaser", "采购", "采购角色");
         User salesA = getOrCreateUser("zach", "123456", "赵宇");
 
         if (salesRole != null && salesA != null) {

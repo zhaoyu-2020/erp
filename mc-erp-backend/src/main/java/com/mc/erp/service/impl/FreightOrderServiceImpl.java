@@ -40,12 +40,6 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     @Autowired
     private SalesOrderService salesOrderService;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private RoleService roleService;
-
     // ============ 分页查询 ============
 
     @Override
@@ -342,8 +336,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
         // 已结算 → 已作废仅管理员可操作
         if (order.getOrderStatus() == FreightOrderStatus.SETTLED.getCode()) {
-            Long currentUserId = SecurityUtil.getCurrentUserId();
-            if (!isAdmin(currentUserId)) {
+            if (!SecurityUtil.isAdmin()) {
                 throw new IllegalStateException("仅管理员可作废已结算订单");
             }
         }
@@ -524,18 +517,5 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         if (!StringUtils.hasText(order.getOrderCurrency())) {
             order.setOrderCurrency("USD");
         }
-    }
-
-    private boolean isAdmin(Long userId) {
-        if (userId == null) return false;
-        List<Long> roleIds = userService.getRoleIds(userId);
-        if (roleIds == null || roleIds.isEmpty()) return false;
-        for (Long roleId : roleIds) {
-            var role = roleService.getById(roleId);
-            if (role != null && "admin".equalsIgnoreCase(role.getRoleCode())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

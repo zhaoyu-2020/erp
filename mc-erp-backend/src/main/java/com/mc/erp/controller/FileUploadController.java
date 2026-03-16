@@ -1,7 +1,6 @@
 package com.mc.erp.controller;
 
 import com.mc.erp.common.Result;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

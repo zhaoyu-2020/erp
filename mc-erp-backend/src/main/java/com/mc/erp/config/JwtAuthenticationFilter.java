@@ -12,16 +12,20 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
- * JWT 认证过滤器：每次请求前校验 Bearer Token
+ * JWT 认证过滤器：每次请求前校验 Bearer Token，并加载用户权限
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -30,16 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = extractToken(request);
 
-        // Token 存在且有效，则设置认证信息到 SecurityContext
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
             String username = jwtUtil.getUsernameFromToken(token);
             Long userId = jwtUtil.getUserIdFromToken(token);
 
-            // 将用户信息封装到认证对象（无需查数据库）
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     username,
                     null,
-                    Collections.emptyList());
+                    userDetails.getAuthorities());
             authentication.setDetails(userId);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

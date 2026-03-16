@@ -41,4 +41,15 @@ public class SecurityUtil {
         Object principal = auth.getPrincipal();
         return principal == null ? null : principal.toString();
     }
+
+    /**
+     * 判断当前登录用户是否为管理员（roleCode = admin）。
+     * 直接读取 Spring Security 上下文中已加载的 authorities，无需额外查询数据库。
+     */
+    public static boolean isAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_admin".equals(a.getAuthority()));
+    }
 }

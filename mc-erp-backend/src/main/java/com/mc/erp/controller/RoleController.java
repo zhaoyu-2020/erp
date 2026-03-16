@@ -4,6 +4,7 @@ import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.RoleQuery;
 import com.mc.erp.entity.Role;
+import com.mc.erp.service.RoleMenuService;
 import com.mc.erp.service.RoleService;
 import com.mc.erp.vo.RoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class RoleController {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     @GetMapping("/page")
     public Result<PageResult<RoleVO>> getPage(RoleQuery query) {
@@ -61,5 +65,17 @@ public class RoleController {
                     return vo;
                 }).collect(Collectors.toList())
         );
+    }
+
+    /** 查询角色拥有的菜单ID列表（用于权限配置页回显） */
+    @GetMapping("/{id}/menus")
+    public Result<List<Long>> getRoleMenus(@PathVariable Long id) {
+        return Result.success(roleMenuService.getMenuIdsByRoleId(id));
+    }
+
+    /** 设置角色菜单（全量覆盖，用于权限配置页保存） */
+    @PutMapping("/{id}/menus")
+    public Result<Boolean> updateRoleMenus(@PathVariable Long id, @RequestBody List<Long> menuIds) {
+        return Result.success(roleMenuService.updateRoleMenus(id, menuIds));
     }
 }
