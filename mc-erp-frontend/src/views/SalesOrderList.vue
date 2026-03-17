@@ -157,7 +157,7 @@
           </el-col>
            <el-col :span="12">
             <el-form-item label="合同金额" prop="contractAmount">
-              <el-input v-model="form.contractAmount" placeholder="输入合同金额" />
+              <el-input v-model="form.contractAmount" placeholder="输入合同金额，上传明细可自动填写" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -234,7 +234,7 @@
           </el-col>
            <el-col :span="12">
             <el-form-item label="定金收款金额" prop="receivedAmount">
-              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额" />
+              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额，绑定收款明细可自动填写" />
             </el-form-item>
           </el-col>
          
@@ -317,7 +317,7 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="合同总数量" prop="contractTotalQuantity">
-              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量" />
+              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量，上传明细可自动填写" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -339,13 +339,13 @@
         <el-row :gutter="16">
            <el-col :span="12">
             <el-form-item label="总收款" prop="actualAmount">
-              <el-input v-model="form.actualAmount" placeholder="输入总收款" />
+              <el-input v-model="form.actualAmount" placeholder="输入总收款，绑定收款自动计算" />
             </el-form-item>
 
           </el-col>
          <el-col :span="12">
             <el-form-item label="结算总数量" prop="settlementTotalQuantity">
-              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量" />
+              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量，完成销售订单明细可自动填写" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -353,13 +353,13 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="尾款金额" prop="finalPaymentAmount">
-              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额" />
+              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额，绑定收款自动计算" />
             </el-form-item>
           </el-col>
 
            <el-col :span="12">
             <el-form-item label="海运费(USD)" prop="seaFreight">
-              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)" />
+              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)，关联货代订单自动计算" />
             </el-form-item>
           </el-col>
           
@@ -374,7 +374,7 @@
           </el-col>
            <el-col :span="12">
             <el-form-item label="港杂费" prop="portFee">
-              <el-input v-model="form.portFee" placeholder="输入港杂费" />
+              <el-input v-model="form.portFee" placeholder="输入港杂费，关联货代订单自动计算" />
             </el-form-item>
           </el-col>
            
@@ -383,12 +383,12 @@
         <el-row :gutter="16">
            <el-col :span="12">
             <el-form-item label="保额" prop="insuranceAmount">
-              <el-input v-model="form.insuranceAmount" placeholder="输入保额" />
+              <el-input v-model="form.insuranceAmount" placeholder="输入保额，关联货代订单自动计算" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="保险费用" prop="insuranceFee">
-              <el-input v-model="form.insuranceFee" placeholder="输入保险费用" />
+              <el-input v-model="form.insuranceFee" placeholder="输入保险费用，关联货代订单自动计算" />
             </el-form-item>
           </el-col>
          
@@ -590,11 +590,11 @@ const rules = {
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
   destinationPort: [{ required: true, message: '请输入目的港', trigger: 'blur' }],
   depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
-  contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
+  // contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
-  receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
+  // receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
   deliveryDate: [{ required: true, message: '请输入交货日期', trigger: 'blur' }],
-  contractTotalQuantity: [{ required: true, message: '请输入合同总数量', trigger: 'blur' }],
+  // contractTotalQuantity: [{ required: true, message: '请输入合同总数量', trigger: 'blur' }],
   transportType: [{ required: true, message: '请选择运输方式', trigger: 'change' }],
   expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }],
   paymentMethod: [{ required: true, message: '请选择付款方式', trigger: 'change' }]

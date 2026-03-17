@@ -80,7 +80,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="长度(米)" prop="length">
-              <el-input v-model="form.length" placeholder="输入长度，单位：米" />
+              <el-input v-model="form.length" placeholder="输入长度，单位：米(卷材输入0)" />
             </el-form-item>
           </el-col>
         </el-row>
