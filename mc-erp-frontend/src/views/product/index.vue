@@ -2,9 +2,9 @@
   <div class="app-container">
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <el-form-item label="产品名称">
+        <!-- <el-form-item label="产品名称">
           <el-input v-model="queryParams.nameCn" placeholder="输入产品中文名称" clearable />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="类型">
           <el-select v-model="queryParams.type" placeholder="选择类型" clearable style="width: 180px">
             <el-option
@@ -31,7 +31,7 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="中文名称" prop="nameCn" min-width="150" />
+        <!-- <el-table-column label="中文名称" prop="nameCn" min-width="150" /> -->
         <el-table-column label="英文名称" prop="nameEn" min-width="150" />
         <el-table-column label="类型" prop="type" width="120" />
         <el-table-column label="规格" prop="spec" width="140" />
@@ -68,9 +68,9 @@
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <el-form-item label="中文名称" prop="nameCn">
+        <!-- <el-form-item label="中文名称" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="输入中文名称" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="英文名称" prop="nameEn">
           <el-input v-model="form.nameEn" placeholder="输入英文名称" />
         </el-form-item>
@@ -189,15 +189,15 @@ const form = reactive<any>({
 })
 
 const rules = {
-  nameCn: [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
+  // nameCn: [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
   type: [{ required: true, message: '请选择类型', trigger: 'change' }],
   spec: [{ required: true, message: '请选择规格', trigger: 'change' }],
   material: [{ required: true, message: '请输入材质', trigger: 'blur' }],
-  length: [{ required: true, message: '请输入长度', trigger: 'blur' }],
-  meterWeight: [{ required: true, message: '请输入米重', trigger: 'blur' }],
-  unit: [{ required: true, message: '请输入单位', trigger: 'blur' }],
-  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }],
-  declaration: [{ required: true, message: '请输入申报要素', trigger: 'blur' }]
+  length: [{ required: true, message: '请输入长度', trigger: 'blur' }]
+  // meterWeight: [{ required: true, message: '请输入米重', trigger: 'blur' }],
+  // unit: [{ required: true, message: '请输入单位', trigger: 'blur' }],
+  // tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }],
+  // declaration: [{ required: true, message: '请输入申报要素', trigger: 'blur' }]
 }
 
 const getList = async () => {
@@ -296,7 +296,7 @@ const handleExport = async () => {
   const res = await getProductPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
   exportToCsv('产品管理导出', rows, [
-    { label: '中文名称', key: 'nameCn' },
+    // { label: '中文名称', key: 'nameCn' },
     { label: '英文名称', key: 'nameEn' },
     { label: '类型', key: 'type' },
     { label: '规格', key: 'spec' },
