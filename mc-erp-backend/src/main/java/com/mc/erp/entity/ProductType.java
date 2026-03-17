@@ -11,6 +11,7 @@ public class ProductType {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String typeName;
+    private String typeNameEn;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableField(fill = FieldFill.INSERT)

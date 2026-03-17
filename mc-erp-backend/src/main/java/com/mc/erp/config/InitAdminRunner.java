@@ -1,6 +1,7 @@
 package com.mc.erp.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mc.erp.dto.ProductTypeCreateDTO;
 import com.mc.erp.entity.Customer;
 import com.mc.erp.entity.Menu;
 import com.mc.erp.entity.ProductType;
@@ -677,6 +678,8 @@ public class InitAdminRunner implements ApplicationRunner {
         if (exists != null) {
             return;
         }
-        productTypeService.createType(typeName);
+        ProductTypeCreateDTO dto = new ProductTypeCreateDTO();
+        dto.setTypeName(typeName);
+        productTypeService.createType(dto);
     }
 }

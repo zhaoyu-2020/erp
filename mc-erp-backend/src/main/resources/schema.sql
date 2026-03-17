@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
 -- 1-1. 产品类型表
 CREATE TABLE IF NOT EXISTS `biz_product_type` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `type_name` varchar(100) NOT NULL COMMENT '产品类型名称',
+  `type_name` varchar(100) NOT NULL COMMENT '产品品名（中文）',
+  `type_name_en` varchar(200) DEFAULT NULL COMMENT '产品品名（英文，可选）',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
@@ -34,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `biz_product_type` (
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_type_name` (`type_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产品类型字典表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产品品名字典表';
 
 -- 2. 销售订单主表
 CREATE TABLE IF NOT EXISTS `biz_sales_order` (

@@ -35,7 +35,9 @@ request.interceptors.response.use(
         const res = response.data as ApiResult<any>
         if (res.code !== 200) {
             ElMessage.error(res.message || '请求失败')
-            return Promise.reject(new Error(res.message || '请求失败'))
+            const err: any = new Error(res.message || '请求失败')
+            err.__handled = true
+            return Promise.reject(err)
         }
         return res
     }) as any,

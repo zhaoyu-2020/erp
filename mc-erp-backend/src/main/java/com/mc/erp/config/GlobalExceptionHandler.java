@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +42,13 @@ public class GlobalExceptionHandler {
         return Result.error(400, e.getMessage());
     }
 
+    /** 数据库唯一键冲突 */
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public Result<Void> handleDuplicateKey(SQLIntegrityConstraintViolationException e) {
+        return Result.error(400, "数据已存在，请勿重复添加");
+    }
+
     /** 业务规则校验失败（如金额超限）*/
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.OK)
@@ -59,6 +67,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.OK)
     public Result<Void> handleBusiness(RuntimeException e) {
+        // 向上找根因，若是唯一键冲突则给友好提示
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof SQLIntegrityConstraintViolationException) {
+                return Result.error(400, "数据已存在，请勿重复添加");
+            }
+            cause = cause.getCause();
+        }
         return Result.error(500, e.getMessage());
     }
 
