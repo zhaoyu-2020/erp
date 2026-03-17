@@ -6,5 +6,5 @@ import lombok.Data;
 public class ProductQuery {
     private Integer pageNum = 1;
     private Integer pageSize = 10;
-    private String type;
+    private Long productTypeId;
 }

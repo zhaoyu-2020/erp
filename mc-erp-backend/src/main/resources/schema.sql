@@ -3,14 +3,14 @@
 CREATE TABLE IF NOT EXISTS `biz_product` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `hs_code` varchar(20) DEFAULT NULL COMMENT '海关编码',
-  `type` varchar(50) DEFAULT NULL COMMENT '产品类型',
+  `product_type_id` bigint(20) DEFAULT NULL COMMENT '产品品名ID(关联biz_product_type)',
   `spec` varchar(100) DEFAULT NULL COMMENT '规格',
   `material` varchar(100) DEFAULT NULL COMMENT '材质',
   `length` varchar(50) DEFAULT NULL COMMENT '长度',
   `meter_weight` varchar(50) DEFAULT NULL COMMENT '米重',
   `tolerance` varchar(50) DEFAULT NULL COMMENT '公差',
   `declaration` varchar(255) DEFAULT NULL COMMENT '申报要素',
-  `name_cn` varchar(200) NOT NULL COMMENT '中文品名',
+  `name_cn` varchar(200) DEFAULT NULL COMMENT '中文品名',
   `name_en` varchar(200) DEFAULT NULL COMMENT '英文品名',
   `tax_refund_rate` decimal(5,4) DEFAULT '0.0000' COMMENT '退税率',
   `unit` varchar(20) DEFAULT 'PCS' COMMENT '计量单位',
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `biz_product_type` (
   `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_type_name` (`type_name`)
+  UNIQUE KEY `uk_type_name` (`type_name`,`type_name_en`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产品品名字典表';
 
 -- 2. 销售订单主表

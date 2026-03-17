@@ -7,7 +7,9 @@ import java.time.LocalDateTime;
 @Data
 public class ProductVO {
     private Long id;
-    private String type;
+    private Long productTypeId;
+    private String typeName;
+    private String typeNameEn;
     private String spec;
     private String material;
     private String length;

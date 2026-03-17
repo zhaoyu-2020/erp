@@ -2,16 +2,13 @@
   <div class="app-container">
     <el-card shadow="never" class="search-wrap">
       <el-form :inline="true" :model="queryParams">
-        <!-- <el-form-item label="产品名称">
-          <el-input v-model="queryParams.nameCn" placeholder="输入产品中文名称" clearable />
-        </el-form-item> -->
-        <el-form-item label="类型">
-          <el-select v-model="queryParams.type" placeholder="选择类型" clearable style="width: 180px">
+        <el-form-item label="产品品名">
+          <el-select v-model="queryParams.productTypeId" placeholder="选择品名" clearable style="width: 200px">
             <el-option
-              v-for="item in PRODUCT_TYPE_OPTIONS"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="item in productTypeList"
+              :key="item.id"
+              :label="item.typeName + (item.typeNameEn ? `：${item.typeNameEn}` : '')"    
+              :value="item.id"
             />
           </el-select>
         </el-form-item>
@@ -31,18 +28,13 @@
 
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <!-- <el-table-column label="中文名称" prop="nameCn" min-width="150" /> -->
-<<<<<<< HEAD
-        <!-- <el-table-column label="英文名称" prop="nameEn" min-width="150" /> -->
-=======
-        <el-table-column label="英文名称" prop="nameEn" min-width="150" />
->>>>>>> refs/remotes/origin/main
-        <el-table-column label="类型" prop="type" width="120" />
+        <el-table-column label="品名（中文）" prop="typeName" min-width="130" />
+        <el-table-column label="品名（英文）" prop="typeNameEn" min-width="150" />
         <el-table-column label="规格" prop="spec" width="140" />
         <el-table-column label="材质" prop="material" width="120" />
         <el-table-column label="长度" prop="length" width="100" />
-        <el-table-column label="米重" prop="meterWeight" width="100" />
         <el-table-column label="公差" prop="tolerance" width="100" />
+        <el-table-column label="米重" prop="meterWeight" width="100" />
         <el-table-column label="单位" prop="unit" width="80" align="center" />
         <el-table-column label="hscode" prop="hsCode" width="130" />
         <el-table-column label="退税率" prop="taxRefundRate" width="140" align="right">
@@ -75,20 +67,13 @@
         <!-- <el-form-item label="中文名称" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="输入中文名称" />
         </el-form-item> -->
-<<<<<<< HEAD
-        <!-- <el-form-item label="英文名称" prop="nameEn">
-=======
-        <el-form-item label="英文名称" prop="nameEn">
->>>>>>> refs/remotes/origin/main
-          <el-input v-model="form.nameEn" placeholder="输入英文名称" />
-        </el-form-item> -->
-        <el-form-item label="类型" prop="type">
-          <el-select v-model="form.type" placeholder="选择类型" style="width: 100%">
+        <el-form-item label="产品品名" prop="productTypeId">
+          <el-select v-model="form.productTypeId" placeholder="选择品名" style="width: 100%">
             <el-option
               v-for="item in productTypeList"
               :key="item.id"
-              :label="item.typeName"
-              :value="item.typeName"
+              :label="item.typeName + (item.typeNameEn ? `：${item.typeNameEn}` : '')"
+              :value="item.id"
             />
           </el-select>
         </el-form-item>
@@ -103,15 +88,16 @@
         <el-form-item label="长度" prop="length">
           <el-input v-model="form.length" placeholder="输入长度" />
         </el-form-item>
+        <el-form-item label="公差" prop="tolerance">
+          <el-input v-model="form.tolerance" placeholder="输入公差" />
+        </el-form-item>
         <el-form-item label="米重" prop="meterWeight">
           <el-input v-model="form.meterWeight" placeholder="输入米重" />
         </el-form-item>
         <el-form-item label="单位" prop="unit">
           <el-input v-model="form.unit" placeholder="例如：吨、米、PCS" />
         </el-form-item>
-        <el-form-item label="公差" prop="tolerance">
-          <el-input v-model="form.tolerance" placeholder="输入公差" />
-        </el-form-item>
+      
         <el-form-item label="hscode" prop="hsCode">
           <el-input v-model="form.hsCode" placeholder="输入hscode" />
         </el-form-item>
@@ -159,6 +145,7 @@
             </template>
             <template v-else>
               <el-button link type="primary" @click="handleEditProductType(row)">编辑</el-button>
+              <!-- todo 删除品名时需要判断是否有产品在使用，若有则不允许删除 -->
               <el-button link type="danger" @click="handleDeleteProductType(row)">删除</el-button>
             </template>
           </template>
@@ -175,14 +162,6 @@ import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getProductPage, saveProduct, updateProduct, deleteProduct } from '@/api/product'
 import { getProductTypeList, saveProductType, updateProductType, deleteProductType } from '@/api/productType'
-
-const PRODUCT_TYPE_OPTIONS = [
-  { label: 'H型钢', value: 'H型钢' },
-  { label: 'I型钢', value: 'I型钢' },
-  { label: '热轧卷', value: '热轧卷' },
-  { label: '冷轧卷', value: '冷轧卷' },
-  { label: '角钢', value: '角钢' }
-]
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -202,15 +181,12 @@ const productTypeList = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
-  nameCn: '',
-  type: ''
+  productTypeId: null as number | null
 })
 
 const form = reactive<any>({
   id: null,
-  nameCn: '',
-  nameEn: '',
-  type: '',
+  productTypeId: null,
   spec: '',
   material: '',
   length: '',
@@ -223,15 +199,11 @@ const form = reactive<any>({
 })
 
 const rules = {
-  // nameCn: [{ required: true, message: '请输入中文名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择类型', trigger: 'change' }],
-  spec: [{ required: true, message: '请选择规格', trigger: 'change' }],
+  productTypeId: [{ required: true, message: '请选择产品品名', trigger: 'change' }],
+  spec: [{ required: true, message: '请输入规格', trigger: 'change' }],
   material: [{ required: true, message: '请输入材质', trigger: 'blur' }],
-  length: [{ required: true, message: '请输入长度', trigger: 'blur' }]
-  // meterWeight: [{ required: true, message: '请输入米重', trigger: 'blur' }],
-  // unit: [{ required: true, message: '请输入单位', trigger: 'blur' }],
-  // tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }],
-  // declaration: [{ required: true, message: '请输入申报要素', trigger: 'blur' }]
+  length: [{ required: true, message: '请输入长度', trigger: 'blur' }],
+  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }]
 }
 
 const getList = async () => {
@@ -250,16 +222,13 @@ const handleQuery = () => {
   getList()
 }
 const resetQuery = () => {
-  queryParams.nameCn = ''
-  queryParams.type = ''
+  queryParams.productTypeId = null
   handleQuery()
 }
 
 const resetForm = () => {
   form.id = null
-  form.nameCn = ''
-  form.nameEn = ''
-  form.type = ''
+  form.productTypeId = null
   form.spec = ''
   form.material = ''
   form.length = ''
@@ -282,9 +251,7 @@ const handleEdit = (row: any) => {
   resetForm()
   Object.assign(form, {
     id: row.id,
-    nameCn: row.nameCn,
-    nameEn: row.nameEn,
-    type: row.type,
+    productTypeId: row.productTypeId,
     spec: row.spec,
     material: row.material,
     length: row.length,
@@ -300,7 +267,8 @@ const handleEdit = (row: any) => {
 }
 
 const handleDelete = (row: any) => {
-  ElMessageBox.confirm(`确定要删除产品 "${row.nameCn}" 吗?`, '警告', { type: 'warning' }).then(async () => {
+  const label = row.typeName || `ID:${row.id}`
+  ElMessageBox.confirm(`确定要删除产品 "${label}" 吗?`, '警告', { type: 'warning' }).then(async () => {
     await deleteProduct(row.id)
     ElMessage.success('删除成功')
     getList()
@@ -330,10 +298,8 @@ const handleExport = async () => {
   const res = await getProductPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
   exportToCsv('产品管理导出', rows, [
-    // { label: '中文名称', key: 'nameCn' },
-
-    // { label: '英文名称', key: 'nameEn' },
-    { label: '类型', key: 'type' },
+    { label: '品名（中文）', key: 'typeName' },
+    { label: '品名（英文）', key: 'typeNameEn' },
     { label: '规格', key: 'spec' },
     { label: '材质', key: 'material' },
     { label: '长度', key: 'length' },

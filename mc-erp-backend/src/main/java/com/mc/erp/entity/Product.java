@@ -11,9 +11,8 @@ import java.time.LocalDateTime;
 public class Product {
     @TableId(type = IdType.AUTO)
     private Long id;
-  
-    @NotBlank(message = "商品类型不能为空")
-    private String type;
+
+    private Long productTypeId;
 
     @NotBlank(message = "规格不能为空")
     private String spec;
