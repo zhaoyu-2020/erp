@@ -12,6 +12,7 @@ import com.mc.erp.entity.FinanceReceiptDetail;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.FinanceReceiptService;
+import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FinanceReceiptDetailVO;
 import com.mc.erp.vo.FinanceReceiptVO;
@@ -33,6 +34,9 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
 
     @Autowired
     private FinanceReceiptDetailMapper detailMapper;
+
+    @Autowired
+    private SalesOrderService salesOrderService;
 
     /** 状态标签 */
     private String statusLabel(Integer status) {
@@ -168,6 +172,15 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         detailMapper.delete(dw);
 
         saveDetails(dto.getId(), dto);
+
+        // 同步销售订单认领金额和状态
+        if (dto.getDetails() != null) {
+            dto.getDetails().stream()
+                    .map(FinanceReceiptDetailDTO::getSalesOrderNo)
+                    .filter(StringUtils::hasText)
+                    .distinct()
+                    .forEach(salesOrderService::syncClaimAmounts);
+        }
     }
 
     private void saveDetails(Long receiptId, FinanceReceiptSaveDTO dto) {
@@ -179,6 +192,7 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
             detail.setReceiptId(receiptId);
             detail.setId(null); // always insert new
             detailMapper.insert(detail);
+
         }
     }
 }

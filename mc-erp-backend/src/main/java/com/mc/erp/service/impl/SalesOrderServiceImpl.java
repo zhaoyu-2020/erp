@@ -2,6 +2,7 @@ package com.mc.erp.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
@@ -10,10 +11,12 @@ import com.mc.erp.dto.SalesOrderDetailImportRow;
 import com.mc.erp.dto.SalesOrderImportRow;
 import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.Customer;
+import com.mc.erp.entity.FinanceReceiptDetail;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.SalesOrderDetail;
 import com.mc.erp.entity.User;
+import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.service.CustomerService;
 import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.service.SalesOrderDetailService;
@@ -48,6 +51,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private SalesOrderDetailService salesOrderDetailService;
+
+    @Autowired
+    private FinanceReceiptDetailMapper financeReceiptDetailMapper;
 
     @Override
     public PageResult<SalesOrderVO> getPage(SalesOrderQuery query) {
@@ -163,6 +169,50 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
         salesOrder.setLoss(loss);
         this.updateById(salesOrder);
+    }
+
+    @Override
+    public void syncClaimAmounts(String orderNo) {
+        SalesOrder order = this.getOne(new LambdaQueryWrapper<SalesOrder>().eq(SalesOrder::getOrderNo, orderNo));
+        if (order == null) return;
+
+        // 查询该订单号下所有收款明细（跨所有收款单）
+        List<FinanceReceiptDetail> allDetails = financeReceiptDetailMapper.selectList(
+                new LambdaQueryWrapper<FinanceReceiptDetail>()
+                        .eq(FinanceReceiptDetail::getSalesOrderNo, orderNo));
+
+        // 分别汇总定金和尾款
+        BigDecimal totalDeposit = allDetails.stream()
+                .filter(d -> Integer.valueOf(1).equals(d.getBindType()))
+                .map(d -> d.getBoundAmount() != null ? d.getBoundAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalFinal = allDetails.stream()
+                .filter(d -> Integer.valueOf(2).equals(d.getBindType()))
+                .map(d -> d.getBoundAmount() != null ? d.getBoundAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 计算应收定金和应收尾款（用于状态判断）
+        BigDecimal contractAmount = order.getContractAmount() != null ? order.getContractAmount() : BigDecimal.ZERO;
+        BigDecimal depositRate = order.getDepositRate() != null ? order.getDepositRate() : BigDecimal.ZERO;
+        BigDecimal expectedDeposit = contractAmount.multiply(depositRate)
+                .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+        BigDecimal expectedFinal = contractAmount.subtract(expectedDeposit);
+
+        // 只更新认领相关字段，不覆盖其他字段
+        LambdaUpdateWrapper<SalesOrder> uw = new LambdaUpdateWrapper<SalesOrder>()
+                .eq(SalesOrder::getId, order.getId())
+                .set(SalesOrder::getReceivedAmount, totalDeposit)
+                .set(SalesOrder::getFinalPaymentAmount, totalFinal)
+                .set(SalesOrder::getActualAmount, totalDeposit.add(totalFinal));
+
+        // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
+        if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
+            uw.set(SalesOrder::getStatus, 6);
+        } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0) {
+            uw.set(SalesOrder::getStatus, 2);
+        }
+
+        this.update(null, uw);
     }
 
     @Override

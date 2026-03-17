@@ -20,6 +20,13 @@ public interface SalesOrderService extends IService<SalesOrder> {
 
     void calculateAndUpdateLoss(Long salesOrderId);
 
+    /**
+     * 根据所有收款明细，重新汇总并回写销售订单的已认领定金/尾款金额及状态。
+     * 同时在新建订单时，根据合同金额和定金比例预填充各金额字段。
+     * @param orderNo 销售订单号
+     */
+    void syncClaimAmounts(String orderNo);
+
     /** 通过Excel批量导入销售订单（合同基本信息）*/
     ImportResult importContracts(MultipartFile file) throws Exception;
 

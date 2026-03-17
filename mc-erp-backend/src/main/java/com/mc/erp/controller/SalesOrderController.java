@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
@@ -40,16 +41,24 @@ public class SalesOrderController {
 
     @PostMapping
     public Result<Boolean> save(@Valid @RequestBody SalesOrder salesOrder) {
-        return Result.success(salesOrderService.save(salesOrder));
+        boolean success = salesOrderService.save(salesOrder);
+        if (success && StringUtils.hasText(salesOrder.getOrderNo())) {
+            salesOrderService.syncClaimAmounts(salesOrder.getOrderNo());
+        }
+        return Result.success(success);
     }
 
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody SalesOrder salesOrder) {
         // 获取更新前的订单信息
         SalesOrder oldOrder = salesOrderService.getById(salesOrder.getId());
-        
+
         // 更新订单
         boolean success = salesOrderService.updateById(salesOrder);
+
+        if (success && StringUtils.hasText(salesOrder.getOrderNo())) {
+            salesOrderService.syncClaimAmounts(salesOrder.getOrderNo());
+        }
         
         // 如果状态变更为已完成（7），自动计算利润和损耗
         if (success && salesOrder.getStatus() != null && salesOrder.getStatus() == 7) {
