@@ -13,7 +13,7 @@
     "explorer.compactFolders": true,
 
     // 编辑器字体和行高（让代码区更紧凑，显示更多内容）
-    "editor.fontSize": 12,
+    "editor.fontSize": 14,
     "editor.lineHeight": 18,
     "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
 
