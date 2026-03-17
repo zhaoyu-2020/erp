@@ -77,10 +77,26 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         wrapper.orderByDesc(FinanceReceipt::getCreateTime);
 
         Page<FinanceReceipt> resultPage = this.page(page, wrapper);
+
+        // 批量查询所有记录的认领明细
+        List<Long> receiptIds = resultPage.getRecords().stream().map(FinanceReceipt::getId).collect(Collectors.toList());
+        List<FinanceReceiptDetail> allDetails = receiptIds.isEmpty() ? Collections.emptyList()
+                : detailMapper.selectList(new LambdaQueryWrapper<FinanceReceiptDetail>()
+                        .in(FinanceReceiptDetail::getReceiptId, receiptIds)
+                        .orderByAsc(FinanceReceiptDetail::getId));
+
         List<FinanceReceiptVO> voList = resultPage.getRecords().stream().map(r -> {
             FinanceReceiptVO vo = new FinanceReceiptVO();
             BeanUtils.copyProperties(r, vo);
             vo.setStatusLabel(statusLabel(r.getStatus()));
+            List<FinanceReceiptDetailVO> detailVOs = allDetails.stream()
+                    .filter(d -> d.getReceiptId().equals(r.getId()))
+                    .map(d -> {
+                        FinanceReceiptDetailVO dvo = new FinanceReceiptDetailVO();
+                        BeanUtils.copyProperties(d, dvo);
+                        return dvo;
+                    }).collect(Collectors.toList());
+            vo.setDetails(detailVOs);
             return vo;
         }).collect(Collectors.toList());
 

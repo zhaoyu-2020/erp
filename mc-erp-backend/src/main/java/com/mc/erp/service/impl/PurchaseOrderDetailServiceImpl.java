@@ -138,13 +138,21 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         String length = detail.getLength();
         String tolerance = detail.getTolerance();
 
-        if (StringUtils.hasText(spec) && StringUtils.hasText(type)
+        // 查找产品品名 ID
+        Long productTypeId = null;
+        if (StringUtils.hasText(type)) {
+            ProductType pt = productTypeMapper.selectOne(new LambdaQueryWrapper<ProductType>()
+                    .eq(ProductType::getTypeName, type.trim()).last("LIMIT 1"));
+            if (pt != null) productTypeId = pt.getId();
+        }
+
+        if (StringUtils.hasText(spec) && productTypeId != null
                 && StringUtils.hasText(material) && StringUtils.hasText(length)
                 && StringUtils.hasText(tolerance)) {
 
             LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<Product>()
                     .eq(Product::getSpec, spec.trim())
-                    .eq(Product::getType, type.trim())
+                    .eq(Product::getProductTypeId, productTypeId)
                     .eq(Product::getMaterial, material.trim())
                     .eq(Product::getLength, length.trim())
                     .eq(Product::getTolerance, tolerance.trim())
@@ -158,17 +166,11 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
 
         Product product = new Product();
         product.setSpec(StringUtils.hasText(spec) ? spec.trim() : null);
-        product.setType(StringUtils.hasText(type) ? type.trim() : null);
+        product.setProductTypeId(productTypeId);
         product.setMaterial(StringUtils.hasText(material) ? material.trim() : null);
         product.setLength(StringUtils.hasText(length) ? length.trim() : null);
         product.setTolerance(StringUtils.hasText(tolerance) ? tolerance.trim() : null);
         product.setMeterWeight("0");
-        String nameParts = List.of(
-                StringUtils.hasText(type) ? type.trim() : "",
-                StringUtils.hasText(spec) ? spec.trim() : "",
-                StringUtils.hasText(material) ? material.trim() : ""
-        ).stream().filter(StringUtils::hasText).collect(Collectors.joining(" "));
-        product.setNameCn(StringUtils.hasText(nameParts) ? nameParts : "未命名产品");
         product.setUnit("T");
         product.setDeclaration("");
         product.setTaxRefundRate(BigDecimal.ZERO);

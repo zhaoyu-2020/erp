@@ -53,8 +53,6 @@ public class FreightFeeItemServiceImpl extends ServiceImpl<FreightFeeItemMapper,
             }
             this.saveBatch(items);
         }
-        // 重新计算订单费用
-        freightOrderService.recalculateTotals(orderId);
         return true;
     }
 
@@ -70,9 +68,6 @@ public class FreightFeeItemServiceImpl extends ServiceImpl<FreightFeeItemMapper,
             throw new IllegalStateException("已结算订单不允许删除费用");
         }
         boolean removed = this.removeById(itemId);
-        if (removed && item.getOrderId() != null) {
-            freightOrderService.recalculateTotals(item.getOrderId());
-        }
         return removed;
     }
 }

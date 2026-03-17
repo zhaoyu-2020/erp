@@ -40,6 +40,26 @@
             <b>{{ row.currency }}</b>&nbsp;{{ row.amount }}
           </template>
         </el-table-column>
+        <!-- 将详情直接展示在table中，点击编辑时才打开对话框进行编辑 -->
+        <el-table-column label="认领明细" min-width="240">
+          <template #default="{ row }">
+            <template v-if="row.details && row.details.length > 0">
+              <div
+                v-for="(d, idx) in row.details"
+                :key="idx"
+                style="font-size:13px;color:#555;line-height:1.8"
+              >
+                <span style="color:#333;font-weight:500">{{ d.salesOrderNo }}</span>
+                &nbsp;
+                <el-tag :type="d.bindType === 1 ? 'warning' : 'primary'" size="small" style="margin-right:4px">
+                  {{ d.bindType === 1 ? '定金' : d.bindType === 2 ? '尾款' : '-' }}
+                </el-tag>
+                <span>{{ row.currency }} {{ d.boundAmount }}</span>
+              </div>
+            </template>
+            <span v-else style="color:#bbb;font-size:13px">暂无认领</span>
+          </template>
+        </el-table-column>
         <el-table-column label="收款日期" prop="receiptDate" width="120" align="center" />
         <el-table-column label="收款银行" prop="receivingBank" min-width="160" />
         <el-table-column label="状态" width="100" align="center">
