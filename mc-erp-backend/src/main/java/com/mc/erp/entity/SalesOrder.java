@@ -40,7 +40,6 @@ public class SalesOrder {
 
     private BigDecimal finalExchangeRate;
 
-    @NotNull(message = "合同金额不能为空")
     private BigDecimal contractAmount;
 
     private BigDecimal actualAmount;
@@ -48,7 +47,6 @@ public class SalesOrder {
     @NotNull(message = "定金比例不能为空")
     private BigDecimal depositRate;
 
-    @NotNull(message = "定金收款金额不能为空")
     private BigDecimal receivedAmount;
 
     private BigDecimal finalPaymentAmount;
