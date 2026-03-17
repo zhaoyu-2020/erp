@@ -331,11 +331,8 @@ const handleExport = async () => {
   const rows = res.data.list || []
   exportToCsv('产品管理导出', rows, [
     // { label: '中文名称', key: 'nameCn' },
-<<<<<<< HEAD
+
     // { label: '英文名称', key: 'nameEn' },
-=======
-    { label: '英文名称', key: 'nameEn' },
->>>>>>> refs/remotes/origin/main
     { label: '类型', key: 'type' },
     { label: '规格', key: 'spec' },
     { label: '材质', key: 'material' },
