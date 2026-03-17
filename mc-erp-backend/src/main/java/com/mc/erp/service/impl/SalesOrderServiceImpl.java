@@ -360,6 +360,8 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 .collect(Collectors.toMap(SalesOrder::getOrderNo, SalesOrder::getId, (a, b) -> a));
 
         ImportResult result = new ImportResult();
+
+        Set<Long> orderIds = new HashSet<>();
         for (int i = 0; i < rows.size(); i++) {
             int rowNum = i + 2;
             SalesOrderDetailImportRow row = rows.get(i);
@@ -373,6 +375,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                     result.addError(rowNum, "订单号不存在: " + row.getOrderNo());
                     continue;
                 }
+                orderIds.add(orderId);
                 SalesOrderDetail detail = new SalesOrderDetail();
                 detail.setOrderId(orderId);
                 detail.setSpec(row.getSpec());
@@ -380,9 +383,6 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 detail.setMaterial(row.getMaterial());
                 detail.setLength(row.getLength());
                 detail.setTolerance(row.getTolerance());
-                detail.setQuantityTon(parseBD(row.getQuantityTon()));
-                detail.setQuantityPc(parseInteger(row.getQuantityPc()));
-                detail.setQuantityMeter(parseBD(row.getQuantityMeter()));
                 detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
                 detail.setMeasurementMethod(row.getMeasurementMethod());
                 detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
@@ -397,12 +397,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 detail.setGrossWeight(parseBD(row.getGrossWeight()));
                 detail.setVolume(parseBD(row.getVolume()));
                 detail.setOriginPlace(row.getOriginPlace());
-                detail.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight()));
                 salesOrderDetailService.save(detail);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
                 result.addError(rowNum, e.getMessage());
             }
+        }
+        // 批量更新相关订单的总数量和总金额
+        for (Long orderId : orderIds) {
+            salesOrderDetailService.recalculateOrderSummary(orderId);
         }
         return result;
     }

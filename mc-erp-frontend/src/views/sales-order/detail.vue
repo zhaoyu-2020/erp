@@ -175,7 +175,7 @@
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="实际理论重量" prop="actualTheoreticalWeight">
-              <el-input v-model="form.actualTheoreticalWeight" placeholder="输入实际理论重量" />
+              <el-input v-model="form.actualTheoreticalWeight" placeholder="输入实际理论重量，由实际数量和公差计算" />
             </el-form-item>
           </el-col>
         </el-row>

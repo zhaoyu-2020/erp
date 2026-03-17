@@ -118,7 +118,8 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     private BigDecimal computePriceTotal(SalesOrderDetail detail) {
-        BigDecimal qty = detail.getQuantityTon();
+        // 优先使用 quantityTon，若无则降级到 orderedQuantity
+        BigDecimal qty = detail.getQuantityTon() != null ? detail.getQuantityTon() : detail.getOrderedQuantity();
         if (qty == null) {
             return detail.getPriceTotal();
         }
@@ -127,6 +128,38 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             return detail.getSettlementPrice().multiply(qty);
         }
         return detail.getPriceTotal();
+    }
+
+    @Override
+    @Transactional
+    public void recalculateOrderSummary(Long orderId) {
+        List<SalesOrderDetail> details = this.list(
+                new LambdaQueryWrapper<SalesOrderDetail>().eq(SalesOrderDetail::getOrderId, orderId));
+
+        BigDecimal totalOrdered = BigDecimal.ZERO;
+        BigDecimal totalActual = BigDecimal.ZERO;
+
+        for (SalesOrderDetail detail : details) {
+            // 补全产品类型、产品 ID 以及 priceTotal
+            ensureProductType(detail.getProductType());
+            detail.setProductId(findOrCreateProduct(detail));
+            detail.setPriceTotal(computePriceTotal(detail));
+            this.updateById(detail);
+
+            if (detail.getOrderedQuantity() != null) {
+                totalOrdered = totalOrdered.add(detail.getOrderedQuantity());
+            }
+            if (detail.getActualQuantity() != null) {
+                totalActual = totalActual.add(detail.getActualQuantity());
+            }
+        }
+
+        // 更新销售订单的汇总数量
+        SalesOrder order = new SalesOrder();
+        order.setId(orderId);
+        order.setContractTotalQuantity(totalOrdered);
+        order.setSettlementTotalQuantity(totalActual);
+        salesOrderMapper.updateById(order);
     }
 
     private void ensureProductType(String typeName) {
