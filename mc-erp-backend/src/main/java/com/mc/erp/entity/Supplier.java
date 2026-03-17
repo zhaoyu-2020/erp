@@ -17,10 +17,8 @@ public class Supplier {
     @NotBlank(message = "供应商名称不能为空")
     private String name;
 
-    @NotBlank(message = "联系人不能为空")
     private String contactPerson;
 
-    @NotBlank(message = "联系电话不能为空")
     private String phone;
     private String address;
     /**
