@@ -32,7 +32,11 @@
       <el-table v-loading="loading" :data="dataList" border stripe>
         <el-table-column type="index" label="序号" width="60" align="center" />
         <!-- <el-table-column label="中文名称" prop="nameCn" min-width="150" /> -->
+<<<<<<< HEAD
         <!-- <el-table-column label="英文名称" prop="nameEn" min-width="150" /> -->
+=======
+        <el-table-column label="英文名称" prop="nameEn" min-width="150" />
+>>>>>>> refs/remotes/origin/main
         <el-table-column label="类型" prop="type" width="120" />
         <el-table-column label="规格" prop="spec" width="140" />
         <el-table-column label="材质" prop="material" width="120" />
@@ -71,7 +75,11 @@
         <!-- <el-form-item label="中文名称" prop="nameCn">
           <el-input v-model="form.nameCn" placeholder="输入中文名称" />
         </el-form-item> -->
+<<<<<<< HEAD
         <!-- <el-form-item label="英文名称" prop="nameEn">
+=======
+        <el-form-item label="英文名称" prop="nameEn">
+>>>>>>> refs/remotes/origin/main
           <el-input v-model="form.nameEn" placeholder="输入英文名称" />
         </el-form-item> -->
         <el-form-item label="类型" prop="type">
@@ -323,7 +331,11 @@ const handleExport = async () => {
   const rows = res.data.list || []
   exportToCsv('产品管理导出', rows, [
     // { label: '中文名称', key: 'nameCn' },
+<<<<<<< HEAD
     // { label: '英文名称', key: 'nameEn' },
+=======
+    { label: '英文名称', key: 'nameEn' },
+>>>>>>> refs/remotes/origin/main
     { label: '类型', key: 'type' },
     { label: '规格', key: 'spec' },
     { label: '材质', key: 'material' },

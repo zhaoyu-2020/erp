@@ -34,6 +34,7 @@ public class Product {
     private BigDecimal taxRefundRate;
 
     // private String nameCn;
+
     // private String nameEn;
 
     private String unit;
