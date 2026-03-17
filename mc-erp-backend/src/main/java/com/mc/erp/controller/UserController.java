@@ -2,10 +2,12 @@ package com.mc.erp.controller;
 
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
+import com.mc.erp.dto.ChangePasswordDTO;
 import com.mc.erp.dto.UpdateUserRolesDTO;
 import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
 import com.mc.erp.service.UserService;
+import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.UserVO;
 import com.mc.erp.vo.UserWithRoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,5 +75,15 @@ public class UserController {
     @PutMapping("/{id}/roles")
     public Result<Boolean> updateUserRoles(@PathVariable Long id, @Valid @RequestBody UpdateUserRolesDTO dto) {
         return Result.success(userService.updateUserRoles(id, dto == null ? null : dto.getRoleIds()));
+    }
+
+    /**
+     * 修改当前登录用户的密码（本人操作，无需特殊权限）
+     */
+    @PutMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        userService.changePassword(userId, dto);
+        return Result.success(null);
     }
 }

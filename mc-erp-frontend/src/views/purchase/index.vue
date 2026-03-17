@@ -180,16 +180,14 @@
         </el-row>
 
         <el-divider content-position="left" class="group-divider">非必填信息</el-divider>
+
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="实际金额(RMB)" prop="actualAmount">
               <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row :gutter="16">
-          
-          <el-col :span="12">
+           <el-col :span="12">
             <el-form-item label="运输备注" prop="transportRemark">
               <el-input v-model="form.transportRemark" placeholder="输入运输备注" />
             </el-form-item>
@@ -202,8 +200,16 @@
               <el-input v-model="form.totalFreight" placeholder="输入总运费" />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="form.status" placeholder="选择状态">
+                <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
+              </el-select>
+            </el-form-item>
+          </el-col>
         </el-row>
-
+        
+<!-- 
         <el-row :gutter="16">
           <el-col :span="24">
             <el-form-item label="照片">
@@ -340,17 +346,9 @@
               </div>
             </el-form-item>
           </el-col>
-        </el-row>
+        </el-row> -->
 
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="状态" prop="status">
-              <el-select v-model="form.status" placeholder="选择状态">
-                <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+      
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>

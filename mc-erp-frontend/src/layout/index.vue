@@ -30,9 +30,9 @@
             <el-icon><DocumentChecked /></el-icon>
             <template #title>采购订单明细</template>
           </el-menu-item>
-          <el-menu-item index="/products">
-            <el-icon><Goods /></el-icon>
-            <template #title>产品管理(PIM)</template>
+            <el-menu-item index="/freight-orders">
+            <el-icon><Ship /></el-icon>
+            <template #title>货代订单</template>
           </el-menu-item>
           <el-menu-item index="/customers">
             <el-icon><User /></el-icon>
@@ -46,14 +46,15 @@
             <el-icon><Ship /></el-icon>
             <template #title>货代管理</template>
           </el-menu-item>
+              <el-menu-item index="/products">
+            <el-icon><Goods /></el-icon>
+            <template #title>产品管理(PIM)</template>
+          </el-menu-item>
           <el-menu-item index="/wms">
             <el-icon><Box /></el-icon>
             <template #title>仓储管理(WMS)</template>
           </el-menu-item>
-          <el-menu-item index="/freight-orders">
-            <el-icon><Ship /></el-icon>
-            <template #title>货代订单</template>
-          </el-menu-item>
+        
           <el-menu-item index="/documents">
             <el-icon><DocumentCopy /></el-icon>
             <template #title>报关单证</template>

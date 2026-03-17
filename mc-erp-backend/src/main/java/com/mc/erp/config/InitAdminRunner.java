@@ -83,6 +83,7 @@ public class InitAdminRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+       
         User admin = getOrCreateUser("admin", "123456", "Admin");
         if (admin == null) {
             throw new RuntimeException("初始化 admin 用户失败");

@@ -1,5 +1,6 @@
 package com.mc.erp.service.impl;
 
+import com.mc.erp.dto.ChangePasswordDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -146,5 +147,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             vo.setRoleNames(userRoleNamesMap.getOrDefault(user.getId(), List.of()));
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordDTO dto) {
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        if (!user.getPassword().equals(dto.getOldPassword())) {
+            throw new RuntimeException("旧密码错误");
+        }
+        User update = new User();
+        update.setId(userId);
+        update.setPassword(dto.getNewPassword());
+        this.updateById(update);
     }
 }

@@ -121,14 +121,14 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="长度(米)" prop="length">
-              <el-input v-model="form.length" placeholder="输入长度，单位：米" />
+              <el-input v-model="form.length" placeholder="输入长度，单位：米(卷材输入0)" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="公差" prop="tolerance">
-              <el-input v-model="form.tolerance" placeholder="输入公差" />
+              <el-input v-model="form.tolerance" placeholder="输入公差（卷材输入0）" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -165,7 +165,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="捆数" prop="bundleCount">
+            <el-form-item label="捆数（卷数）" prop="bundleCount">
               <el-input v-model="form.bundleCount" placeholder="输入捆数" />
             </el-form-item>
           </el-col>
@@ -224,7 +224,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="包装" prop="packaging">
+            <el-form-item label="包装方式" prop="packaging">
               <el-input v-model="form.packaging" placeholder="输入包装方式" />
             </el-form-item>
           </el-col>
@@ -232,7 +232,7 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="卷内径(mm)" prop="coilInnerDiameter">
-              <el-input v-model="form.coilInnerDiameter" placeholder="输入卷内径，单位：mm" />
+              <el-input v-model="form.coilInnerDiameter" placeholder="输入卷内径，单位：mm（508/610）" />
             </el-form-item>
           </el-col>
           <el-col :span="12">

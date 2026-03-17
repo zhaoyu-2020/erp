@@ -2,6 +2,7 @@ package com.mc.erp.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mc.erp.common.PageResult;
+import com.mc.erp.dto.ChangePasswordDTO;
 import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
 import com.mc.erp.dto.LoginDTO;
@@ -24,4 +25,7 @@ public interface UserService extends IService<User> {
 
     /** 查询所有用户（含角色名称），用于前端下拉搜索 */
     List<UserWithRoleVO> listWithRoles();
+
+    /** 修改当前登录用户密码 */
+    void changePassword(Long userId, ChangePasswordDTO dto);
 }

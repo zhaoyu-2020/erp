@@ -59,6 +59,11 @@ export function updateRoleMenus(roleId: number, menuIds: number[]) {
     return request({ url: `/roles/${roleId}/menus`, method: 'put', data: menuIds })
 }
 
+// Profile API
+export function changePassword(data: { oldPassword: string; newPassword: string }) {
+    return request({ url: '/users/change-password', method: 'put', data })
+}
+
 // Menu API
 export function getMenuTree() {
     return request({ url: '/menus/tree', method: 'get' })

@@ -60,7 +60,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import { User, Message, Phone, UserFilled } from '@element-plus/icons-vue'
+import { changePassword } from '@/api/system'
 
 interface UserInfo {
   username?: string
@@ -69,6 +71,7 @@ interface UserInfo {
   roles?: string[]
 }
 
+const router = useRouter()
 const userInfo = reactive<UserInfo>({})
 const pwdFormRef = ref()
 const loading = ref(false)
@@ -114,10 +117,11 @@ const handleChangePwd = async () => {
     if (!valid) return
     loading.value = true
     try {
-      // TODO: 调用修改密码接口
-      // await updatePassword({ oldPassword: pwdForm.oldPassword, newPassword: pwdForm.newPassword })
+      await changePassword({ oldPassword: pwdForm.oldPassword, newPassword: pwdForm.newPassword })
       ElMessage.success('密码修改成功，请重新登录')
-      resetForm()
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      router.push('/login')
     } catch {
       ElMessage.error('密码修改失败')
     } finally {
