@@ -29,9 +29,6 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         implements FreightOrderService {
 
     @Autowired
-    private FreightFeeItemService feeItemService;
-
-    @Autowired
     private FreightOrderLogService logService;
 
     @Autowired
@@ -90,7 +87,6 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         if (order == null) return null;
 
         FreightOrderVO vo = toVO(order);
-        vo.setFeeItems(feeItemService.listByOrderId(orderId));
         vo.setLogs(logService.listByOrderId(orderId));
         return vo;
     }
@@ -99,7 +95,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
     @Override
     @Transactional
-    public Long createOrder(FreightOrder order, List<FreightFeeItem> feeItems) {
+    public Long createOrder(FreightOrder order) {
         // 校验销售订单
         validateSaleOrderCode(order.getSaleOrderCode());
         // 校验货代
@@ -126,22 +122,10 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         // 初始化费用
         initializeFees(order);
 
+        // 计算合计
+        recalculateTotalsFromFields(order);
+
         this.save(order);
-
-        // 保存费用明细
-        if (feeItems != null && !feeItems.isEmpty()) {
-            for (FreightFeeItem item : feeItems) {
-                item.setItemId(null);
-                item.setOrderId(order.getOrderId());
-                if (item.getFeeAmount() != null && item.getFeeAmount().signum() < 0) {
-                    throw new IllegalArgumentException("费用金额不能为负数");
-                }
-            }
-            feeItemService.saveBatch(feeItems);
-        }
-
-        // 计算费用合计
-        recalculateTotals(order.getOrderId());
 
         // 记录日志
         logService.log(order.getOrderId(), order.getOrderCode(), "CREATE", null, null, "创建货代订单");
@@ -153,7 +137,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
     @Override
     @Transactional
-    public boolean updateOrder(FreightOrder order, List<FreightFeeItem> feeItems) {
+    public boolean updateOrder(FreightOrder order) {
         FreightOrder existing = this.getById(order.getOrderId());
         if (existing == null) {
             throw new IllegalArgumentException("货代订单不存在");
@@ -186,11 +170,6 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
             if (StringUtils.hasText(order.getInsuranceRemark())) existing.setInsuranceRemark(order.getInsuranceRemark());
             existing.setUpdateTime(LocalDateTime.now());
             this.updateById(existing);
-
-            // 已提交状态依然可以修改费用明细
-            if (feeItems != null) {
-                feeItemService.saveFeeItems(existing.getOrderId(), feeItems);
-            }
 
             logService.log(existing.getOrderId(), existing.getOrderCode(), "UPDATE", null, null, "修改已提交订单非核心字段");
             return true;
@@ -247,13 +226,13 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         validateInsurance(existing);
         validateDuplicateOrder(existing.getSaleOrderCode(), existing.getForwarderId(), existing.getOrderId());
 
+        // 更新海运费和地面费用
+        if (order.getTotalOceanFreight() != null) existing.setTotalOceanFreight(order.getTotalOceanFreight());
+        if (order.getTotalGroundFee() != null) existing.setTotalGroundFee(order.getTotalGroundFee());
+        recalculateTotalsFromFields(existing);
+
         existing.setUpdateTime(LocalDateTime.now());
         this.updateById(existing);
-
-        // 更新费用明细
-        if (feeItems != null) {
-            feeItemService.saveFeeItems(existing.getOrderId(), feeItems);
-        }
 
         logService.log(existing.getOrderId(), existing.getOrderCode(), "UPDATE", null, null, "修改草稿订单");
         return true;
@@ -350,32 +329,15 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         return true;
     }
 
-    // ============ 重新计算费用 ============
+    // ============ 重新计算费用（基于字段直接计算）============
 
-    @Override
-    public void recalculateTotals(Long orderId) {
-        FreightOrder order = this.getById(orderId);
-        if (order == null) return;
-
-        List<FreightFeeItem> items = feeItemService.listByOrderId(orderId);
-
-        BigDecimal oceanFreight = items.stream()
-                .filter(i -> i.getFeeType() != null && i.getFeeType() == 1)
-                .map(FreightFeeItem::getFeeAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal groundFee = items.stream()
-                .filter(i -> i.getFeeType() != null && i.getFeeType() == 2)
-                .map(FreightFeeItem::getFeeAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+    private void recalculateTotalsFromFields(FreightOrder order) {
+        BigDecimal oceanFreight = order.getTotalOceanFreight() != null ? order.getTotalOceanFreight() : BigDecimal.ZERO;
+        BigDecimal groundFee = order.getTotalGroundFee() != null ? order.getTotalGroundFee() : BigDecimal.ZERO;
         BigDecimal premium = order.getPremium() != null ? order.getPremium() : BigDecimal.ZERO;
-
         order.setTotalOceanFreight(oceanFreight);
         order.setTotalGroundFee(groundFee);
         order.setTotalAmount(oceanFreight.add(groundFee).add(premium));
-        order.setUpdateTime(LocalDateTime.now());
-        this.updateById(order);
     }
 
     // ============ 私有方法 ============
@@ -497,11 +459,6 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
             if (order.getInsuredAmount() == null || order.getPremium() == null) {
                 throw new IllegalArgumentException("提交失败：购买保险时保额和保费为必填项");
             }
-        }
-        // 检查是否录入至少一类费用
-        List<FreightFeeItem> items = feeItemService.listByOrderId(order.getOrderId());
-        if (items.isEmpty()) {
-            throw new IllegalArgumentException("提交失败：至少需要录入一条费用明细");
         }
     }
 

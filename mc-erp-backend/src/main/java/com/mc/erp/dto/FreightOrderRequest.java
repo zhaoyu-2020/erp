@@ -1,13 +1,11 @@
 package com.mc.erp.dto;
 
-import com.mc.erp.entity.FreightFeeItem;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 public class FreightOrderRequest {
@@ -44,5 +42,8 @@ public class FreightOrderRequest {
     private LocalDateTime estimatedArrivalDate;
     private String remark;
 
-    private List<FreightFeeItem> feeItems;
+    /** 海运费 */
+    private BigDecimal oceanFreight;
+    /** 地面费用 */
+    private BigDecimal groundFee;
 }

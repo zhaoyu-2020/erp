@@ -253,115 +253,22 @@
           </el-col>
         </el-row>
 
-        <!-- 费用明细 -->
-        <el-divider content-position="left">海运费</el-divider>
-        <div class="fee-section">
-          <el-button type="primary" size="small" icon="Plus" @click="addFeeItem(1)"
-            :disabled="isSettled">新增海运费</el-button>
-          <el-table :data="oceanFeeItems" border size="small" class="fee-table">
-            <el-table-column label="费用名称" min-width="140">
-              <template #default="{ row }">
-                <el-select v-model="row.feeName" filterable allow-create placeholder="选择或输入" size="small"
-                  :disabled="isSettled">
-                  <el-option label="海运基本费" value="海运基本费" />
-                  <el-option label="燃油附加费" value="燃油附加费" />
-                  <el-option label="货币附加费" value="货币附加费" />
-                  <el-option label="旺季附加费" value="旺季附加费" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="金额" width="140">
-              <template #default="{ row }">
-                <el-input-number v-model="row.feeAmount" :min="0" :precision="2" size="small" controls-position="right"
-                  :disabled="isSettled" />
-              </template>
-            </el-table-column>
-            <el-table-column label="币种" width="100">
-              <template #default="{ row }">
-                <el-select v-model="row.currency" size="small" :disabled="isSettled">
-                  <el-option label="USD" value="USD" />
-                  <el-option label="CNY" value="CNY" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="计费方式" width="120">
-              <template #default="{ row }">
-                <el-select v-model="row.billingMethod" size="small" clearable :disabled="isSettled">
-                  <el-option label="按柜" value="按柜" />
-                  <el-option label="按吨" value="按吨" />
-                  <el-option label="按体积" value="按体积" />
-                  <el-option label="固定金额" value="固定金额" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="备注" min-width="120">
-              <template #default="{ row }">
-                <el-input v-model="row.remark" size="small" placeholder="备注" />
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="70" align="center" v-if="!isSettled">
-              <template #default="{ $index }">
-                <el-button link type="danger" size="small" @click="removeFeeItem(1, $index)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="fee-total">海运费合计：<b>{{ formatMoney(oceanFeeTotal) }}</b></div>
-        </div>
-
-        <el-divider content-position="left">地面费用</el-divider>
-        <div class="fee-section">
-          <el-button type="primary" size="small" icon="Plus" @click="addFeeItem(2)"
-            :disabled="isSettled">新增地面费用</el-button>
-          <el-table :data="groundFeeItems" border size="small" class="fee-table">
-            <el-table-column label="费用名称" min-width="140">
-              <template #default="{ row }">
-                <el-select v-model="row.feeName" filterable allow-create placeholder="选择或输入" size="small"
-                  :disabled="isSettled">
-                  <el-option label="报关费" value="报关费" />
-                  <el-option label="拖车费" value="拖车费" />
-                  <el-option label="码头操作费" value="码头操作费" />
-                  <el-option label="文件费" value="文件费" />
-                  <el-option label="港杂费" value="港杂费" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="金额" width="140">
-              <template #default="{ row }">
-                <el-input-number v-model="row.feeAmount" :min="0" :precision="2" size="small" controls-position="right"
-                  :disabled="isSettled" />
-              </template>
-            </el-table-column>
-            <el-table-column label="币种" width="100">
-              <template #default="{ row }">
-                <el-select v-model="row.currency" size="small" :disabled="isSettled">
-                  <el-option label="USD" value="USD" />
-                  <el-option label="CNY" value="CNY" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="计费方式" width="120">
-              <template #default="{ row }">
-                <el-select v-model="row.billingMethod" size="small" clearable :disabled="isSettled">
-                  <el-option label="按柜" value="按柜" />
-                  <el-option label="按吨" value="按吨" />
-                  <el-option label="按体积" value="按体积" />
-                  <el-option label="固定金额" value="固定金额" />
-                </el-select>
-              </template>
-            </el-table-column>
-            <el-table-column label="备注" min-width="120">
-              <template #default="{ row }">
-                <el-input v-model="row.remark" size="small" placeholder="备注" />
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="70" align="center" v-if="!isSettled">
-              <template #default="{ $index }">
-                <el-button link type="danger" size="small" @click="removeFeeItem(2, $index)">删除</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="fee-total">地面费用合计：<b>{{ formatMoney(groundFeeTotal) }}</b></div>
-        </div>
+        <!-- 费用 -->
+        <el-divider content-position="left">费用</el-divider>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="海运费">
+              <el-input-number v-model="form.oceanFreight" :min="0" :precision="2" :step="100"
+                style="width: 100%" :disabled="isSettled" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="地面费用">
+              <el-input-number v-model="form.groundFee" :min="0" :precision="2" :step="100"
+                style="width: 100%" :disabled="isSettled" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <el-divider />
         <el-row :gutter="20">
@@ -426,38 +333,20 @@
           <el-descriptions-item label="发货日期">{{ detailData.shipDate || '-' }}</el-descriptions-item>
         </el-descriptions>
 
-        <!-- 区域3：费用明细 -->
-        <el-divider content-position="left">费用明细</el-divider>
-        <h4 style="margin: 8px 0">海运费 <span style="color: #409EFF">(合计：{{ formatMoney(detailData.totalOceanFreight)
-            }})</span></h4>
-        <el-table :data="detailOceanFees" border size="small" v-if="detailOceanFees.length">
-          <el-table-column label="费用名称" prop="feeName" />
-          <el-table-column label="金额" prop="feeAmount" width="120" align="right">
-            <template #default="{ row }">{{ formatMoney(row.feeAmount) }}</template>
-          </el-table-column>
-          <el-table-column label="币种" prop="currency" width="80" />
-          <el-table-column label="计费方式" prop="billingMethod" width="100" />
-          <el-table-column label="备注" prop="remark" show-overflow-tooltip />
-        </el-table>
-        <el-empty v-else description="暂无海运费明细" :image-size="40" />
-
-        <h4 style="margin: 16px 0 8px">地面费用 <span style="color: #E6A23C">(合计：{{ formatMoney(detailData.totalGroundFee)
-            }})</span></h4>
-        <el-table :data="detailGroundFees" border size="small" v-if="detailGroundFees.length">
-          <el-table-column label="费用名称" prop="feeName" />
-          <el-table-column label="金额" prop="feeAmount" width="120" align="right">
-            <template #default="{ row }">{{ formatMoney(row.feeAmount) }}</template>
-          </el-table-column>
-          <el-table-column label="币种" prop="currency" width="80" />
-          <el-table-column label="计费方式" prop="billingMethod" width="100" />
-          <el-table-column label="备注" prop="remark" show-overflow-tooltip />
-        </el-table>
-        <el-empty v-else description="暂无地面费用明细" :image-size="40" />
-
-        <div class="total-summary">
-          订单总费用：<b style="font-size: 16px; color: #409EFF">{{ formatMoney(detailData.totalAmount) }}</b>
-          <span style="margin-left: 8px; color: #999">{{ detailData.orderCurrency }}</span>
-        </div>
+        <!-- 区域3：费用 -->
+        <el-divider content-position="left">费用</el-divider>
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="海运费">
+            <span style="color: #409EFF; font-weight: bold">{{ formatMoney(detailData.totalOceanFreight) }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="地面费用">
+            <span style="color: #E6A23C; font-weight: bold">{{ formatMoney(detailData.totalGroundFee) }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="总费用">
+            <span style="color: #409EFF; font-size: 15px; font-weight: bold">{{ formatMoney(detailData.totalAmount) }}</span>
+            <span style="margin-left: 4px; color: #999">{{ detailData.orderCurrency }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
 
         <!-- 区域4：保险信息 -->
         <el-divider content-position="left">保险信息</el-divider>
@@ -611,33 +500,10 @@ const form = reactive<any>({
   orderCurrency: 'USD',
   departurePort: '',
   destinationPort: '',
+  oceanFreight: 0,
+  groundFee: 0,
   remark: ''
 })
-
-const feeItems = ref<any[]>([])
-
-const oceanFeeItems = computed(() => feeItems.value.filter(i => i.feeType === 1))
-const groundFeeItems = computed(() => feeItems.value.filter(i => i.feeType === 2))
-const oceanFeeTotal = computed(() => oceanFeeItems.value.reduce((s, i) => s + (Number(i.feeAmount) || 0), 0))
-const groundFeeTotal = computed(() => groundFeeItems.value.reduce((s, i) => s + (Number(i.feeAmount) || 0), 0))
-
-const addFeeItem = (type: number) => {
-  feeItems.value.push({
-    feeType: type,
-    feeName: '',
-    feeAmount: 0,
-    currency: form.orderCurrency || 'USD',
-    billingMethod: '',
-    remark: ''
-  })
-}
-
-const removeFeeItem = (type: number, index: number) => {
-  const items = type === 1 ? oceanFeeItems.value : groundFeeItems.value
-  const item = items[index]
-  const idx = feeItems.value.indexOf(item)
-  if (idx >= 0) feeItems.value.splice(idx, 1)
-}
 
 const rules = {
   saleOrderCode: [{ required: true, message: '请选择销售订单号', trigger: 'change' }],
@@ -666,8 +532,9 @@ const resetForm = () => {
   form.orderCurrency = 'USD'
   form.departurePort = ''
   form.destinationPort = ''
+  form.oceanFreight = 0
+  form.groundFee = 0
   form.remark = ''
-  feeItems.value = []
   editingOrder.value = null
   formRef.value?.clearValidate()
 }
@@ -704,9 +571,10 @@ const handleEdit = async (row: any) => {
     orderCurrency: d.orderCurrency,
     departurePort: d.departurePort,
     destinationPort: d.destinationPort,
+    oceanFreight: d.totalOceanFreight ?? 0,
+    groundFee: d.totalGroundFee ?? 0,
     remark: d.remark
   })
-  feeItems.value = (d.feeItems || []).map((i: any) => ({ ...i }))
   // 将当前销售订单号加入列表以便回显
   if (d.saleOrderCode) {
     salesOrderList.value = [{ orderNo: d.saleOrderCode }]
@@ -724,7 +592,7 @@ const handleFormSubmit = async () => {
   }
   submitLoading.value = true
   try {
-    const payload = { order: { ...form }, feeItems: feeItems.value }
+    const payload = { ...form }
     if (form.orderId) {
       await updateFreightOrder(payload)
       ElMessage.success('更新成功')
@@ -742,8 +610,6 @@ const handleFormSubmit = async () => {
 // ============ 详情 ============
 const detailVisible = ref(false)
 const detailData = ref<any>(null)
-const detailOceanFees = computed(() => (detailData.value?.feeItems || []).filter((i: any) => i.feeType === 1))
-const detailGroundFees = computed(() => (detailData.value?.feeItems || []).filter((i: any) => i.feeType === 2))
 
 const handleDetail = async (row: any) => {
   const res = await getFreightOrderDetail(row.orderId)

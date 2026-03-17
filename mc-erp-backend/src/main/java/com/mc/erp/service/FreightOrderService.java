@@ -3,11 +3,8 @@ package com.mc.erp.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.FreightOrderQuery;
-import com.mc.erp.entity.FreightFeeItem;
 import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.vo.FreightOrderVO;
-
-import java.util.List;
 
 public interface FreightOrderService extends IService<FreightOrder> {
 
@@ -17,19 +14,19 @@ public interface FreightOrderService extends IService<FreightOrder> {
     PageResult<FreightOrderVO> getPage(FreightOrderQuery query);
 
     /**
-     * 查询货代订单详情（含费用明细、操作日志）
+     * 查询货代订单详情（含操作日志）
      */
     FreightOrderVO getDetail(Long orderId);
 
     /**
-     * 创建货代订单（含费用明细）
+     * 创建货代订单
      */
-    Long createOrder(FreightOrder order, List<FreightFeeItem> feeItems);
+    Long createOrder(FreightOrder order);
 
     /**
      * 修改货代订单（按状态限制可编辑字段）
      */
-    boolean updateOrder(FreightOrder order, List<FreightFeeItem> feeItems);
+    boolean updateOrder(FreightOrder order);
 
     /**
      * 删除货代订单（仅草稿状态）
@@ -50,9 +47,4 @@ public interface FreightOrderService extends IService<FreightOrder> {
      * 作废订单
      */
     boolean cancelOrder(Long orderId, String cancelReason);
-
-    /**
-     * 重新计算订单费用合计
-     */
-    void recalculateTotals(Long orderId);
 }

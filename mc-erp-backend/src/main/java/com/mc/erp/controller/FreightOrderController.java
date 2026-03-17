@@ -4,11 +4,9 @@ import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FreightOrderQuery;
 import com.mc.erp.dto.FreightOrderRequest;
-import com.mc.erp.entity.FreightFeeItem;
 import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.entity.FreightOrderLog;
 import com.mc.erp.enums.FreightOrderStatus;
-import com.mc.erp.service.FreightFeeItemService;
 import com.mc.erp.service.FreightOrderLogService;
 import com.mc.erp.service.FreightOrderService;
 import com.mc.erp.vo.FreightOrderVO;
@@ -28,9 +26,6 @@ public class FreightOrderController {
 
     @Autowired
     private FreightOrderService freightOrderService;
-
-    @Autowired
-    private FreightFeeItemService feeItemService;
 
     @Autowired
     private FreightOrderLogService logService;
@@ -57,7 +52,7 @@ public class FreightOrderController {
     @PostMapping
     public Result<Long> create(@Valid @RequestBody FreightOrderRequest request) {
         FreightOrder order = toOrder(request);
-        return Result.success(freightOrderService.createOrder(order, request.getFeeItems()));
+        return Result.success(freightOrderService.createOrder(order));
     }
 
     /**
@@ -66,7 +61,7 @@ public class FreightOrderController {
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody FreightOrderRequest request) {
         FreightOrder order = toOrder(request);
-        return Result.success(freightOrderService.updateOrder(order, request.getFeeItems()));
+        return Result.success(freightOrderService.updateOrder(order));
     }
 
     /**
@@ -103,30 +98,6 @@ public class FreightOrderController {
     }
 
     /**
-     * 获取费用明细列表
-     */
-    @GetMapping("/{orderId}/fee-items")
-    public Result<List<FreightFeeItem>> getFeeItems(@PathVariable Long orderId) {
-        return Result.success(feeItemService.listByOrderId(orderId));
-    }
-
-    /**
-     * 保存费用明细（批量替换）
-     */
-    @PostMapping("/{orderId}/fee-items")
-    public Result<Boolean> saveFeeItems(@PathVariable Long orderId, @RequestBody List<FreightFeeItem> items) {
-        return Result.success(feeItemService.saveFeeItems(orderId, items));
-    }
-
-    /**
-     * 删除单个费用明细
-     */
-    @DeleteMapping("/fee-items/{itemId}")
-    public Result<Boolean> deleteFeeItem(@PathVariable Long itemId) {
-        return Result.success(feeItemService.deleteFeeItem(itemId));
-    }
-
-    /**
      * 获取操作日志列表
      */
     @GetMapping("/{orderId}/logs")
@@ -145,6 +116,13 @@ public class FreightOrderController {
     private FreightOrder toOrder(FreightOrderRequest request) {
         FreightOrder order = new FreightOrder();
         BeanUtils.copyProperties(request, order);
+        // 将请求中的 oceanFreight/groundFee 映射到实体的 totalOceanFreight/totalGroundFee
+        if (request.getOceanFreight() != null) {
+            order.setTotalOceanFreight(request.getOceanFreight());
+        }
+        if (request.getGroundFee() != null) {
+            order.setTotalGroundFee(request.getGroundFee());
+        }
         return order;
     }
 }
