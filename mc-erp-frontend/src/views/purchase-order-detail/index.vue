@@ -211,7 +211,7 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="价格汇总">
-              <el-input :model-value="computedPriceTotal" disabled placeholder="结算价格 × 吨数（自动计算）" />
+              <el-input :model-value="computedPriceTotal" disabled placeholder="结算价格 × 结算数量（自动计算）" />
             </el-form-item>
           </el-col>
         </el-row>

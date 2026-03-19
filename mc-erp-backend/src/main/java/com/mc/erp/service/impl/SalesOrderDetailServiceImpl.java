@@ -138,6 +138,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
 
         BigDecimal totalOrdered = BigDecimal.ZERO;
         BigDecimal totalActual = BigDecimal.ZERO;
+        BigDecimal contractAmount = BigDecimal.ZERO;
 
         for (SalesOrderDetail detail : details) {
             // 补全产品类型、产品 ID 以及 priceTotal
@@ -152,6 +153,9 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             if (detail.getActualQuantity() != null) {
                 totalActual = totalActual.add(detail.getActualQuantity());
             }
+            if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
+                contractAmount = contractAmount.add(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
+            }
         }
 
         // 更新销售订单的汇总数量
@@ -159,6 +163,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         order.setId(orderId);
         order.setContractTotalQuantity(totalOrdered);
         order.setSettlementTotalQuantity(totalActual);
+        order.setContractAmount(contractAmount);
         salesOrderMapper.updateById(order);
     }
 
