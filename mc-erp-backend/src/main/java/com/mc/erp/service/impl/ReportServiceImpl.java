@@ -5,6 +5,7 @@ import com.mc.erp.dto.ReportQuery;
 import com.mc.erp.entity.Customer;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
+import com.mc.erp.enums.SalesOrderStatus;
 import com.mc.erp.service.*;
 import com.mc.erp.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,5 +229,39 @@ public class ReportServiceImpl implements ReportService {
     public List<FinanceReportVO> getFinanceReport(ReportQuery query) {
         // 简化实现，返回空列表
         return new ArrayList<>();
+    }
+
+    @Override
+    public List<OrderStatusReportVO> getOrderStatusReport() {
+        List<SalesOrder> allOrders = salesOrderService.list();
+        Map<Integer, Long> countByStatus = allOrders.stream()
+                .filter(o -> o.getStatus() != null)
+                .collect(Collectors.groupingBy(SalesOrder::getStatus, Collectors.counting()));
+
+        return java.util.Arrays.stream(SalesOrderStatus.values())
+                .map(s -> new OrderStatusReportVO(
+                        s.getCode(),
+                        s.getLabel(),
+                        countByStatus.getOrDefault(s.getCode(), 0L).intValue(),
+                        s.getCode() == SalesOrderStatus.COMPLETED.getCode()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IncompleteOrderStatusVO> getIncompleteOrdersStatus() {
+        return salesOrderService.list().stream()
+                .filter(o -> o.getStatus() != null && o.getStatus() != SalesOrderStatus.COMPLETED.getCode())
+                .sorted(java.util.Comparator.comparing(SalesOrder::getOrderNo))
+                .map(o -> {
+                    String label;
+                    try {
+                        label = SalesOrderStatus.of(o.getStatus()).getLabel();
+                    } catch (Exception e) {
+                        label = String.valueOf(o.getStatus());
+                    }
+                    return new IncompleteOrderStatusVO(o.getOrderNo(), o.getStatus(), label);
+                })
+                .collect(Collectors.toList());
     }
 }

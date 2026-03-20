@@ -80,6 +80,10 @@
               <el-icon><Wallet /></el-icon>
               <template #title>财务报表</template>
             </el-menu-item>
+            <el-menu-item index="/reports/order-status">
+              <el-icon><PieChart /></el-icon>
+              <template #title>未完订单状态图</template>
+            </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/system">
             <template #title>

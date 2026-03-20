@@ -32,3 +32,23 @@ export function getFinanceReport(params: any) {
     params
   })
 }
+
+/**
+ * 获取订单状态报表（未完订单状态图）
+ */
+export function getOrderStatusReport() {
+  return request({
+    url: '/reports/order-status',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取所有未完成订单的状态进度列表
+ */
+export function getIncompleteOrdersStatus() {
+  return request({
+    url: '/reports/incomplete-orders',
+    method: 'get'
+  })
+}

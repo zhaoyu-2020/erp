@@ -39,6 +39,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '财务报表', icon: 'Wallet' }
             },
             {
+                path: 'reports/order-status',
+                name: 'OrderStatusReport',
+                component: () => import('@/views/reports/order-status.vue'),
+                meta: { title: '未完订单状态图', icon: 'PieChart' }
+            },
+            {
                 path: 'customers',
                 name: 'CustomerList',
                 component: () => import('@/views/customer/index.vue'),
