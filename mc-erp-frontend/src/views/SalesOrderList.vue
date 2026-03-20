@@ -111,6 +111,7 @@
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="success" @click="handleGoDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
             <!-- 状态流转下拉 -->
             <el-dropdown
               v-if="getAllowedNextStatuses(scope.row.status).length > 0"
@@ -474,15 +475,29 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
-import { getOrderPage, saveSalesOrder, updateSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
+import { getOrderPage, saveSalesOrder, updateSalesOrder, deleteSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
 import { getUserListWithRoles } from '@/api/system'
 import { getCustomerPage } from '@/api/customer'
 import { useOrderStatus } from '@/composables/useOrderStatus'
 
 const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('sales')
+
+// Admin check
+const isAdmin = ref(false)
+const checkAdmin = async () => {
+  try {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    const res = await getUserListWithRoles()
+    const allUsers = res.data || []
+    const currentUser = allUsers.find((u: any) => u.id === userInfo.userId)
+    isAdmin.value = !!(currentUser && Array.isArray(currentUser.roleNames) && currentUser.roleNames.includes('管理员'))
+  } catch {
+    isAdmin.value = false
+  }
+}
 
 // Data definitions
 const loading = ref(false)
@@ -808,6 +823,13 @@ const handleSubmit = async () => {
   }
 }
 
+const handleDelete = async (row: any) => {
+  await ElMessageBox.confirm(`确认删除订单 "${row.orderNo}"？此操作不可恢复。`, '提示', { type: 'warning' })
+  await deleteSalesOrder(row.id)
+  ElMessage.success('删除成功')
+  getList()
+}
+
 const handleExport = async () => {
   const res = await getOrderPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
@@ -921,6 +943,7 @@ const onSalespersonChange = async (salespersonId: number | null) => {
 
 // Init
 onMounted(() => {
+  checkAdmin()
   loadSalespersonOptions()
   getList()
 })

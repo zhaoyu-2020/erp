@@ -9,6 +9,7 @@ import com.mc.erp.dto.SalesOrderImportRow;
 import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.service.SalesOrderService;
+import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.SalesOrderVO;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,9 @@ public class SalesOrderController {
 
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
+        if (!SecurityUtil.isAdmin()) {
+            return Result.error(403, "仅管理员可删除销售订单");
+        }
         return Result.success(salesOrderService.removeById(id));
     }
 
