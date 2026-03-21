@@ -5,6 +5,7 @@ import com.mc.erp.dto.ReportQuery;
 import com.mc.erp.service.ReportService;
 import com.mc.erp.vo.DashboardVO;
 import com.mc.erp.vo.FinanceReportVO;
+import com.mc.erp.vo.IncompleteOrderFinanceVO;
 import com.mc.erp.vo.IncompleteOrderStatusVO;
 import com.mc.erp.vo.OrderStatusReportVO;
 import com.mc.erp.vo.SalesReportVO;
@@ -61,5 +62,13 @@ public class ReportController {
     @GetMapping("/incomplete-orders")
     public Result<List<IncompleteOrderStatusVO>> getIncompleteOrdersStatus() {
         return Result.success(reportService.getIncompleteOrdersStatus());
+    }
+
+    /**
+     * 获取所有未完成订单的资金数据（用于资金图）
+     */
+    @GetMapping("/incomplete-finance")
+    public Result<List<IncompleteOrderFinanceVO>> getIncompleteOrdersFinance() {
+        return Result.success(reportService.getIncompleteOrdersFinance());
     }
 }

@@ -84,6 +84,10 @@
               <el-icon><PieChart /></el-icon>
               <template #title>未完订单状态图</template>
             </el-menu-item>
+            <el-menu-item index="/reports/order-finance">
+              <el-icon><Money /></el-icon>
+              <template #title>未完订单资金图</template>
+            </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/system">
             <template #title>

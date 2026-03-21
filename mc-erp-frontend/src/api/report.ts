@@ -52,3 +52,13 @@ export function getIncompleteOrdersStatus() {
     method: 'get'
   })
 }
+
+/**
+ * 获取所有未完成订单的资金数据（用于资金图）
+ */
+export function getIncompleteOrdersFinance() {
+  return request({
+    url: '/reports/incomplete-finance',
+    method: 'get'
+  })
+}

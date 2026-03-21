@@ -264,4 +264,33 @@ public class ReportServiceImpl implements ReportService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<IncompleteOrderFinanceVO> getIncompleteOrdersFinance() {
+        List<SalesOrder> incompleteSales = salesOrderService.list().stream()
+                .filter(o -> o.getStatus() != null && o.getStatus() != SalesOrderStatus.COMPLETED.getCode())
+                .sorted(java.util.Comparator.comparing(SalesOrder::getOrderNo))
+                .collect(Collectors.toList());
+
+        List<PurchaseOrder> allPurchase = purchaseOrderService.list();
+        Map<String, List<PurchaseOrder>> purchaseByOrderNo = allPurchase.stream()
+                .filter(p -> p.getSalesOrderNo() != null)
+                .collect(Collectors.groupingBy(PurchaseOrder::getSalesOrderNo));
+
+        return incompleteSales.stream().map(o -> {
+            BigDecimal salesContract = o.getContractAmount() != null ? o.getContractAmount() : BigDecimal.ZERO;
+            BigDecimal salesReceived = o.getReceivedAmount() != null ? o.getReceivedAmount() : BigDecimal.ZERO;
+
+            List<PurchaseOrder> linked = purchaseByOrderNo.getOrDefault(o.getOrderNo(), java.util.Collections.emptyList());
+            BigDecimal purchaseContract = linked.stream()
+                    .map(p -> p.getActualAmount() != null ? p.getActualAmount() :
+                              p.getTotalAmount() != null ? p.getTotalAmount() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal purchaseDeposit = linked.stream()
+                    .map(p -> p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            return new IncompleteOrderFinanceVO(o.getOrderNo(), salesContract, salesReceived, purchaseContract, purchaseDeposit);
+        }).collect(Collectors.toList());
+    }
 }
