@@ -3,6 +3,7 @@ package com.mc.erp.service;
 import com.mc.erp.dto.ReportQuery;
 import com.mc.erp.vo.DashboardVO;
 import com.mc.erp.vo.FinanceReportVO;
+import com.mc.erp.vo.HalfMonthCashFlowVO;
 import com.mc.erp.vo.IncompleteOrderFinanceVO;
 import com.mc.erp.vo.IncompleteOrderStatusVO;
 import com.mc.erp.vo.OrderStatusReportVO;
@@ -44,4 +45,9 @@ public interface ReportService {
      * 获取所有未完成订单的资金数据（用于资金图）
      */
     List<IncompleteOrderFinanceVO> getIncompleteOrdersFinance();
+
+    /**
+     * 获取资金收付预期半月图数据
+     */
+    List<HalfMonthCashFlowVO> getHalfMonthCashFlow();
 }

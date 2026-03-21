@@ -88,6 +88,10 @@
               <el-icon><Money /></el-icon>
               <template #title>未完订单资金图</template>
             </el-menu-item>
+            <el-menu-item index="/reports/cashflow">
+              <el-icon><Timer /></el-icon>
+              <template #title>资金收付预期半月图</template>
+            </el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/system">
             <template #title>

@@ -15,9 +15,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -292,5 +290,110 @@ public class ReportServiceImpl implements ReportService {
 
             return new IncompleteOrderFinanceVO(o.getOrderNo(), salesContract, salesReceived, purchaseContract, purchaseDeposit);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<HalfMonthCashFlowVO> getHalfMonthCashFlow() {
+        // 查询所有未完成的销售订单
+        List<SalesOrder> incompleteSales = salesOrderService.list().stream()
+                .filter(o -> o.getStatus() != null && o.getStatus() != SalesOrderStatus.COMPLETED.getCode())
+                .collect(Collectors.toList());
+
+        // 查询所有采购订单（关联未完成销售订单）
+        Set<String> incompleteOrderNos = incompleteSales.stream()
+                .map(SalesOrder::getOrderNo)
+                .collect(Collectors.toSet());
+        List<PurchaseOrder> linkedPurchases = purchaseOrderService.list().stream()
+                .filter(p -> p.getSalesOrderNo() != null && incompleteOrderNos.contains(p.getSalesOrderNo()))
+                .collect(Collectors.toList());
+
+        // 确定时间范围：从当前月初开始，到数据中最远日期后再加一个月
+        LocalDate now = LocalDate.now();
+        LocalDate rangeStart = now.withDayOfMonth(1);
+        LocalDate rangeEnd = now.plusMonths(6); // 默认至少6个月
+
+        for (SalesOrder o : incompleteSales) {
+            if (o.getExpectedReceiptDays() != null && o.getExpectedReceiptDays().isAfter(rangeEnd)) {
+                rangeEnd = o.getExpectedReceiptDays();
+            }
+        }
+        for (PurchaseOrder p : linkedPurchases) {
+            if (p.getDeliveryDate() != null && p.getDeliveryDate().isAfter(rangeEnd)) {
+                rangeEnd = p.getDeliveryDate();
+            }
+        }
+        rangeEnd = rangeEnd.plusMonths(1).withDayOfMonth(1).minusDays(1); // 延伸到月末
+
+        // 生成半月时间段
+        List<HalfMonthCashFlowVO> result = new ArrayList<>();
+        LocalDate cursor = rangeStart;
+        while (!cursor.isAfter(rangeEnd)) {
+            LocalDate periodStart;
+            LocalDate periodEnd;
+            String label;
+
+            if (cursor.getDayOfMonth() <= 15) {
+                periodStart = cursor.withDayOfMonth(1);
+                periodEnd = cursor.withDayOfMonth(15);
+                label = cursor.getMonthValue() + "月15日";
+            } else {
+                periodStart = cursor.withDayOfMonth(16);
+                periodEnd = YearMonth.from(cursor).atEndOfMonth();
+                label = cursor.getMonthValue() + "月" + periodEnd.getDayOfMonth() + "日";
+            }
+
+            // 计算该时间段的预计收款（销售订单 expectedReceiptDays 落在此区间）
+            BigDecimal collection = BigDecimal.ZERO;
+            List<String> collectionOrders = new ArrayList<>();
+            for (SalesOrder o : incompleteSales) {
+                if (o.getExpectedReceiptDays() != null
+                        && !o.getExpectedReceiptDays().isBefore(periodStart)
+                        && !o.getExpectedReceiptDays().isAfter(periodEnd)) {
+                    BigDecimal contract = o.getContractAmount() != null ? o.getContractAmount() : BigDecimal.ZERO;
+                    BigDecimal received = o.getReceivedAmount() != null ? o.getReceivedAmount() : BigDecimal.ZERO;
+                    BigDecimal remaining = contract.subtract(received);
+                    if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+                        collection = collection.add(remaining);
+                        collectionOrders.add(o.getOrderNo());
+                    }
+                }
+            }
+
+            // 计算该时间段的预计付款（采购订单 deliveryDate 落在此区间 → 到期需付尾款）
+            BigDecimal payment = BigDecimal.ZERO;
+            List<String> paymentOrders = new ArrayList<>();
+            for (PurchaseOrder p : linkedPurchases) {
+                if (p.getDeliveryDate() != null
+                        && !p.getDeliveryDate().isBefore(periodStart)
+                        && !p.getDeliveryDate().isAfter(periodEnd)) {
+                    BigDecimal total = p.getTotalAmount() != null ? p.getTotalAmount() : BigDecimal.ZERO;
+                    BigDecimal deposit = p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO;
+                    BigDecimal remaining = total.subtract(deposit);
+                    if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+                        payment = payment.add(remaining);
+                        paymentOrders.add(p.getSalesOrderNo() + "(" + p.getPoNo() + ")");
+                    }
+                }
+            }
+
+            HalfMonthCashFlowVO vo = new HalfMonthCashFlowVO();
+            vo.setPeriodLabel(label);
+            vo.setPeriodStart(periodStart);
+            vo.setPeriodEnd(periodEnd);
+            vo.setExpectedCollection(collection);
+            vo.setExpectedPayment(payment);
+            vo.setCollectionOrderNos(collectionOrders);
+            vo.setPaymentOrderNos(paymentOrders);
+            result.add(vo);
+
+            // 移动到下一个半月
+            if (cursor.getDayOfMonth() <= 15) {
+                cursor = cursor.withDayOfMonth(16);
+            } else {
+                cursor = cursor.plusMonths(1).withDayOfMonth(1);
+            }
+        }
+
+        return result;
     }
 }

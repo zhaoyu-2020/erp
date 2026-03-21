@@ -51,6 +51,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '未完订单资金图', icon: 'Money' }
             },
             {
+                path: 'reports/cashflow',
+                name: 'CashFlowReport',
+                component: () => import('@/views/reports/cashflow.vue'),
+                meta: { title: '资金收付预期半月图', icon: 'Timer' }
+            },
+            {
                 path: 'customers',
                 name: 'CustomerList',
                 component: () => import('@/views/customer/index.vue'),

@@ -5,6 +5,7 @@ import com.mc.erp.dto.ReportQuery;
 import com.mc.erp.service.ReportService;
 import com.mc.erp.vo.DashboardVO;
 import com.mc.erp.vo.FinanceReportVO;
+import com.mc.erp.vo.HalfMonthCashFlowVO;
 import com.mc.erp.vo.IncompleteOrderFinanceVO;
 import com.mc.erp.vo.IncompleteOrderStatusVO;
 import com.mc.erp.vo.OrderStatusReportVO;
@@ -70,5 +71,13 @@ public class ReportController {
     @GetMapping("/incomplete-finance")
     public Result<List<IncompleteOrderFinanceVO>> getIncompleteOrdersFinance() {
         return Result.success(reportService.getIncompleteOrdersFinance());
+    }
+
+    /**
+     * 获取资金收付预期半月图数据
+     */
+    @GetMapping("/half-month-cashflow")
+    public Result<List<HalfMonthCashFlowVO>> getHalfMonthCashFlow() {
+        return Result.success(reportService.getHalfMonthCashFlow());
     }
 }

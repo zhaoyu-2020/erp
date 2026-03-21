@@ -62,3 +62,13 @@ export function getIncompleteOrdersFinance() {
     method: 'get'
   })
 }
+
+/**
+ * 获取资金收付预期半月图数据
+ */
+export function getHalfMonthCashFlow() {
+  return request({
+    url: '/reports/half-month-cashflow',
+    method: 'get'
+  })
+}
