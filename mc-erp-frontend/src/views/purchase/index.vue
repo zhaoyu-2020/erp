@@ -74,6 +74,7 @@
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="primary" @click="goToDetail(scope.row)">明细</el-button>
             <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
             <el-dropdown
               v-if="getAllowedNextStatuses(scope.row.status).length > 0"
               @command="(code: number) => changeStatus(scope.row.id, code, getList)"
@@ -426,16 +427,30 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { exportToCsv } from '@/utils/export'
-import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, uploadPurchaseFiles, importPurchaseOrderContract, importPurchaseOrderDetails, downloadPurchaseContractTemplate as apiDownloadPoContract, downloadPurchaseDetailsTemplate as apiDownloadPoDetails } from '@/api/purchaseOrder'
+import { getPurchaseOrderPage, savePurchaseOrder, updatePurchaseOrder, deletePurchaseOrder, uploadPurchaseFiles, importPurchaseOrderContract, importPurchaseOrderDetails, downloadPurchaseContractTemplate as apiDownloadPoContract, downloadPurchaseDetailsTemplate as apiDownloadPoDetails } from '@/api/purchaseOrder'
 import { getSupplierPage } from '@/api/supplier'
 import { getUserListWithRoles } from '@/api/system'
 import { useOrderStatus } from '@/composables/useOrderStatus'
 
 const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('purchase')
+
+// Admin check
+const isAdmin = ref(false)
+const checkAdmin = async () => {
+  try {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+    const res = await getUserListWithRoles()
+    const users = res.data || []
+    const currentUser = users.find((u: any) => u.id === userInfo.userId)
+    isAdmin.value = !!(currentUser && Array.isArray(currentUser.roleCodes) && currentUser.roleCodes.includes('admin'))
+  } catch {
+    isAdmin.value = false
+  }
+}
 
 const router = useRouter()
 const loading = ref(false)
@@ -863,7 +878,15 @@ const downloadTpl = async (apiFn: () => Promise<any>, filename: string) => {
 const handleDownloadPoContractTpl = () => downloadTpl(apiDownloadPoContract, '采购订单合同导入模板.xlsx')
 const handleDownloadPoDetailsTpl = () => downloadTpl(apiDownloadPoDetails, '采购订单明细导入模板.xlsx')
 
+const handleDelete = async (row: any) => {
+  await ElMessageBox.confirm(`确认删除采购订单 "${row.poNo}"？此操作不可恢复。`, '提示', { type: 'warning' })
+  await deletePurchaseOrder(row.id)
+  ElMessage.success('删除成功')
+  getList()
+}
+
 onMounted(() => {
+  checkAdmin()
   loadUserOptions()
   getList()
 })

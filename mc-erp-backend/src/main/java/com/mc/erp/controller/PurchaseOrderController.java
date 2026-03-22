@@ -9,6 +9,7 @@ import com.mc.erp.dto.PurchaseOrderImportRow;
 import com.mc.erp.dto.PurchaseOrderQuery;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.service.PurchaseOrderService;
+import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.PurchaseOrderVO;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,9 @@ public class PurchaseOrderController {
 
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
+        if (!SecurityUtil.isAdmin()) {
+            return Result.error(403, "仅管理员可删除采购订单");
+        }
         return Result.success(purchaseOrderService.removeById(id));
     }
 
