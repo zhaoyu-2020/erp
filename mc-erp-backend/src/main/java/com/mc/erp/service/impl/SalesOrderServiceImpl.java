@@ -208,7 +208,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
         if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
             uw.set(SalesOrder::getStatus, 6);
-        } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0) {
+        } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0 && order.getStatus() < 2) {
             uw.set(SalesOrder::getStatus, 2);
         }
 
