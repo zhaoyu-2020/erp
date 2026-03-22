@@ -22,9 +22,6 @@
         <el-table-column label="材质" prop="material" width="100" />
         <el-table-column label="长度(m)" prop="length" width="100" align="center" />
         <el-table-column label="公差" prop="tolerance" width="100" />
-        <!-- <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
-        <el-table-column label="数量(pc)" prop="quantityPc" width="100" align="right" />
-        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" /> -->
         <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
         <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
           <template #default="{ row }">
@@ -94,25 +91,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-
-        <!-- <el-divider content-position="left" class="group-divider">数量</el-divider>
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="数量（t）" prop="quantityTon">
-              <el-input v-model="form.quantityTon" placeholder="吨数" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="数量（pc）" prop="quantityPc">
-              <el-input v-model="form.quantityPc" placeholder="片数" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="数量（m）" prop="quantityMeter">
-              <el-input v-model="form.quantityMeter" placeholder="米数" />
-            </el-form-item>
-          </el-col>
-        </el-row> -->
 
         <el-divider content-position="left" class="group-divider">价格</el-divider>
         <el-row :gutter="16">
@@ -256,9 +234,6 @@ const form = reactive<any>({
   material: '',
   length: '',
   tolerance: '',
-  quantityTon: null,
-  quantityPc: null,
-  quantityMeter: null,
   settlementPrice: null,
   packagingWeight: null,
   packaging: '',
@@ -338,9 +313,6 @@ const handleEdit = (row: any) => {
     material: row.material ?? '',
     length: row.length ?? '',
     tolerance: row.tolerance ?? '',
-    quantityTon: row.quantityTon ?? null,
-    quantityPc: row.quantityPc ?? null,
-    quantityMeter: row.quantityMeter ?? null,
     settlementPrice: row.settlementPrice ?? null,
     packagingWeight: row.packagingWeight ?? null,
     packaging: row.packaging ?? '',
@@ -376,9 +348,6 @@ const resetForm = () => {
   form.material = ''
   form.length = ''
   form.tolerance = ''
-  form.quantityTon = null
-  form.quantityPc = null
-  form.quantityMeter = null
   form.settlementPrice = null
   form.packagingWeight = null
   form.packaging = ''
@@ -425,10 +394,6 @@ const handleExport = async () => {
     { label: '材质', key: 'material' },
     { label: '长度(m)', key: 'length' },
     { label: '公差', key: 'tolerance' },
-    // { label: '数量(t)', key: 'quantityTon' },
-    // { label: '数量(pc)', key: 'quantityPc' },
-    
-    // { label: '数量(m)', key: 'quantityMeter' },
     { label: '结算价格', key: 'settlementPrice' },
     { label: '价格汇总', key: 'priceTotal' },
     { label: '包装重量', key: 'packagingWeight' },

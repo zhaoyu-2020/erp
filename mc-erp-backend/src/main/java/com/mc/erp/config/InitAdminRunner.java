@@ -246,8 +246,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("Q235B");
                 detail.setLength("12");
                 detail.setTolerance("±2mm");
-                detail.setQuantityTon(new BigDecimal("40"));
-                detail.setQuantityPc(120);
                 detail.setSettlementPrice(new BigDecimal("2000"));
                 detail.setPriceTotal(new BigDecimal("80000"));
                 detail.setPackaging("裸装");
@@ -264,8 +262,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("Q345B");
                 detail.setLength("9");
                 detail.setTolerance("±1.5mm");
-                detail.setQuantityTon(new BigDecimal("20"));
-                detail.setQuantityPc(80);
                 detail.setSettlementPrice(new BigDecimal("2100"));
                 detail.setPriceTotal(new BigDecimal("42000"));
                 detail.setPackaging("裸装");
@@ -312,8 +308,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SS400");
                 detail.setLength("6");
                 detail.setTolerance("±1.5mm");
-                detail.setQuantityTon(new BigDecimal("25"));
-                detail.setQuantityPc(200);
                 detail.setSettlementPrice(new BigDecimal("1800"));
                 detail.setPriceTotal(new BigDecimal("45000"));
                 detail.setPackaging("托盘");
@@ -330,8 +324,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SS400");
                 detail.setLength("6");
                 detail.setTolerance("±1mm");
-                detail.setQuantityTon(new BigDecimal("20"));
-                detail.setQuantityPc(280);
                 detail.setSettlementPrice(new BigDecimal("1600"));
                 detail.setPriceTotal(new BigDecimal("32000"));
                 detail.setPackaging("托盘");
@@ -374,7 +366,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SPCC");
                 detail.setLength("");
                 detail.setTolerance("±0.1mm");
-                detail.setQuantityTon(new BigDecimal("8"));
                 detail.setCoilInnerDiameter("508mm");
                 detail.setSettlementPrice(new BigDecimal("1400"));
                 detail.setPriceTotal(new BigDecimal("11200"));
@@ -391,7 +382,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SPCC");
                 detail.setLength("");
                 detail.setTolerance("±0.1mm");
-                detail.setQuantityTon(new BigDecimal("7"));
                 detail.setCoilInnerDiameter("508mm");
                 detail.setSettlementPrice(new BigDecimal("1380"));
                 detail.setPriceTotal(new BigDecimal("9660"));
@@ -437,8 +427,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("Q235B");
                 detail.setLength("12");
                 detail.setTolerance("±2mm");
-                detail.setQuantityTon(new BigDecimal("40"));
-                detail.setQuantityPc(120);
                 detail.setSettlementPrice(new BigDecimal("1800"));
                 detail.setPriceTotal(new BigDecimal("72000"));
                 detail.setPackaging("裸装");
@@ -455,8 +443,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("Q345B");
                 detail.setLength("9");
                 detail.setTolerance("±1.5mm");
-                detail.setQuantityTon(new BigDecimal("20"));
-                detail.setQuantityPc(80);
                 detail.setSettlementPrice(new BigDecimal("1900"));
                 detail.setPriceTotal(new BigDecimal("38000"));
                 detail.setPackaging("裸装");
@@ -494,8 +480,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SS400");
                 detail.setLength("6");
                 detail.setTolerance("±1.5mm");
-                detail.setQuantityTon(new BigDecimal("25"));
-                detail.setQuantityPc(200);
                 detail.setSettlementPrice(new BigDecimal("1600"));
                 detail.setPriceTotal(new BigDecimal("40000"));
                 detail.setPackaging("托盘");
@@ -511,8 +495,6 @@ public class InitAdminRunner implements ApplicationRunner {
                 detail.setMaterial("SS400");
                 detail.setLength("6");
                 detail.setTolerance("±1mm");
-                detail.setQuantityTon(new BigDecimal("20"));
-                detail.setQuantityPc(280);
                 detail.setSettlementPrice(new BigDecimal("1500"));
                 detail.setPriceTotal(new BigDecimal("30000"));
                 detail.setPackaging("托盘");

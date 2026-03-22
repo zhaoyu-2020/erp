@@ -172,6 +172,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 .collect(Collectors.toMap(PurchaseOrder::getPoNo, PurchaseOrder::getId, (a, b) -> a));
 
         ImportResult result = new ImportResult();
+        Set<Long> purchaseOrderIds = new HashSet<>();
         for (int i = 0; i < rows.size(); i++) {
             int rowNum = i + 2;
             PurchaseOrderDetailImportRow row = rows.get(i);
@@ -185,6 +186,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     result.addError(rowNum, "采购单号不存在: " + row.getPoNo());
                     continue;
                 }
+                purchaseOrderIds.add(purchaseOrderId);
                 PurchaseOrderDetail detail = new PurchaseOrderDetail();
                 detail.setPurchaseOrderId(purchaseOrderId);
                 detail.setSpec(row.getSpec());
@@ -192,11 +194,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 detail.setMaterial(row.getMaterial());
                 detail.setLength(row.getLength());
                 detail.setTolerance(row.getTolerance());
-                detail.setQuantityTon(parseBD(row.getQuantityTon()));
-                detail.setQuantityPc(parseInteger(row.getQuantityPc()));
-                detail.setQuantityMeter(parseBD(row.getQuantityMeter()));
                 detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
-                detail.setMeasurementMethod(row.getMeasurementMethod());
                 detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
                 detail.setPackaging(row.getPackaging());
                 detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
@@ -210,11 +208,19 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 detail.setVolume(parseBD(row.getVolume()));
                 detail.setOriginPlace(row.getOriginPlace());
                 detail.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight()));
+                // 预计算 priceTotal = orderedQuantity * settlementPrice
+                if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
+                    detail.setPriceTotal(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
+                }
                 purchaseOrderDetailService.save(detail);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
                 result.addError(rowNum, e.getMessage());
             }
+        }
+        // 所有明细保存完毕后，批量触发一次汇总计算（参照销售订单模块逻辑）
+        for (Long purchaseOrderId : purchaseOrderIds) {
+            purchaseOrderDetailService.recalculateOrderTotals(purchaseOrderId);
         }
         return result;
     }

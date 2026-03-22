@@ -35,10 +35,14 @@
         <el-table-column label="材质" prop="material" width="100" />
         <el-table-column label="长度(m)" prop="length" width="100" align="center" />
         <el-table-column label="公差" prop="tolerance" width="100" />
-        <!-- <el-table-column label="数量(t)" prop="quantityTon" width="100" align="right" />
-        <el-table-column label="数量(pc)" prop="quantityPc" width="100" align="right" />
-        <el-table-column label="数量(m)" prop="quantityMeter" width="100" align="right" /> -->
         <el-table-column label="订货数量" prop="orderedQuantity" width="100" align="right" />
+        <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
+        <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
+          <template #default="{ row }">
+            <span class="price-total">{{ row.priceTotal ?? '-' }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="实际数量" prop="actualQuantity" width="100" align="right" />
         <el-table-column label="捆数" prop="bundleCount" width="80" align="right" />
         <el-table-column label="净重" prop="netWeight" width="100" align="right" />
@@ -46,12 +50,7 @@
         <el-table-column label="实际理论重量" prop="actualTheoreticalWeight" width="120" align="right" />
         <el-table-column label="体积" prop="volume" width="100" align="right" />
         <el-table-column label="货源地" prop="originPlace" width="120" show-overflow-tooltip />
-        <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
-        <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
-          <template #default="{ row }">
-            <span class="price-total">{{ row.priceTotal ?? '-' }}</span>
-          </template>
-        </el-table-column>
+
         <el-table-column label="包装重量" prop="packagingWeight" width="110" align="right" />
         <el-table-column label="包装" prop="packaging" width="120" />
         <el-table-column label="卷内径(mm)" prop="coilInnerDiameter" width="110" align="center" />
@@ -132,25 +131,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-
-        <!-- <el-divider content-position="left" class="group-divider">数量</el-divider>
-        <el-row :gutter="16">
-          <el-col :span="8">
-            <el-form-item label="数量（t）" prop="quantityTon">
-              <el-input v-model="form.quantityTon" placeholder="吨数" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="数量（pc）" prop="quantityPc">
-              <el-input v-model="form.quantityPc" placeholder="片数" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="数量（m）" prop="quantityMeter">
-              <el-input v-model="form.quantityMeter" placeholder="米数" />
-            </el-form-item>
-          </el-col>
-        </el-row> -->
 
         <el-divider content-position="left" class="group-divider">数量明细 / 重量 / 体积</el-divider>
         <el-row :gutter="16">
@@ -299,9 +279,6 @@ const form = reactive<any>({
   material: '',
   length: '',
   tolerance: '',
-  quantityTon: null,
-  quantityPc: null,
-  quantityMeter: null,
   orderedQuantity: null,
   actualQuantity: null,
   bundleCount: null,
@@ -325,15 +302,14 @@ const rules = {
   productType: [{ required: true, message: '请输入产品类型', trigger: 'blur' }],
   material: [{ required: true, message: '请输入材质', trigger: 'blur' }],
   length: [{ required: true, message: '请输入长度', trigger: 'blur' }],
-  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }],
-  quantityTon: [{ required: true, message: '请输入吨数', trigger: 'blur' }]
+  tolerance: [{ required: true, message: '请输入公差', trigger: 'blur' }]
 }
 
 const computedPriceTotal = computed(() => {
   const price = parseFloat(form.settlementPrice)
-  const ton = parseFloat(form.quantityTon)
-  if (!isNaN(price) && !isNaN(ton)) {
-    return (price * ton).toFixed(2)
+  const qty = parseFloat(form.orderedQuantity)
+  if (!isNaN(price) && !isNaN(qty)) {
+    return (price * qty).toFixed(2)
   }
   return ''
 })
@@ -415,9 +391,6 @@ const handleEdit = (row: any) => {
     material: row.material ?? '',
     length: row.length ?? '',
     tolerance: row.tolerance ?? '',
-    quantityTon: row.quantityTon ?? null,
-    quantityPc: row.quantityPc ?? null,
-    quantityMeter: row.quantityMeter ?? null,
     orderedQuantity: row.orderedQuantity ?? null,
     actualQuantity: row.actualQuantity ?? null,
     bundleCount: row.bundleCount ?? null,
@@ -454,9 +427,6 @@ const resetForm = () => {
   form.material = ''
   form.length = ''
   form.tolerance = ''
-  form.quantityTon = null
-  form.quantityPc = null
-  form.quantityMeter = null
   form.orderedQuantity = null
   form.actualQuantity = null
   form.bundleCount = null
@@ -510,9 +480,6 @@ const handleExport = async () => {
     { label: '材质', key: 'material' },
     { label: '长度(m)', key: 'length' },
     { label: '公差', key: 'tolerance' },
-    { label: '数量(t)', key: 'quantityTon' },
-    { label: '数量(pc)', key: 'quantityPc' },
-    { label: '数量(m)', key: 'quantityMeter' },
     { label: '订货数量', key: 'orderedQuantity' },
     { label: '实际数量', key: 'actualQuantity' },
     { label: '捆数', key: 'bundleCount' },

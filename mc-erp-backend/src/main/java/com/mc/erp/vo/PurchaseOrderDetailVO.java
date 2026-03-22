@@ -16,9 +16,6 @@ public class PurchaseOrderDetailVO {
     private String material;
     private String length;
     private String tolerance;
-    private BigDecimal quantityTon;
-    private Integer quantityPc;
-    private BigDecimal quantityMeter;
     private BigDecimal settlementPrice;
     private String measurementMethod;
     private BigDecimal priceTotal;

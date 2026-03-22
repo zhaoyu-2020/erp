@@ -129,16 +129,16 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         List<PurchaseOrderDetail> details = this.list(new LambdaQueryWrapper<PurchaseOrderDetail>()
                 .eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId));
 
-        // 合同总数量 = sum(quantityTon)
+        // 合同总数量 = sum(orderedQuantity)
         BigDecimal contractTotalQty = details.stream()
-                .map(PurchaseOrderDetail::getQuantityTon)
+                .map(PurchaseOrderDetail::getOrderedQuantity)
                 .filter(v -> v != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 合同总金额 = sum(quantityTon * settlementPrice)
+        // 合同总金额 = sum(orderedQuantity * settlementPrice)
         BigDecimal contractTotalAmount = details.stream()
                 .map(d -> {
-                    BigDecimal qty = d.getQuantityTon();
+                    BigDecimal qty = d.getOrderedQuantity();
                     BigDecimal price = d.getSettlementPrice();
                     if (qty != null && price != null) {
                         return qty.multiply(price);

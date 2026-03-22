@@ -118,8 +118,8 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     private BigDecimal computePriceTotal(SalesOrderDetail detail) {
-        // 优先使用 quantityTon，若无则降级到 orderedQuantity
-        BigDecimal qty = detail.getQuantityTon() != null ? detail.getQuantityTon() : detail.getOrderedQuantity();
+        // 优先使用 orderedQuantity 计算价格汇总
+        BigDecimal qty = detail.getOrderedQuantity();
         if (qty == null) {
             return detail.getPriceTotal();
         }

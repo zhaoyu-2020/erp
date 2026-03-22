@@ -20,10 +20,6 @@ public class SalesOrderDetail {
     private String length;
     private String tolerance;
 
-    private BigDecimal quantityTon;
-    private Integer quantityPc;
-    private BigDecimal quantityMeter;
-
     private BigDecimal settlementPrice;
     private BigDecimal priceTotal;
 

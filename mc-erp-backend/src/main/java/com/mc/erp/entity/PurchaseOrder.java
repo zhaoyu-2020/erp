@@ -40,7 +40,7 @@ public class PurchaseOrder {
     /** 合同总金额（由明细合同吨数 × 结算单价自动计算） */
     private BigDecimal totalAmount;
 
-    /** 合同总数量（由明细 quantity_ton 汇总） */
+    /** 合同总数量（由明细订货数量汇总） */
     private BigDecimal contractTotalQty;
 
     /** 结算总金额（由明细实际交货数据汇总） */
