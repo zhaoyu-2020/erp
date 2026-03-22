@@ -13,4 +13,6 @@ public class UserWithRoleVO {
     private String realName;
     /** 角色名称列表 */
     private List<String> roleNames;
+    /** 角色编码列表，供前端权限判断（如 admin） */
+    private List<String> roleCodes;
 }

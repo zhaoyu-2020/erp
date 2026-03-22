@@ -85,12 +85,12 @@ public class InitAdminRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
        
-        User admin = getOrCreateUser("admin", "123456", "Admin");
+        User admin = getOrCreateUser("admin", "123456", "管理员");
         if (admin == null) {
             throw new RuntimeException("初始化 admin 用户失败");
         }
 
-        Role adminRole = getOrCreateRole("admin", "超级管理员", "系统最高权限");
+        Role adminRole = getOrCreateRole("admin", "管理员", "系统最高权限");
         if (adminRole == null) {
             throw new RuntimeException("初始化 admin 角色失败");
         }
@@ -166,9 +166,9 @@ public class InitAdminRunner implements ApplicationRunner {
     }
 
     private void initSeedData() {
-        Role salesRole = getOrCreateRole("sales", "业务", "销售业务角色");
-        getOrCreateRole("operator", "操作", "操作角色");
-        getOrCreateRole("purchaser", "采购", "采购角色");
+        Role salesRole = getOrCreateRole("sales", "业务员", "销售业务角色");
+        getOrCreateRole("operator", "操作员", "操作角色");
+        getOrCreateRole("purchaser", "采购员", "采购角色");
         User salesA = getOrCreateUser("zach", "123456", "赵宇");
 
         if (salesRole != null && salesA != null) {
@@ -603,6 +603,11 @@ public class InitAdminRunner implements ApplicationRunner {
         wrapper.eq(User::getUsername, username);
         User exists = userService.getOne(wrapper);
         if (exists != null) {
+            // 同步更新 realName，确保重启后展示名称保持最新
+            if (!realName.equals(exists.getRealName())) {
+                exists.setRealName(realName);
+                userService.updateById(exists);
+            }
             return exists;
         }
         User user = new User();
@@ -618,6 +623,12 @@ public class InitAdminRunner implements ApplicationRunner {
         wrapper.eq(Role::getRoleCode, roleCode);
         Role exists = roleService.getOne(wrapper);
         if (exists != null) {
+            // 同步更新名称，确保重启后名称保持最新
+            if (!roleName.equals(exists.getRoleName())) {
+                exists.setRoleName(roleName);
+                exists.setDescription(description);
+                roleService.updateById(exists);
+            }
             return exists;
         }
         Role role = new Role();

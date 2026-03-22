@@ -125,11 +125,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<UserRole> links = userRoleMapper.selectList(
                 new LambdaQueryWrapper<UserRole>().in(UserRole::getUserId, userIds));
 
-        // 收集所有 roleId，查角色名称
+        // 收集所有 roleId，查角色名称和编码
         List<Long> roleIds = links.stream().map(UserRole::getRoleId).filter(Objects::nonNull).distinct().toList();
-        Map<Long, String> roleNameMap = roleIds.isEmpty() ? Map.of()
-                : roleMapper.selectList(new LambdaQueryWrapper<Role>().in(Role::getId, roleIds))
-                        .stream().collect(Collectors.toMap(Role::getId, Role::getRoleName));
+        List<Role> roles = roleIds.isEmpty() ? List.of()
+                : roleMapper.selectList(new LambdaQueryWrapper<Role>().in(Role::getId, roleIds));
+        Map<Long, String> roleNameMap = roles.stream().collect(Collectors.toMap(Role::getId, Role::getRoleName));
+        Map<Long, String> roleCodeMap = roles.stream().collect(Collectors.toMap(Role::getId, Role::getRoleCode));
 
         // userId -> roleNames
         Map<Long, List<String>> userRoleNamesMap = links.stream()
@@ -139,12 +140,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                                 link -> roleNameMap.getOrDefault(link.getRoleId(), ""),
                                 Collectors.filtering(s -> !s.isEmpty(), Collectors.toList()))));
 
+        // userId -> roleCodes
+        Map<Long, List<String>> userRoleCodesMap = links.stream()
+                .collect(Collectors.groupingBy(
+                        UserRole::getUserId,
+                        Collectors.mapping(
+                                link -> roleCodeMap.getOrDefault(link.getRoleId(), ""),
+                                Collectors.filtering(s -> !s.isEmpty(), Collectors.toList()))));
+
         return users.stream().map(user -> {
             UserWithRoleVO vo = new UserWithRoleVO();
             vo.setId(user.getId());
             vo.setUsername(user.getUsername());
             vo.setRealName(user.getRealName());
             vo.setRoleNames(userRoleNamesMap.getOrDefault(user.getId(), List.of()));
+            vo.setRoleCodes(userRoleCodesMap.getOrDefault(user.getId(), List.of()));
             return vo;
         }).collect(Collectors.toList());
     }

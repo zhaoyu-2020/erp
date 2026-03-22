@@ -493,7 +493,7 @@ const checkAdmin = async () => {
     const res = await getUserListWithRoles()
     const allUsers = res.data || []
     const currentUser = allUsers.find((u: any) => u.id === userInfo.userId)
-    isAdmin.value = !!(currentUser && Array.isArray(currentUser.roleNames) && currentUser.roleNames.includes('管理员'))
+    isAdmin.value = !!(currentUser && Array.isArray(currentUser.roleCodes) && currentUser.roleCodes.includes('admin'))
   } catch {
     isAdmin.value = false
   }

@@ -194,9 +194,9 @@ const loadUsers = async () => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
     const res = await getUserListWithRoles()
     const allUsers = res.data || []
-    // 判断是否管理员（roleNames 包含 '管理员'）
+    // 判断是否管理员（roleCodes 包含 'admin'）
     const currentUser = allUsers.find((u: any) => u.id === userInfo.userId)
-    const isAdmin = currentUser && Array.isArray(currentUser.roleNames) && currentUser.roleNames.includes('管理员')
+    const isAdmin = currentUser && Array.isArray(currentUser.roleCodes) && currentUser.roleCodes.includes('admin')
     if (isAdmin) {
       userOptions.value = allUsers
     } else {
