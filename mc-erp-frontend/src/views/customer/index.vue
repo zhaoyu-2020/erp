@@ -130,8 +130,7 @@ const CONTINENT_OPTIONS = [
   { label: '北美洲', value: 'NORTH_AMERICA' },
   { label: '南美洲', value: 'SOUTH_AMERICA' },
   { label: '非洲', value: 'AFRICA' },
-  { label: '大洋洲', value: 'OCEANIA' },
-  { label: '南极洲', value: 'ANTARCTICA' }
+  { label: '大洋洲', value: 'OCEANIA' }
 ]
 
 const CONTINENT_LABEL_MAP = CONTINENT_OPTIONS.reduce<Record<string, string>>((acc, item) => {
