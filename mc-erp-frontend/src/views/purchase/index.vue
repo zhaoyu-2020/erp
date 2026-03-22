@@ -77,7 +77,6 @@
           <template #default="scope">
             <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
             <el-button link type="primary" @click="goToDetail(scope.row)">明细</el-button>
-            <el-button link type="primary" v-if="scope.row.status === 1" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
             <el-dropdown
               v-if="getAllowedNextStatuses(scope.row.status).length > 0"
@@ -455,6 +454,7 @@
         <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
+        <el-button v-if="detailData.status === 1" type="warning" @click="() => { detailDialogVisible = false; handleEdit(detailData) }">编辑</el-button>
         <el-button type="primary" @click="detailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
