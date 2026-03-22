@@ -21,6 +21,9 @@ public class PurchaseOrderImportRow {
     @ExcelProperty("业务员姓名")
     private String salespersonName;
 
+    @ExcelProperty("币种")
+    private String currency;
+
     @ExcelProperty("订单金额(RMB)")
     private String totalAmount;
 

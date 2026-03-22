@@ -34,9 +34,20 @@ public class PurchaseOrder {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateId;
 
-    // 订单金额
-    @NotNull(message = "订单金额不能为空")
+    /** 币种: RMB / USD */
+    private String currency;
+
+    /** 合同总金额（由明细合同吨数 × 结算单价自动计算） */
     private BigDecimal totalAmount;
+
+    /** 合同总数量（由明细 quantity_ton 汇总） */
+    private BigDecimal contractTotalQty;
+
+    /** 结算总金额（由明细实际交货数据汇总） */
+    private BigDecimal settlementTotalAmount;
+
+    /** 结算总数量（由明细 actual_quantity 汇总） */
+    private BigDecimal settlementTotalQty;
 
     // 实际金额
     private BigDecimal actualAmount;

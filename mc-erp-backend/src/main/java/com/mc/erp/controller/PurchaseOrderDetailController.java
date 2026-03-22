@@ -45,6 +45,12 @@ public class PurchaseOrderDetailController {
 
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(purchaseOrderDetailService.removeById(id));
+        PurchaseOrderDetail detail = purchaseOrderDetailService.getById(id);
+        Long purchaseOrderId = detail != null ? detail.getPurchaseOrderId() : null;
+        boolean result = purchaseOrderDetailService.removeById(id);
+        if (result && purchaseOrderId != null) {
+            purchaseOrderDetailService.recalculateOrderTotals(purchaseOrderId);
+        }
+        return Result.success(result);
     }
 }

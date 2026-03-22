@@ -138,6 +138,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     Long uid = userNameToId.get(row.getSalespersonName().trim());
                     order.setSalespersonId(uid);
                 }
+                order.setCurrency(StringUtils.hasText(row.getCurrency()) ? row.getCurrency().trim() : "RMB");
                 order.setTotalAmount(parseBD(row.getTotalAmount()));
                 order.setActualAmount(parseBD(row.getActualAmount()));
                 order.setDepositRate(parseBD(row.getDepositRate()));

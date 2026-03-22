@@ -103,7 +103,11 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
-        return this.save(detail);
+        boolean result = this.save(detail);
+        if (result && detail.getPurchaseOrderId() != null) {
+            recalculateOrderTotals(detail.getPurchaseOrderId());
+        }
+        return result;
     }
 
     @Override
@@ -112,7 +116,62 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
-        return this.updateById(detail);
+        boolean result = this.updateById(detail);
+        if (result && detail.getPurchaseOrderId() != null) {
+            recalculateOrderTotals(detail.getPurchaseOrderId());
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public void recalculateOrderTotals(Long purchaseOrderId) {
+        List<PurchaseOrderDetail> details = this.list(new LambdaQueryWrapper<PurchaseOrderDetail>()
+                .eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId));
+
+        // 合同总数量 = sum(quantityTon)
+        BigDecimal contractTotalQty = details.stream()
+                .map(PurchaseOrderDetail::getQuantityTon)
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 合同总金额 = sum(quantityTon * settlementPrice)
+        BigDecimal contractTotalAmount = details.stream()
+                .map(d -> {
+                    BigDecimal qty = d.getQuantityTon();
+                    BigDecimal price = d.getSettlementPrice();
+                    if (qty != null && price != null) {
+                        return qty.multiply(price);
+                    }
+                    return BigDecimal.ZERO;
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 结算总数量 = sum(actualQuantity)
+        BigDecimal settlementTotalQty = details.stream()
+                .map(PurchaseOrderDetail::getActualQuantity)
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 结算总金额 = sum(actualQuantity * settlementPrice)
+        BigDecimal settlementTotalAmount = details.stream()
+                .map(d -> {
+                    BigDecimal qty = d.getActualQuantity();
+                    BigDecimal price = d.getSettlementPrice();
+                    if (qty != null && price != null) {
+                        return qty.multiply(price);
+                    }
+                    return BigDecimal.ZERO;
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        PurchaseOrder update = new PurchaseOrder();
+        update.setId(purchaseOrderId);
+        update.setTotalAmount(contractTotalAmount);
+        update.setContractTotalQty(contractTotalQty);
+        update.setSettlementTotalQty(settlementTotalQty);
+        update.setSettlementTotalAmount(settlementTotalAmount);
+        purchaseOrderMapper.updateById(update);
     }
 
     private BigDecimal computePriceTotal(PurchaseOrderDetail detail) {

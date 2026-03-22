@@ -59,10 +59,14 @@
         <el-table-column label="订单日期" prop="orderDate" width="120" />
         <el-table-column label="供应商" prop="supplierName" width="140" />
         <el-table-column label="关联销售单号" prop="salesOrderNo" width="160" />
-        <el-table-column label="总金额(RMB)" prop="totalAmount" width="160" align="right" />
-        <el-table-column label="实际金额(RMB)" prop="actualAmount" width="160" align="right" />
+        <el-table-column label="币种" prop="currency" width="80" align="center" />
+        <el-table-column label="合同总金额" prop="totalAmount" width="140" align="right" />
+        <el-table-column label="合同总吨数" prop="contractTotalQty" width="120" align="right" />
+        <el-table-column label="结算总金额" prop="settlementTotalAmount" width="120" align="right" />
+        <el-table-column label="结算总数量" prop="settlementTotalQty" width="120" align="right" />
+        <el-table-column label="实际金额" prop="actualAmount" width="120" align="right" />
         <el-table-column label="定金比例(%)" prop="depositRate" width="120" align="right" />
-        <el-table-column label="定金金额(RMB)" prop="depositAmount" width="160" align="right" />
+        <el-table-column label="定金金额" prop="depositAmount" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getTagType(row.status)">{{ getLabel(row.status) }}</el-tag>
@@ -148,8 +152,24 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="总金额(RMB)" prop="totalAmount">
-              <el-input v-model="form.totalAmount" placeholder="输入订单金额" />
+            <el-form-item label="币种" prop="currency">
+              <el-select v-model="form.currency" placeholder="选择币种" style="width: 100%">
+                <el-option label="RMB - 人民币" value="RMB" />
+                <el-option label="USD - 美元" value="USD" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="合同总金额" prop="totalAmount">
+              <el-input v-model="form.totalAmount" placeholder="可手动输入，也会由明细自动计算" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="合同总吨数" prop="contractTotalQty">
+              <el-input v-model="form.contractTotalQty" placeholder="可手动输入，也会由明细自动计算" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -184,7 +204,20 @@
 
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="实际金额(RMB)" prop="actualAmount">
+            <el-form-item label="结算总金额" prop="settlementTotalAmount">
+              <el-input v-model="form.settlementTotalAmount" placeholder="可手动输入，也会由明细自动计算" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结算总数量" prop="settlementTotalQty">
+              <el-input v-model="form.settlementTotalQty" placeholder="可手动输入，也会由明细自动计算" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="实际金额" prop="actualAmount">
               <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
             </el-form-item>
           </el-col>
@@ -364,10 +397,14 @@
         <el-descriptions-item label="状态">{{ getLabel(detailData.status) }}</el-descriptions-item>
         <el-descriptions-item label="供应商">{{ detailData.supplierName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="关联销售单号">{{ detailData.salesOrderNo || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="总金额(RMB)">{{ detailData.totalAmount ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="实际金额(RMB)">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="币种">{{ detailData.currency || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="合同总金额">{{ detailData.totalAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="合同总吨数">{{ detailData.contractTotalQty ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="结算总金额">{{ detailData.settlementTotalAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="结算总数量">{{ detailData.settlementTotalQty ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="实际金额">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="定金金额(RMB)">{{ detailData.depositAmount ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="定金金额">{{ detailData.depositAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="订单日期">{{ detailData.orderDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="交货日期">{{ detailData.deliveryDate || '-' }}</el-descriptions-item>
         <el-descriptions-item label="运输备注">{{ detailData.transportRemark || '-' }}</el-descriptions-item>
@@ -489,7 +526,11 @@ const form = reactive<any>({
   poNo: '',
   supplierId: null,
   salesOrderNo: '',
-  totalAmount: 0,
+  currency: 'RMB',
+  totalAmount: null,
+  contractTotalQty: null,
+  settlementTotalAmount: null,
+  settlementTotalQty: null,
   actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
@@ -512,7 +553,11 @@ const detailData = reactive<any>({
   supplierId: null,
   supplierName: '',
   salesOrderNo: '',
-  totalAmount: 0,
+  currency: 'RMB',
+  totalAmount: null,
+  contractTotalQty: null,
+  settlementTotalAmount: null,
+  settlementTotalQty: null,
   actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
@@ -535,7 +580,7 @@ const rules = {
   poNo: [{ required: true, message: '请输入采购单号', trigger: 'blur' }],
   supplierId: [{ required: true, message: '请选择供应商', trigger: 'change' }],
   salesOrderNo: [{ required: true, message: '请输入关联销售单号', trigger: 'blur' }],
-  totalAmount: [{ required: true, message: '请输入订单金额', trigger: 'blur' }],
+  currency: [{ required: true, message: '请选择币种', trigger: 'change' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
   depositAmount: [{ required: true, message: '请输入定金金额', trigger: 'blur' }],
   orderDate: [{ required: true, message: '请选择订单日期', trigger: 'change' }],
@@ -666,7 +711,11 @@ const resetForm = () => {
   form.poNo = ''
   form.supplierId = null
   form.salesOrderNo = ''
-  form.totalAmount = 0
+  form.currency = 'RMB'
+  form.totalAmount = null
+  form.contractTotalQty = null
+  form.settlementTotalAmount = null
+  form.settlementTotalQty = null
   form.actualAmount = 0
   form.depositRate = 0
   form.depositAmount = 0
@@ -704,7 +753,11 @@ const handleDetail = (row: any) => {
     supplierId: row.supplierId,
     supplierName: row.supplierName,
     salesOrderNo: row.salesOrderNo,
+    currency: row.currency ?? 'RMB',
     totalAmount: row.totalAmount ?? 0,
+    contractTotalQty: row.contractTotalQty ?? 0,
+    settlementTotalAmount: row.settlementTotalAmount ?? 0,
+    settlementTotalQty: row.settlementTotalQty ?? 0,
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
@@ -739,7 +792,11 @@ const handleEdit = (row: any) => {
     poNo: row.poNo,
     supplierId: row.supplierId,
     salesOrderNo: row.salesOrderNo,
+    currency: row.currency ?? 'RMB',
     totalAmount: row.totalAmount ?? 0,
+    contractTotalQty: row.contractTotalQty ?? 0,
+    settlementTotalAmount: row.settlementTotalAmount ?? 0,
+    settlementTotalQty: row.settlementTotalQty ?? 0,
     actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
@@ -812,14 +869,18 @@ const handleExport = async () => {
     { label: '采购单号', key: 'poNo' },
     { label: '供应商', key: 'supplierName' },
     { label: '关联销售单号', key: 'salesOrderNo' },
-    { label: '总金额(RMB)', key: 'totalAmount' },
-    { label: '实际金额(RMB)', key: 'actualAmount' },
+    { label: '币种', key: 'currency' },
+    { label: '合同总金额', key: 'totalAmount' },
+    { label: '合同总吨数', key: 'contractTotalQty' },
+    { label: '结算总金额', key: 'settlementTotalAmount' },
+    { label: '结算总数量', key: 'settlementTotalQty' },
+    { label: '实际金额', key: 'actualAmount' },
     { label: '定金比例(%)', key: 'depositRate' },
-    { label: '定金金额(RMB)', key: 'depositAmount' },
+    { label: '定金金额', key: 'depositAmount' },
     { label: '订单日期', key: 'orderDate' },
     { label: '交货日期', key: 'deliveryDate' },
     { label: '运输备注', key: 'transportRemark' },
-    { label: '总运费(RMB)', key: 'totalFreight' },
+    { label: '总运费', key: 'totalFreight' },
     { label: '发票', key: 'invoice' },
     { label: '状态', value: (r: any) => getLabel(r.status) },
     { label: '创建时间', key: 'createTime' }

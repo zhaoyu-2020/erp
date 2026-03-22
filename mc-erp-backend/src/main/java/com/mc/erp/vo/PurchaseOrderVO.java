@@ -18,7 +18,11 @@ public class PurchaseOrderVO {
     private Long createId;
     private String createUserName;
     private Long updateId;
+    private String currency;
     private BigDecimal totalAmount;
+    private BigDecimal contractTotalQty;
+    private BigDecimal settlementTotalAmount;
+    private BigDecimal settlementTotalQty;
     private BigDecimal actualAmount;
     private BigDecimal depositRate;
     private BigDecimal depositAmount;
