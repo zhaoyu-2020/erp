@@ -150,6 +150,25 @@ CREATE TABLE IF NOT EXISTS `biz_supplier_account` (
   KEY `idx_supplier_id` (`supplier_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='供应商账户信息表';
 
+-- 5-1-2. 货代账户信息表
+CREATE TABLE IF NOT EXISTS `biz_forwarder_account` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `forwarder_id` bigint(20) NOT NULL COMMENT '货代ID',
+  `bank_name` varchar(100) NOT NULL COMMENT '开户银行',
+  `account_name` varchar(100) NOT NULL COMMENT '账户名称',
+  `account_no` varchar(100) NOT NULL COMMENT '银行账号',
+  `currency` varchar(20) DEFAULT 'CNY' COMMENT '币种',
+  `swift_code` varchar(50) DEFAULT NULL COMMENT 'SWIFT码',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_forwarder_id` (`forwarder_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代账户信息表';
+
 -- 5-2. 货代档案表
 CREATE TABLE IF NOT EXISTS `biz_freight_forwarder` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
