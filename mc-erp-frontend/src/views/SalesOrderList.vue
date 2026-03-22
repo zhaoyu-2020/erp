@@ -106,28 +106,29 @@
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="260" fixed="right" align="center">
+        <el-table-column label="操作" width="260" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
-            <el-button link type="success" @click="handleGoDetail(scope.row)">明细</el-button>
-            <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
-            <!-- 状态流转下拉 -->
-            <el-dropdown
-              v-if="getAllowedNextStatuses(scope.row.status).length > 0"
-              @command="(targetCode: number) => changeStatus(scope.row.id, targetCode, getList)"
-              trigger="click"
-            >
-              <el-button link type="warning">变更状态<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="next in getAllowedNextStatuses(scope.row.status)"
-                    :key="next.code"
-                    :command="next.code"
-                  >{{ next.label }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <div class="action-btns">
+              <el-button size="small" type="info" @click="handleDetail(scope.row)">详情</el-button>
+              <el-button size="small" type="primary" @click="handleGoDetail(scope.row)">明细</el-button>
+              <el-dropdown
+                v-if="getAllowedNextStatuses(scope.row.status).length > 0"
+                @command="(targetCode: number) => changeStatus(scope.row.id, targetCode, getList)"
+                trigger="click"
+              >
+                <el-button size="small" type="warning">变更状态</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="next in getAllowedNextStatuses(scope.row.status)"
+                      :key="next.code"
+                      :command="next.code"
+                    >{{ next.label }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              <el-button size="small" type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -970,5 +971,11 @@ onMounted(() => {
 }
 .group-divider {
   margin: 8px 0 16px;
+}
+.action-btns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
 }
 </style>
