@@ -55,6 +55,7 @@
                   {{ d.bindType === 1 ? '定金' : d.bindType === 2 ? '尾款' : '-' }}
                 </el-tag>
                 <span>{{ row.currency }} {{ d.boundAmount }}</span>
+                <span v-if="d.exchangeRate" style="color:#999;margin-left:4px">@{{ d.exchangeRate }}</span>
               </div>
             </template>
             <span v-else style="color:#bbb;font-size:13px">暂无认领</span>
@@ -157,6 +158,11 @@
             {{ currentReceipt?.currency }} {{ row.boundAmount }}
           </template>
         </el-table-column>
+        <el-table-column label="汇率" prop="exchangeRate" width="100" align="right">
+          <template #default="{ row }">
+            {{ row.exchangeRate ?? '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
         <el-table-column label="操作" width="80" align="center">
           <template #default="{ row }">
@@ -198,6 +204,9 @@
         <el-form-item label="绑定金额" prop="boundAmount">
           <el-input v-model="detailForm.boundAmount"
             :placeholder="`最多可认领 ${remainingAmount}`" />
+        </el-form-item>
+        <el-form-item label="汇率" prop="exchangeRate">
+          <el-input v-model="detailForm.exchangeRate" placeholder="请输入本笔收款汇率（如 7.2500）" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -387,7 +396,7 @@ const handleRemoveDetail = (row: any) => {
 // ---- 新增认领明细行 ----
 const addDetailVisible = ref(false)
 const detailFormRef = ref<FormInstance>()
-const detailForm = reactive({ salesOrderNo: '', bindType: null as number | null, boundAmount: null as number | null })
+const detailForm = reactive({ salesOrderNo: '', bindType: null as number | null, boundAmount: null as number | null, exchangeRate: null as number | null })
 const detailRules = {
   salesOrderNo: [{ required: true, message: '请输入销售订单号', trigger: 'blur' }],
   bindType: [{ required: true, message: '请选择绑定类型', trigger: 'change' }],
@@ -416,6 +425,7 @@ const handleAddDetail = () => {
   detailForm.salesOrderNo = ''
   detailForm.bindType = null
   detailForm.boundAmount = null
+  detailForm.exchangeRate = null
   detailFormRef.value?.clearValidate()
   addDetailVisible.value = true
 }
@@ -426,7 +436,8 @@ const confirmAddDetail = async () => {
   currentReceipt.value.details.push({
     salesOrderNo: detailForm.salesOrderNo,
     bindType: detailForm.bindType,
-    boundAmount: detailForm.boundAmount
+    boundAmount: detailForm.boundAmount,
+    exchangeRate: detailForm.exchangeRate
   })
   addDetailVisible.value = false
 }
@@ -445,6 +456,7 @@ const handleSaveDetails = async () => {
         salesOrderNo: d.salesOrderNo,
         bindType: d.bindType,
         boundAmount: d.boundAmount,
+        exchangeRate: d.exchangeRate ?? null,
         salesOrderId: d.salesOrderId || 0
       }))
     }

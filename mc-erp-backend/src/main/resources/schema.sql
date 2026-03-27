@@ -352,6 +352,7 @@ CREATE TABLE IF NOT EXISTS `biz_finance_receipt_detail` (
   `sales_order_id` bigint(20) NOT NULL COMMENT '销售订单ID',
   `sales_order_no` varchar(50) NOT NULL COMMENT '销售订单号',
   `bound_amount` decimal(15,2) NOT NULL COMMENT '绑定金额',
+  `exchange_rate` decimal(10,4) DEFAULT NULL COMMENT '本笔收款汇率',
   `bind_type` tinyint(2) DEFAULT NULL COMMENT '绑定类型:1定金 2尾款',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

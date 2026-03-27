@@ -23,6 +23,9 @@ public class FinanceReceiptDetail {
 
     @NotNull(message = "绑定金额不能为空")
     private BigDecimal boundAmount;
+    @NotNull(message = "本笔收款汇率不能为空")
+    /** 本笔收款汇率 */
+    private BigDecimal exchangeRate;
 
     /** 绑定类型: 1=定金, 2=尾款 */
     private Integer bindType;

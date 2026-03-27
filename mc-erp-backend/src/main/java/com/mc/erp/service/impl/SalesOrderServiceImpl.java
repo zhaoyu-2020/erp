@@ -207,6 +207,24 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 .map(d -> d.getBoundAmount() != null ? d.getBoundAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // 计算定金加权平均汇率
+        BigDecimal depositWeightedSum = allDetails.stream()
+                .filter(d -> Integer.valueOf(1).equals(d.getBindType()) && d.getExchangeRate() != null)
+                .map(d -> d.getBoundAmount() != null ? d.getBoundAmount().multiply(d.getExchangeRate()) : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal avgDepositRate = totalDeposit.compareTo(BigDecimal.ZERO) > 0
+                ? depositWeightedSum.divide(totalDeposit, 4, java.math.RoundingMode.HALF_UP)
+                : null;
+
+        // 计算尾款加权平均汇率
+        BigDecimal finalWeightedSum = allDetails.stream()
+                .filter(d -> Integer.valueOf(2).equals(d.getBindType()) && d.getExchangeRate() != null)
+                .map(d -> d.getBoundAmount() != null ? d.getBoundAmount().multiply(d.getExchangeRate()) : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal avgFinalRate = totalFinal.compareTo(BigDecimal.ZERO) > 0
+                ? finalWeightedSum.divide(totalFinal, 4, java.math.RoundingMode.HALF_UP)
+                : null;
+
         // 计算应收定金和应收尾款（用于状态判断）
         BigDecimal contractAmount = order.getContractAmount() != null ? order.getContractAmount() : BigDecimal.ZERO;
         BigDecimal depositRate = order.getDepositRate() != null ? order.getDepositRate() : BigDecimal.ZERO;
@@ -220,6 +238,14 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 .set(SalesOrder::getReceivedAmount, totalDeposit)
                 .set(SalesOrder::getFinalPaymentAmount, totalFinal)
                 .set(SalesOrder::getActualAmount, totalDeposit.add(totalFinal));
+
+        // 同步加权平均汇率（有收款数据时才覆盖，否则保留原值）
+        if (avgDepositRate != null) {
+            uw.set(SalesOrder::getDepositExchangeRate, avgDepositRate);
+        }
+        if (avgFinalRate != null) {
+            uw.set(SalesOrder::getFinalExchangeRate, avgFinalRate);
+        }
 
         // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
         if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
