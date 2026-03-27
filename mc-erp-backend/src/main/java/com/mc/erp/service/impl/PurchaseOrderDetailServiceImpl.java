@@ -103,6 +103,7 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
+        detail.setSettlementAmount(computeSettlementAmount(detail));
         boolean result = this.save(detail);
         if (result && detail.getPurchaseOrderId() != null) {
             recalculateOrderTotals(detail.getPurchaseOrderId());
@@ -116,6 +117,7 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
+        detail.setSettlementAmount(computeSettlementAmount(detail));
         boolean result = this.updateById(detail);
         if (result && detail.getPurchaseOrderId() != null) {
             recalculateOrderTotals(detail.getPurchaseOrderId());
@@ -176,6 +178,17 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
 
     private BigDecimal computePriceTotal(PurchaseOrderDetail detail) {
         return detail.getPriceTotal();
+    }
+
+    private BigDecimal computeSettlementAmount(PurchaseOrderDetail detail) {
+        BigDecimal qty = detail.getActualQuantity();
+        if (qty == null) {
+            return detail.getSettlementAmount();
+        }
+        if (detail.getSettlementPrice() != null) {
+            return detail.getSettlementPrice().multiply(qty);
+        }
+        return detail.getSettlementAmount();
     }
 
     private void ensureProductType(String typeName) {

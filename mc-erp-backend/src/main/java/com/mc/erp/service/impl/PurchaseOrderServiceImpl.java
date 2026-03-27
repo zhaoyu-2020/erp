@@ -254,6 +254,10 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     if (changed && existing.getOrderedQuantity() != null && existing.getSettlementPrice() != null) {
                         existing.setPriceTotal(existing.getOrderedQuantity().multiply(existing.getSettlementPrice()));
                     }
+                    // 重新计算 settlementAmount
+                    if (changed && existing.getActualQuantity() != null && existing.getSettlementPrice() != null) {
+                        existing.setSettlementAmount(existing.getActualQuantity().multiply(existing.getSettlementPrice()));
+                    }
                     if (changed) {
                         purchaseOrderDetailService.updateById(existing);
                     }
@@ -284,6 +288,10 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     // 预计算 priceTotal = orderedQuantity * settlementPrice
                     if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
                         detail.setPriceTotal(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
+                    }
+                    // 预计算 settlementAmount = actualQuantity * settlementPrice
+                    if (detail.getActualQuantity() != null && detail.getSettlementPrice() != null) {
+                        detail.setSettlementAmount(detail.getActualQuantity().multiply(detail.getSettlementPrice()));
                     }
                     purchaseOrderDetailService.saveDetail(detail);
                     result.setSuccessCount(result.getSuccessCount() + 1);

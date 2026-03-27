@@ -21,9 +21,14 @@
         <el-table-column label="长度(m)" prop="length" width="100" align="center" />
         <el-table-column label="公差" prop="tolerance" width="100" />
         <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" /> 
-        <el-table-column label="价格汇总" prop="priceTotal" width="120" align="right">
+        <el-table-column label="合同金额小计" prop="priceTotal" width="120" align="right">
           <template #default="{ row }">
             <span class="price-total">{{ row.priceTotal ?? '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="结算金额小计" prop="settlementAmount" width="120" align="right">
+          <template #default="{ row }">
+            <span class="price-total">{{ row.settlementAmount ?? '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="包装重量" prop="packagingWeight" width="110" align="right" />
@@ -99,8 +104,13 @@
         </el-row>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="价格汇总">
-              <el-input :model-value="computedPriceTotal" disabled placeholder="结算价格 × 结算数量（自动计算）" />
+            <el-form-item label="合同金额小计">
+              <el-input :model-value="computedPriceTotal" disabled placeholder="结算价格 × 订货数量（自动计算）" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="结算金额小计">
+              <el-input :model-value="computedSettlementAmount" disabled placeholder="结算价格 × 实际数量（自动计算）" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -266,6 +276,15 @@ const computedPriceTotal = computed(() => {
   return ''
 })
 
+const computedSettlementAmount = computed(() => {
+  const price = parseFloat(form.settlementPrice)
+  const qty = parseFloat(form.actualQuantity)
+  if (!isNaN(price) && !isNaN(qty)) {
+    return (price * qty).toFixed(2)
+  }
+  return ''
+})
+
 const getList = async () => {
   loading.value = true
   try {
@@ -393,7 +412,8 @@ const handleExport = async () => {
     { label: '长度(m)', key: 'length' },
     { label: '公差', key: 'tolerance' },
     { label: '结算价格', key: 'settlementPrice' },
-    { label: '价格汇总', key: 'priceTotal' },
+    { label: '合同金额小计', key: 'priceTotal' },
+    { label: '结算金额小计', key: 'settlementAmount' },
     { label: '包装重量', key: 'packagingWeight' },
     { label: '包装', key: 'packaging' },
     { label: '卷内径(mm)', key: 'coilInnerDiameter' },

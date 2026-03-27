@@ -21,7 +21,10 @@ public class SalesOrderDetail {
     private String tolerance;
 
     private BigDecimal settlementPrice;
+    /** 合同金额小计 */
     private BigDecimal priceTotal;
+    /** 结算金额小计 */
+    private BigDecimal settlementAmount;
 
     private BigDecimal packagingWeight;
     private String packaging;

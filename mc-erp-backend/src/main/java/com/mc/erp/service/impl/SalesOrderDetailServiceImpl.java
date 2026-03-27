@@ -105,6 +105,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
+        detail.setSettlementAmount(computeSettlementAmount(detail));
         return this.save(detail);
     }
 
@@ -114,6 +115,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
+        detail.setSettlementAmount(computeSettlementAmount(detail));
         return this.updateById(detail);
     }
 
@@ -128,6 +130,17 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             return detail.getSettlementPrice().multiply(qty);
         }
         return detail.getPriceTotal();
+    }
+
+    private BigDecimal computeSettlementAmount(SalesOrderDetail detail) {
+        BigDecimal qty = detail.getActualQuantity();
+        if (qty == null) {
+            return detail.getSettlementAmount();
+        }
+        if (detail.getSettlementPrice() != null) {
+            return detail.getSettlementPrice().multiply(qty);
+        }
+        return detail.getSettlementAmount();
     }
 
     @Override
@@ -145,6 +158,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             ensureProductType(detail.getProductType());
             detail.setProductId(findOrCreateProduct(detail));
             detail.setPriceTotal(computePriceTotal(detail));
+            detail.setSettlementAmount(computeSettlementAmount(detail));
             this.updateById(detail);
 
             if (detail.getOrderedQuantity() != null) {
