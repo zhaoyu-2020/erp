@@ -73,11 +73,12 @@
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" width="320" fixed="right">
           <template #default="scope">
             <div class="action-btns">
               <el-button size="small" type="info" @click="handleDetail(scope.row)">详情</el-button>
               <el-button size="small" type="primary" @click="goToDetail(scope.row)">明细</el-button>
+              <!-- <el-button v-if="isAdmin" size="small" @click="handleEdit(scope.row)">编辑</el-button> -->
               <el-dropdown
                 v-if="getAllowedNextStatuses(scope.row.status).length > 0"
                 @command="(code: number) => changeStatus(scope.row.id, code, getList)"
@@ -455,7 +456,7 @@
         <el-descriptions-item label="更新时间">{{ detailData.updateTime || '-' }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
-        <el-button v-if="detailData.status === 1" type="warning" @click="() => { detailDialogVisible = false; handleEdit(detailData) }">编辑</el-button>
+        <el-button v-if="detailData.status === 1 || isAdmin" type="warning" @click="() => { detailDialogVisible = false; handleEdit(detailData) }">编辑</el-button>
         <el-button type="primary" @click="detailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
