@@ -68,7 +68,7 @@
               <el-icon><DataAnalysis /></el-icon>
               <span>报表管理</span>
             </template>
-            <el-menu-item index="/dashboard">
+            <!-- <el-menu-item index="/dashboard">
               <el-icon><Odometer /></el-icon>
               <template #title>经营驾驶舱</template>
             </el-menu-item>
@@ -79,7 +79,7 @@
             <el-menu-item index="/reports/finance">
               <el-icon><Wallet /></el-icon>
               <template #title>财务报表</template>
-            </el-menu-item>
+            </el-menu-item> -->
             <el-menu-item index="/reports/order-status">
               <el-icon><PieChart /></el-icon>
               <template #title>未完订单状态图</template>
