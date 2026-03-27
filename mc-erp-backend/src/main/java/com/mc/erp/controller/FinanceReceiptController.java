@@ -43,6 +43,7 @@ public class FinanceReceiptController {
 
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(financeReceiptService.removeById(id));
+        financeReceiptService.deleteWithDetails(id);
+        return Result.success(true);
     }
 }

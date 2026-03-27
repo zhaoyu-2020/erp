@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 public class ImportResult {
     private int successCount;
+    private int updateCount;
     private int errorCount;
     private List<String> errors = new ArrayList<>();
 

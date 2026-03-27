@@ -31,6 +31,7 @@ import com.mc.erp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -78,6 +79,9 @@ public class InitAdminRunner implements ApplicationRunner {
 
     @Autowired
     private PurchaseOrderItemMapper purchaseOrderItemMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private PurchaseOrderDetailMapper purchaseOrderDetailMapper;
@@ -513,12 +517,15 @@ public class InitAdminRunner implements ApplicationRunner {
     // ----------------------------------------------------------------
 
     private SalesOrder getOrCreateSalesOrder(String orderNo, java.util.function.Consumer<SalesOrder> setter) {
+        // 先按正常逻辑查（自动过滤 is_deleted=0）
         LambdaQueryWrapper<SalesOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SalesOrder::getOrderNo, orderNo);
         SalesOrder exists = salesOrderMapper.selectOne(wrapper);
         if (exists != null) {
             return exists;
         }
+        // 物理删除可能残留的同名软删除记录（唯一索引会阻止重复插入）
+        jdbcTemplate.update("DELETE FROM biz_sales_order WHERE order_no = ? AND is_deleted = 1", orderNo);
         SalesOrder so = new SalesOrder();
         so.setOrderNo(orderNo);
         setter.accept(so);
@@ -546,6 +553,8 @@ public class InitAdminRunner implements ApplicationRunner {
         if (exists != null) {
             return exists;
         }
+        // 物理删除可能残留的同名软删除记录（唯一索引会阻止重复插入）
+        jdbcTemplate.update("DELETE FROM biz_purchase_order WHERE po_no = ? AND is_deleted = 1", poNo);
         PurchaseOrder po = new PurchaseOrder();
         po.setPoNo(poNo);
         setter.accept(po);
@@ -592,6 +601,8 @@ public class InitAdminRunner implements ApplicationRunner {
             }
             return exists;
         }
+        // 物理删除可能残留的同名软删除记录
+        jdbcTemplate.update("DELETE FROM sys_user WHERE username = ? AND is_deleted = 1", username);
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
@@ -613,6 +624,8 @@ public class InitAdminRunner implements ApplicationRunner {
             }
             return exists;
         }
+        // 物理删除可能残留的同编码软删除记录
+        jdbcTemplate.update("DELETE FROM sys_role WHERE role_code = ? AND is_deleted = 1", roleCode);
         Role role = new Role();
         role.setRoleCode(roleCode);
         role.setRoleName(roleName);
@@ -654,6 +667,8 @@ public class InitAdminRunner implements ApplicationRunner {
         if (exists != null) {
             return exists.getId();
         }
+        // 物理删除可能残留的同编码软删除记录
+        jdbcTemplate.update("DELETE FROM biz_supplier WHERE supplier_code = ? AND is_deleted = 1", supplierCode);
         Supplier supplier = new Supplier();
         supplier.setSupplierCode(supplierCode);
         supplier.setName(name);

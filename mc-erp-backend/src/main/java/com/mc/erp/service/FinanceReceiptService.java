@@ -12,4 +12,6 @@ public interface FinanceReceiptService extends IService<FinanceReceipt> {
     FinanceReceiptVO getWithDetails(Long id);
     void saveWithDetails(FinanceReceiptSaveDTO dto);
     void updateWithDetails(FinanceReceiptSaveDTO dto);
+    /** 删除收款单，同时删除明细并同步销售订单金额 */
+    void deleteWithDetails(Long id);
 }

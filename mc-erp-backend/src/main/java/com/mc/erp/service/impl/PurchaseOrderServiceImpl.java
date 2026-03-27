@@ -181,44 +181,118 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     result.addError(rowNum, "采购单号不能为空");
                     continue;
                 }
+                if (!StringUtils.hasText(row.getSpec()) || !StringUtils.hasText(row.getProductType())
+                        || !StringUtils.hasText(row.getMaterial()) || !StringUtils.hasText(row.getLength())
+                        || !StringUtils.hasText(row.getTolerance())) {
+                    result.addError(rowNum, "必填项不完整（产品规格/产品类型/材质/长度/公差）");
+                    continue;
+                }
                 Long purchaseOrderId = poNoToId.get(row.getPoNo().trim());
                 if (purchaseOrderId == null) {
                     result.addError(rowNum, "采购单号不存在: " + row.getPoNo());
                     continue;
                 }
                 purchaseOrderIds.add(purchaseOrderId);
-                PurchaseOrderDetail detail = new PurchaseOrderDetail();
-                detail.setPurchaseOrderId(purchaseOrderId);
-                detail.setSpec(row.getSpec());
-                detail.setProductType(row.getProductType());
-                detail.setMaterial(row.getMaterial());
-                detail.setLength(row.getLength());
-                detail.setTolerance(row.getTolerance());
-                detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
-                detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
-                detail.setPackaging(row.getPackaging());
-                detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
-                detail.setProcessingItems(row.getProcessingItems());
-                detail.setRemark(row.getRemark());
-                detail.setOrderedQuantity(parseBD(row.getOrderedQuantity()));
-                detail.setActualQuantity(parseBD(row.getActualQuantity()));
-                detail.setBundleCount(parseInteger(row.getBundleCount()));
-                detail.setNetWeight(parseBD(row.getNetWeight()));
-                detail.setGrossWeight(parseBD(row.getGrossWeight()));
-                detail.setVolume(parseBD(row.getVolume()));
-                detail.setOriginPlace(row.getOriginPlace());
-                detail.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight()));
-                // 预计算 priceTotal = orderedQuantity * settlementPrice
-                if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
-                    detail.setPriceTotal(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
+
+                // 根据必填项组合查找已有记录（采购单号+规格+产品类型+材质+长度+公差）
+                LambdaQueryWrapper<PurchaseOrderDetail> existWrapper = new LambdaQueryWrapper<PurchaseOrderDetail>()
+                        .eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId)
+                        .eq(PurchaseOrderDetail::getSpec, row.getSpec().trim())
+                        .eq(PurchaseOrderDetail::getProductType, row.getProductType().trim())
+                        .eq(PurchaseOrderDetail::getMaterial, row.getMaterial().trim())
+                        .eq(PurchaseOrderDetail::getLength, row.getLength().trim())
+                        .eq(PurchaseOrderDetail::getTolerance, row.getTolerance().trim())
+                        .last("LIMIT 1");
+                PurchaseOrderDetail existing = purchaseOrderDetailService.getOne(existWrapper);
+
+                if (existing != null) {
+                    // 老数据 —— 仅补充原来为空的字段，不覆盖已有数据
+                    boolean changed = false;
+                    if (existing.getSettlementPrice() == null && parseBD(row.getSettlementPrice()) != null) {
+                        existing.setSettlementPrice(parseBD(row.getSettlementPrice())); changed = true;
+                    }
+                    if (existing.getOrderedQuantity() == null && parseBD(row.getOrderedQuantity()) != null) {
+                        existing.setOrderedQuantity(parseBD(row.getOrderedQuantity())); changed = true;
+                    }
+                    if (existing.getActualQuantity() == null && parseBD(row.getActualQuantity()) != null) {
+                        existing.setActualQuantity(parseBD(row.getActualQuantity())); changed = true;
+                    }
+                    if (existing.getBundleCount() == null && parseInteger(row.getBundleCount()) != null) {
+                        existing.setBundleCount(parseInteger(row.getBundleCount())); changed = true;
+                    }
+                    if (existing.getNetWeight() == null && parseBD(row.getNetWeight()) != null) {
+                        existing.setNetWeight(parseBD(row.getNetWeight())); changed = true;
+                    }
+                    if (existing.getGrossWeight() == null && parseBD(row.getGrossWeight()) != null) {
+                        existing.setGrossWeight(parseBD(row.getGrossWeight())); changed = true;
+                    }
+                    if (existing.getVolume() == null && parseBD(row.getVolume()) != null) {
+                        existing.setVolume(parseBD(row.getVolume())); changed = true;
+                    }
+                    if (existing.getPackagingWeight() == null && parseBD(row.getPackagingWeight()) != null) {
+                        existing.setPackagingWeight(parseBD(row.getPackagingWeight())); changed = true;
+                    }
+                    if (existing.getPackaging() == null && StringUtils.hasText(row.getPackaging())) {
+                        existing.setPackaging(row.getPackaging()); changed = true;
+                    }
+                    if (existing.getCoilInnerDiameter() == null && StringUtils.hasText(row.getCoilInnerDiameter())) {
+                        existing.setCoilInnerDiameter(row.getCoilInnerDiameter()); changed = true;
+                    }
+                    if (existing.getProcessingItems() == null && StringUtils.hasText(row.getProcessingItems())) {
+                        existing.setProcessingItems(row.getProcessingItems()); changed = true;
+                    }
+                    if (existing.getRemark() == null && StringUtils.hasText(row.getRemark())) {
+                        existing.setRemark(row.getRemark()); changed = true;
+                    }
+                    if (existing.getOriginPlace() == null && StringUtils.hasText(row.getOriginPlace())) {
+                        existing.setOriginPlace(row.getOriginPlace()); changed = true;
+                    }
+                    if (existing.getActualTheoreticalWeight() == null && parseBD(row.getActualTheoreticalWeight()) != null) {
+                        existing.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight())); changed = true;
+                    }
+                    // 重新计算 priceTotal
+                    if (changed && existing.getOrderedQuantity() != null && existing.getSettlementPrice() != null) {
+                        existing.setPriceTotal(existing.getOrderedQuantity().multiply(existing.getSettlementPrice()));
+                    }
+                    if (changed) {
+                        purchaseOrderDetailService.updateById(existing);
+                    }
+                    result.setUpdateCount(result.getUpdateCount() + 1);
+                } else {
+                    // 新数据 —— 插入
+                    PurchaseOrderDetail detail = new PurchaseOrderDetail();
+                    detail.setPurchaseOrderId(purchaseOrderId);
+                    detail.setSpec(row.getSpec());
+                    detail.setProductType(row.getProductType());
+                    detail.setMaterial(row.getMaterial());
+                    detail.setLength(row.getLength());
+                    detail.setTolerance(row.getTolerance());
+                    detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
+                    detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
+                    detail.setPackaging(row.getPackaging());
+                    detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
+                    detail.setProcessingItems(row.getProcessingItems());
+                    detail.setRemark(row.getRemark());
+                    detail.setOrderedQuantity(parseBD(row.getOrderedQuantity()));
+                    detail.setActualQuantity(parseBD(row.getActualQuantity()));
+                    detail.setBundleCount(parseInteger(row.getBundleCount()));
+                    detail.setNetWeight(parseBD(row.getNetWeight()));
+                    detail.setGrossWeight(parseBD(row.getGrossWeight()));
+                    detail.setVolume(parseBD(row.getVolume()));
+                    detail.setOriginPlace(row.getOriginPlace());
+                    detail.setActualTheoreticalWeight(parseBD(row.getActualTheoreticalWeight()));
+                    // 预计算 priceTotal = orderedQuantity * settlementPrice
+                    if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
+                        detail.setPriceTotal(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
+                    }
+                    purchaseOrderDetailService.saveDetail(detail);
+                    result.setSuccessCount(result.getSuccessCount() + 1);
                 }
-                purchaseOrderDetailService.save(detail);
-                result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
                 result.addError(rowNum, e.getMessage());
             }
         }
-        // 所有明细保存完毕后，批量触发一次汇总计算（参照销售订单模块逻辑）
+        // 所有明细保存完毕后，批量触发一次汇总计算
         for (Long purchaseOrderId : purchaseOrderIds) {
             purchaseOrderDetailService.recalculateOrderTotals(purchaseOrderId);
         }

@@ -150,6 +150,15 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
         this.save(receipt);
 
         saveDetails(receipt.getId(), dto);
+
+        // 同步销售订单认领金额和状态
+        if (dto.getDetails() != null) {
+            dto.getDetails().stream()
+                    .map(FinanceReceiptDetailDTO::getSalesOrderNo)
+                    .filter(StringUtils::hasText)
+                    .distinct()
+                    .forEach(salesOrderService::syncClaimAmounts);
+        }
     }
 
     @Override
@@ -181,6 +190,28 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
                     .distinct()
                     .forEach(salesOrderService::syncClaimAmounts);
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteWithDetails(Long id) {
+        // 查出明细中涉及的销售订单号（用于后续同步）
+        LambdaQueryWrapper<FinanceReceiptDetail> dw = new LambdaQueryWrapper<>();
+        dw.eq(FinanceReceiptDetail::getReceiptId, id);
+        List<FinanceReceiptDetail> details = detailMapper.selectList(dw);
+        List<String> affectedOrderNos = details.stream()
+                .map(FinanceReceiptDetail::getSalesOrderNo)
+                .filter(StringUtils::hasText)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 软删除明细
+        detailMapper.delete(dw);
+        // 软删除收款单
+        this.removeById(id);
+
+        // 同步受影响的销售订单认领金额和状态
+        affectedOrderNos.forEach(salesOrderService::syncClaimAmounts);
     }
 
     private void saveDetails(Long receiptId, FinanceReceiptSaveDTO dto) {

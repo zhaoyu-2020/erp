@@ -11,12 +11,14 @@ import com.mc.erp.dto.SalesOrderDetailImportRow;
 import com.mc.erp.dto.SalesOrderImportRow;
 import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.Customer;
+import com.mc.erp.entity.FinanceReceipt;
 import com.mc.erp.entity.FinanceReceiptDetail;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.SalesOrderDetail;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
+import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.CustomerService;
 import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.service.SalesOrderDetailService;
@@ -54,6 +56,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private FinanceReceiptDetailMapper financeReceiptDetailMapper;
+
+    @Autowired
+    private FinanceReceiptMapper financeReceiptMapper;
 
     @Override
     public PageResult<SalesOrderVO> getPage(SalesOrderQuery query) {
@@ -176,10 +181,21 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         SalesOrder order = this.getOne(new LambdaQueryWrapper<SalesOrder>().eq(SalesOrder::getOrderNo, orderNo));
         if (order == null) return;
 
-        // 查询该订单号下所有收款明细（跨所有收款单）
-        List<FinanceReceiptDetail> allDetails = financeReceiptDetailMapper.selectList(
-                new LambdaQueryWrapper<FinanceReceiptDetail>()
-                        .eq(FinanceReceiptDetail::getSalesOrderNo, orderNo));
+        // 先查出所有未删除的收款单ID（selectList 自动过滤 is_deleted=0）
+        List<Long> validReceiptIds = financeReceiptMapper.selectList(
+                new LambdaQueryWrapper<FinanceReceipt>().select(FinanceReceipt::getId))
+                .stream().map(FinanceReceipt::getId).collect(Collectors.toList());
+
+        // 查询该订单号下所有收款明细，且其所属收款单未被删除
+        List<FinanceReceiptDetail> allDetails;
+        if (validReceiptIds.isEmpty()) {
+            allDetails = Collections.emptyList();
+        } else {
+            allDetails = financeReceiptDetailMapper.selectList(
+                    new LambdaQueryWrapper<FinanceReceiptDetail>()
+                            .eq(FinanceReceiptDetail::getSalesOrderNo, orderNo)
+                            .in(FinanceReceiptDetail::getReceiptId, validReceiptIds));
+        }
 
         // 分别汇总定金和尾款
         BigDecimal totalDeposit = allDetails.stream()
@@ -366,8 +382,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             int rowNum = i + 2;
             SalesOrderDetailImportRow row = rows.get(i);
             try {
+                // 校验必填项
                 if (!StringUtils.hasText(row.getOrderNo())) {
                     result.addError(rowNum, "订单号不能为空");
+                    continue;
+                }
+                if (!StringUtils.hasText(row.getSpec()) || !StringUtils.hasText(row.getProductType())
+                        || !StringUtils.hasText(row.getMaterial()) || !StringUtils.hasText(row.getLength())
+                        || !StringUtils.hasText(row.getTolerance())) {
+                    result.addError(rowNum, "必填项不完整（产品规格/产品类型/材质/长度/公差）");
                     continue;
                 }
                 Long orderId = orderNoToId.get(row.getOrderNo().trim());
@@ -376,29 +399,93 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                     continue;
                 }
                 orderIds.add(orderId);
-                SalesOrderDetail detail = new SalesOrderDetail();
-                detail.setOrderId(orderId);
-                detail.setSpec(row.getSpec());
-                detail.setProductType(row.getProductType());
-                detail.setMaterial(row.getMaterial());
-                detail.setLength(row.getLength());
-                detail.setTolerance(row.getTolerance());
-                detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
-                detail.setMeasurementMethod(row.getMeasurementMethod());
-                detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
-                detail.setPackaging(row.getPackaging());
-                detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
-                detail.setProcessingItems(row.getProcessingItems());
-                detail.setRemark(row.getRemark());
-                detail.setOrderedQuantity(parseBD(row.getOrderedQuantity()));
-                detail.setActualQuantity(parseBD(row.getActualQuantity()));
-                detail.setBundleCount(parseInteger(row.getBundleCount()));
-                detail.setNetWeight(parseBD(row.getNetWeight()));
-                detail.setGrossWeight(parseBD(row.getGrossWeight()));
-                detail.setVolume(parseBD(row.getVolume()));
-                detail.setOriginPlace(row.getOriginPlace());
-                salesOrderDetailService.save(detail);
-                result.setSuccessCount(result.getSuccessCount() + 1);
+
+                // 根据必填项组合查找已有记录（订单号+规格+产品类型+材质+长度+公差）
+                LambdaQueryWrapper<SalesOrderDetail> existWrapper = new LambdaQueryWrapper<SalesOrderDetail>()
+                        .eq(SalesOrderDetail::getOrderId, orderId)
+                        .eq(SalesOrderDetail::getSpec, row.getSpec().trim())
+                        .eq(SalesOrderDetail::getProductType, row.getProductType().trim())
+                        .eq(SalesOrderDetail::getMaterial, row.getMaterial().trim())
+                        .eq(SalesOrderDetail::getLength, row.getLength().trim())
+                        .eq(SalesOrderDetail::getTolerance, row.getTolerance().trim())
+                        .last("LIMIT 1");
+                SalesOrderDetail existing = salesOrderDetailService.getOne(existWrapper);
+
+                if (existing != null) {
+                    // 老数据 —— 仅补充原来为空的字段，不覆盖已有数据
+                    boolean changed = false;
+                    if (existing.getSettlementPrice() == null && parseBD(row.getSettlementPrice()) != null) {
+                        existing.setSettlementPrice(parseBD(row.getSettlementPrice())); changed = true;
+                    }
+                    if (existing.getMeasurementMethod() == null && StringUtils.hasText(row.getMeasurementMethod())) {
+                        existing.setMeasurementMethod(row.getMeasurementMethod()); changed = true;
+                    }
+                    if (existing.getOrderedQuantity() == null && parseBD(row.getOrderedQuantity()) != null) {
+                        existing.setOrderedQuantity(parseBD(row.getOrderedQuantity())); changed = true;
+                    }
+                    if (existing.getActualQuantity() == null && parseBD(row.getActualQuantity()) != null) {
+                        existing.setActualQuantity(parseBD(row.getActualQuantity())); changed = true;
+                    }
+                    if (existing.getBundleCount() == null && parseInteger(row.getBundleCount()) != null) {
+                        existing.setBundleCount(parseInteger(row.getBundleCount())); changed = true;
+                    }
+                    if (existing.getNetWeight() == null && parseBD(row.getNetWeight()) != null) {
+                        existing.setNetWeight(parseBD(row.getNetWeight())); changed = true;
+                    }
+                    if (existing.getGrossWeight() == null && parseBD(row.getGrossWeight()) != null) {
+                        existing.setGrossWeight(parseBD(row.getGrossWeight())); changed = true;
+                    }
+                    if (existing.getVolume() == null && parseBD(row.getVolume()) != null) {
+                        existing.setVolume(parseBD(row.getVolume())); changed = true;
+                    }
+                    if (existing.getPackagingWeight() == null && parseBD(row.getPackagingWeight()) != null) {
+                        existing.setPackagingWeight(parseBD(row.getPackagingWeight())); changed = true;
+                    }
+                    if (existing.getPackaging() == null && StringUtils.hasText(row.getPackaging())) {
+                        existing.setPackaging(row.getPackaging()); changed = true;
+                    }
+                    if (existing.getCoilInnerDiameter() == null && StringUtils.hasText(row.getCoilInnerDiameter())) {
+                        existing.setCoilInnerDiameter(row.getCoilInnerDiameter()); changed = true;
+                    }
+                    if (existing.getProcessingItems() == null && StringUtils.hasText(row.getProcessingItems())) {
+                        existing.setProcessingItems(row.getProcessingItems()); changed = true;
+                    }
+                    if (existing.getRemark() == null && StringUtils.hasText(row.getRemark())) {
+                        existing.setRemark(row.getRemark()); changed = true;
+                    }
+                    if (existing.getOriginPlace() == null && StringUtils.hasText(row.getOriginPlace())) {
+                        existing.setOriginPlace(row.getOriginPlace()); changed = true;
+                    }
+                    if (changed) {
+                        salesOrderDetailService.updateById(existing);
+                    }
+                    result.setUpdateCount(result.getUpdateCount() + 1);
+                } else {
+                    // 新数据 —— 插入
+                    SalesOrderDetail detail = new SalesOrderDetail();
+                    detail.setOrderId(orderId);
+                    detail.setSpec(row.getSpec());
+                    detail.setProductType(row.getProductType());
+                    detail.setMaterial(row.getMaterial());
+                    detail.setLength(row.getLength());
+                    detail.setTolerance(row.getTolerance());
+                    detail.setSettlementPrice(parseBD(row.getSettlementPrice()));
+                    detail.setMeasurementMethod(row.getMeasurementMethod());
+                    detail.setPackagingWeight(parseBD(row.getPackagingWeight()));
+                    detail.setPackaging(row.getPackaging());
+                    detail.setCoilInnerDiameter(row.getCoilInnerDiameter());
+                    detail.setProcessingItems(row.getProcessingItems());
+                    detail.setRemark(row.getRemark());
+                    detail.setOrderedQuantity(parseBD(row.getOrderedQuantity()));
+                    detail.setActualQuantity(parseBD(row.getActualQuantity()));
+                    detail.setBundleCount(parseInteger(row.getBundleCount()));
+                    detail.setNetWeight(parseBD(row.getNetWeight()));
+                    detail.setGrossWeight(parseBD(row.getGrossWeight()));
+                    detail.setVolume(parseBD(row.getVolume()));
+                    detail.setOriginPlace(row.getOriginPlace());
+                    salesOrderDetailService.saveDetail(detail);
+                    result.setSuccessCount(result.getSuccessCount() + 1);
+                }
             } catch (Exception e) {
                 result.addError(rowNum, e.getMessage());
             }
