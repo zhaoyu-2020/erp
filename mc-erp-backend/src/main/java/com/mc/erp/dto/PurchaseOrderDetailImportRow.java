@@ -33,22 +33,6 @@ public class PurchaseOrderDetailImportRow {
     @ExcelProperty("订货数量*")
     private String orderedQuantity;
 
-    @ExcelProperty("包装重量")
-    private String packagingWeight;
-
-    @ExcelProperty("包装")
-    private String packaging;
-
-    @ExcelProperty("卷内径(mm)")
-    private String coilInnerDiameter;
-
-    @ExcelProperty("加工项")
-    private String processingItems;
-
-    @ExcelProperty("备注")
-    private String remark;
-
-
     @ExcelProperty("实际数量")
     private String actualQuantity;
 
@@ -69,4 +53,24 @@ public class PurchaseOrderDetailImportRow {
 
     @ExcelProperty("实际理论重量")
     private String actualTheoreticalWeight;
+
+
+
+
+    @ExcelProperty("包装重量")
+    private String packagingWeight;
+
+    @ExcelProperty("包装")
+    private String packaging;
+
+    @ExcelProperty("卷内径(mm)")
+    private String coilInnerDiameter;
+
+    @ExcelProperty("加工项")
+    private String processingItems;
+
+    @ExcelProperty("备注")
+    private String remark;
+
+
 }
