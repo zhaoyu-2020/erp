@@ -101,7 +101,7 @@ public class InitAdminRunner implements ApplicationRunner {
 
         userService.updateUserRoles(admin.getId(), List.of(adminRole.getId()));
         initPermissions(adminRole.getId());
-        initSeedData();
+        initSeedData(adminRole);
     }
 
     /**
@@ -169,9 +169,9 @@ public class InitAdminRunner implements ApplicationRunner {
         return menu.getId();
     }
 
-    private void initSeedData() {
+    private void initSeedData(Role adminRole) {
         Role salesRole = getOrCreateRole("sales", "业务员", "销售业务角色");
-        getOrCreateRole("operator", "操作员", "操作角色");
+        Role operatorRole = getOrCreateRole("operator", "操作员", "操作角色");
         getOrCreateRole("purchaser", "采购员", "采购角色");
         User salesA = getOrCreateUser("zach", "123456", "赵宇");
 
@@ -179,415 +179,73 @@ public class InitAdminRunner implements ApplicationRunner {
             userService.updateUserRoles(salesA.getId(), List.of(salesRole.getId()));
         }
 
+        // ====== 额外用户 ======
+        // 管理员
+        User cathy = getOrCreateUser("Cathy", "123456", "赵彩霞");
+        if (cathy != null && adminRole != null) {
+            userService.updateUserRoles(cathy.getId(), List.of(adminRole.getId()));
+        }
+        User ma = getOrCreateUser("Ma", "123456", "马世军");
+        if (ma != null && adminRole != null) {
+            userService.updateUserRoles(ma.getId(), List.of(adminRole.getId()));
+        }
+        // 业务员
+        User lisa = getOrCreateUser("lisa", "123456", "姚琪");
+        if (lisa != null && salesRole != null) {
+            userService.updateUserRoles(lisa.getId(), List.of(salesRole.getId()));
+        }
+        User nancy = getOrCreateUser("nancy", "123456", "张欣欣");
+        if (nancy != null && salesRole != null) {
+            userService.updateUserRoles(nancy.getId(), List.of(salesRole.getId()));
+        }
+        User sophia = getOrCreateUser("Sophia", "123456", "马新月");
+        if (sophia != null && salesRole != null) {
+            userService.updateUserRoles(sophia.getId(), List.of(salesRole.getId()));
+        }
+        // 操作员
+        User kelly = getOrCreateUser("Kelly", "123456", "乔羽童");
+        if (kelly != null && operatorRole != null) {
+            userService.updateUserRoles(kelly.getId(), List.of(operatorRole.getId()));
+        }
+        User shirley = getOrCreateUser("Shirley", "123456", "李羽萱");
+        if (shirley != null && operatorRole != null) {
+            userService.updateUserRoles(shirley.getId(), List.of(operatorRole.getId()));
+        }
+
         // ====== 客户 ======
         Long customerId1 = null;
         Long customerId2 = null;
         if (salesA != null) {
-            customerId1 = getOrCreateCustomer("测试客户-华东", "中国", "ASIA", "张三", "李四",
-                    "cust-east@example.com", "13800000001", salesA.getId());
-            customerId2 = getOrCreateCustomer("测试客户-欧洲", "德国", "EUROPE", "Hans", "Mia",
-                    "cust-eu@example.com", "13800000002", salesA.getId());
+            customerId1 = getOrCreateCustomer("Talla", "塞内加尔", "AFRICA", "talla", "talla",
+                    "talla@example.com", "13800000001", salesA.getId());
+
+            
         }
 
         // ====== 供应商 ======
-        Long supplierId1 = getOrCreateSupplier("SUP_TEST_001", "测试供应商一", "赵六", "13900000001", "上海市浦东新区");
-        Long supplierId2 = getOrCreateSupplier("SUP_TEST_002", "测试供应商二", "孙七", "13900000002", "天津市滨海新区");
+        Long supplierId1 = getOrCreateSupplier("TSYY", "月羿", "安", "13900000001", "唐山市路南区");
 
         // ====== 产品类型 ======
+        getOrCreateProductType("热轧卷");
+        getOrCreateProductType("冷轧卷");
+        getOrCreateProductType("角钢");
+        getOrCreateProductType("扁钢");
+        getOrCreateProductType("槽钢");
+        getOrCreateProductType("工字钢");
         getOrCreateProductType("H型钢");
         getOrCreateProductType("I型钢");
-        getOrCreateProductType("热轧卷");
+        getOrCreateProductType("镀锌卷");
+        getOrCreateProductType("彩涂卷");
 
-        // ====== 销售订单及明细 ======
-        if (salesA != null && customerId1 != null && customerId2 != null) {
-            initSalesOrders(salesA.getId(), customerId1, customerId2);
-        }
-
-        // ====== 采购订单及明细 ======
-        if (supplierId1 != null && supplierId2 != null) {
-            initPurchaseOrders(supplierId1, supplierId2);
-        }
 
         System.out.println("====== Seed Data Initialized ======");
     }
 
-    // ----------------------------------------------------------------
-    // 销售订单
-    // ----------------------------------------------------------------
-    private void initSalesOrders(Long salespersonId, Long customerId1, Long customerId2) {
-
-        // ----- SO-TEST-001：H型钢，华东客户 -----
-        SalesOrder so1 = getOrCreateSalesOrder("SO-TEST-001", so -> {
-            so.setSalespersonId(salespersonId);
-            so.setOperatorId(salespersonId);
-            so.setCustomerId(customerId1);
-            so.setTradeTerm("FOB");
-            so.setPaymentMethod("TT");
-            so.setCurrency("USD");
-            so.setDepositExchangeRate(new BigDecimal("7.10"));
-            so.setFinalExchangeRate(new BigDecimal("7.15"));
-            so.setContractAmount(new BigDecimal("120000"));
-            so.setActualAmount(new BigDecimal("120000"));
-            so.setDepositRate(new BigDecimal("30"));
-            so.setReceivedAmount(new BigDecimal("36000"));
-            so.setFinalPaymentAmount(new BigDecimal("84000"));
-            so.setInsuranceFee(new BigDecimal("0.0015"));
-            so.setInsuranceAmount(new BigDecimal("180"));
-            so.setExpectedReceiptDays(LocalDate.now().plusDays(30));
-            so.setDeliveryDate(LocalDate.now().plusDays(15));
-            so.setDestinationPort("Shanghai");
-            so.setTransportType("海运");
-            so.setSeaFreight(new BigDecimal("3000"));
-            so.setPortFee(new BigDecimal("500"));
-            so.setVat(new BigDecimal("13"));
-            so.setContractTotalQuantity(new BigDecimal("60"));
-            so.setStatus(1);
-        });
-        if (so1 != null) {
-            // 明细1：H300×300
-            insertSalesDetailIfAbsent(so1.getId(), "H300×300", detail -> {
-                detail.setProductType("H型钢");
-                detail.setMaterial("Q235B");
-                detail.setLength("12");
-                detail.setTolerance("±2mm");
-                detail.setSettlementPrice(new BigDecimal("2000"));
-                detail.setPriceTotal(new BigDecimal("80000"));
-                detail.setPackaging("裸装");
-                detail.setOriginPlace("宝钢");
-                detail.setNetWeight(new BigDecimal("40"));
-                detail.setGrossWeight(new BigDecimal("40.5"));
-                detail.setBundleCount(6);
-                detail.setMeasurementMethod("理重");
-                detail.setRemark("主规格");
-            });
-            // 明细2：H200×200
-            insertSalesDetailIfAbsent(so1.getId(), "H200×200", detail -> {
-                detail.setProductType("H型钢");
-                detail.setMaterial("Q345B");
-                detail.setLength("9");
-                detail.setTolerance("±1.5mm");
-                detail.setSettlementPrice(new BigDecimal("2100"));
-                detail.setPriceTotal(new BigDecimal("42000"));
-                detail.setPackaging("裸装");
-                detail.setOriginPlace("马钢");
-                detail.setNetWeight(new BigDecimal("20"));
-                detail.setGrossWeight(new BigDecimal("20.3"));
-                detail.setBundleCount(4);
-                detail.setMeasurementMethod("理重");
-                detail.setRemark("补充规格");
-            });
-        }
-
-        // ----- SO-TEST-002：I型钢，欧洲客户 -----
-        SalesOrder so2 = getOrCreateSalesOrder("SO-TEST-002", so -> {
-            so.setSalespersonId(salespersonId);
-            so.setOperatorId(salespersonId);
-            so.setCustomerId(customerId2);
-            so.setTradeTerm("CIF");
-            so.setPaymentMethod("LC");
-            so.setCurrency("EUR");
-            so.setDepositExchangeRate(new BigDecimal("7.80"));
-            so.setFinalExchangeRate(new BigDecimal("7.85"));
-            so.setContractAmount(new BigDecimal("75000"));
-            so.setActualAmount(new BigDecimal("75000"));
-            so.setDepositRate(new BigDecimal("20"));
-            so.setReceivedAmount(new BigDecimal("15000"));
-            so.setFinalPaymentAmount(new BigDecimal("60000"));
-            so.setInsuranceFee(new BigDecimal("0.002"));
-            so.setInsuranceAmount(new BigDecimal("150"));
-            so.setExpectedReceiptDays(LocalDate.now().plusDays(45));
-            so.setDeliveryDate(LocalDate.now().plusDays(25));
-            so.setDestinationPort("Hamburg");
-            so.setTransportType("海运");
-            so.setSeaFreight(new BigDecimal("5000"));
-            so.setPortFee(new BigDecimal("800"));
-            so.setVat(new BigDecimal("0"));
-            so.setContractTotalQuantity(new BigDecimal("45"));
-            so.setStatus(1);
-        });
-        if (so2 != null) {
-            // 明细1：I200×150
-            insertSalesDetailIfAbsent(so2.getId(), "I200×150", detail -> {
-                detail.setProductType("I型钢");
-                detail.setMaterial("SS400");
-                detail.setLength("6");
-                detail.setTolerance("±1.5mm");
-                detail.setSettlementPrice(new BigDecimal("1800"));
-                detail.setPriceTotal(new BigDecimal("45000"));
-                detail.setPackaging("托盘");
-                detail.setOriginPlace("武钢");
-                detail.setNetWeight(new BigDecimal("25"));
-                detail.setGrossWeight(new BigDecimal("25.8"));
-                detail.setBundleCount(5);
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("欧洲客户标准规格");
-            });
-            // 明细2：I160×82
-            insertSalesDetailIfAbsent(so2.getId(), "I160×82", detail -> {
-                detail.setProductType("I型钢");
-                detail.setMaterial("SS400");
-                detail.setLength("6");
-                detail.setTolerance("±1mm");
-                detail.setSettlementPrice(new BigDecimal("1600"));
-                detail.setPriceTotal(new BigDecimal("32000"));
-                detail.setPackaging("托盘");
-                detail.setOriginPlace("武钢");
-                detail.setNetWeight(new BigDecimal("20"));
-                detail.setGrossWeight(new BigDecimal("20.5"));
-                detail.setBundleCount(4);
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("欧洲客户辅助规格");
-            });
-        }
-
-        // ----- SO-TEST-003：热轧卷，华东客户，小批量空运 -----
-        SalesOrder so3 = getOrCreateSalesOrder("SO-TEST-003", so -> {
-            so.setSalespersonId(salespersonId);
-            so.setOperatorId(salespersonId);
-            so.setCustomerId(customerId1);
-            so.setTradeTerm("FOB");
-            so.setPaymentMethod("TT");
-            so.setCurrency("USD");
-            so.setDepositExchangeRate(new BigDecimal("7.10"));
-            so.setFinalExchangeRate(new BigDecimal("7.15"));
-            so.setContractAmount(new BigDecimal("36000"));
-            so.setActualAmount(new BigDecimal("36000"));
-            so.setDepositRate(new BigDecimal("50"));
-            so.setReceivedAmount(new BigDecimal("18000"));
-            so.setFinalPaymentAmount(new BigDecimal("18000"));
-            so.setExpectedReceiptDays(LocalDate.now().plusDays(20));
-            so.setDeliveryDate(LocalDate.now().plusDays(5));
-            so.setDestinationPort("Shenzhen");
-            so.setTransportType("空运");
-            so.setVat(new BigDecimal("13"));
-            so.setContractTotalQuantity(new BigDecimal("15"));
-            so.setStatus(0);
-        });
-        if (so3 != null) {
-            // 明细1：热轧卷 SPCC 1.5mm
-            insertSalesDetailIfAbsent(so3.getId(), "卷材1.5×1250", detail -> {
-                detail.setProductType("热轧卷");
-                detail.setMaterial("SPCC");
-                detail.setLength("");
-                detail.setTolerance("±0.1mm");
-                detail.setCoilInnerDiameter("508mm");
-                detail.setSettlementPrice(new BigDecimal("1400"));
-                detail.setPriceTotal(new BigDecimal("11200"));
-                detail.setPackaging("卷内");
-                detail.setOriginPlace("鞍钢");
-                detail.setNetWeight(new BigDecimal("8"));
-                detail.setGrossWeight(new BigDecimal("8.2"));
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("1.5mm厚热轧卷");
-            });
-            // 明细2：热轧卷 SPCC 2.0mm
-            insertSalesDetailIfAbsent(so3.getId(), "卷材2.0×1250", detail -> {
-                detail.setProductType("热轧卷");
-                detail.setMaterial("SPCC");
-                detail.setLength("");
-                detail.setTolerance("±0.1mm");
-                detail.setCoilInnerDiameter("508mm");
-                detail.setSettlementPrice(new BigDecimal("1380"));
-                detail.setPriceTotal(new BigDecimal("9660"));
-                detail.setPackaging("卷内");
-                detail.setOriginPlace("鞍钢");
-                detail.setNetWeight(new BigDecimal("7"));
-                detail.setGrossWeight(new BigDecimal("7.2"));
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("2.0mm厚热轧卷");
-            });
-        }
-    }
-
-    // ----------------------------------------------------------------
-    // 采购订单
-    // ----------------------------------------------------------------
-    private void initPurchaseOrders(Long supplierId1, Long supplierId2) {
-
-        // ----- PO-TEST-001：关联 SO-TEST-001，H型钢加工采购 -----
-        PurchaseOrder po1 = getOrCreatePurchaseOrder("PO-TEST-001", po -> {
-            po.setSupplierId(supplierId1);
-            po.setSalesOrderNo("SO-TEST-001");
-            po.setTotalAmount(new BigDecimal("90000"));
-            po.setActualAmount(new BigDecimal("90000"));
-            po.setDepositRate(new BigDecimal("30"));
-            po.setDepositAmount(new BigDecimal("27000"));
-            po.setOrderDate(LocalDate.now());
-            po.setDeliveryDate(LocalDate.now().plusDays(10));
-            po.setTransportRemark("送货上门，需提前2天通知");
-            po.setTotalFreight(new BigDecimal("1200"));
-            po.setStatus(1);
-        });
-        if (po1 != null) {
-            Long poId1 = po1.getId();
-            // 加工项
-            insertPurchaseItemIfAbsent(poId1, "H型钢 加工", new BigDecimal("70000"));
-            insertPurchaseItemIfAbsent(poId1, "切割加工", new BigDecimal("12000"));
-            insertPurchaseItemIfAbsent(poId1, "喷漆处理", new BigDecimal("5000"));
-            insertPurchaseItemIfAbsent(poId1, "质量检测", new BigDecimal("3000"));
-            // 物料明细
-            insertPurchaseDetailIfAbsent(poId1, "H300×300", detail -> {
-                detail.setProductType("H型钢");
-                detail.setMaterial("Q235B");
-                detail.setLength("12");
-                detail.setTolerance("±2mm");
-                detail.setSettlementPrice(new BigDecimal("1800"));
-                detail.setPriceTotal(new BigDecimal("72000"));
-                detail.setPackaging("裸装");
-                detail.setOriginPlace("宝钢");
-                detail.setNetWeight(new BigDecimal("40"));
-                detail.setGrossWeight(new BigDecimal("40.5"));
-                detail.setBundleCount(6);
-                detail.setMeasurementMethod("理重");
-                detail.setProcessingItems("切割,喷漆");
-                detail.setRemark("主规格采购");
-            });
-            insertPurchaseDetailIfAbsent(poId1, "H200×200", detail -> {
-                detail.setProductType("H型钢");
-                detail.setMaterial("Q345B");
-                detail.setLength("9");
-                detail.setTolerance("±1.5mm");
-                detail.setSettlementPrice(new BigDecimal("1900"));
-                detail.setPriceTotal(new BigDecimal("38000"));
-                detail.setPackaging("裸装");
-                detail.setOriginPlace("马钢");
-                detail.setNetWeight(new BigDecimal("20"));
-                detail.setGrossWeight(new BigDecimal("20.3"));
-                detail.setBundleCount(4);
-                detail.setMeasurementMethod("理重");
-                detail.setRemark("补充规格采购");
-            });
-        }
-
-        // ----- PO-TEST-002：关联 SO-TEST-002，I型钢采购 -----
-        PurchaseOrder po2 = getOrCreatePurchaseOrder("PO-TEST-002", po -> {
-            po.setSupplierId(supplierId2);
-            po.setSalesOrderNo("SO-TEST-002");
-            po.setTotalAmount(new BigDecimal("55000"));
-            po.setActualAmount(new BigDecimal("55000"));
-            po.setDepositRate(new BigDecimal("20"));
-            po.setDepositAmount(new BigDecimal("11000"));
-            po.setOrderDate(LocalDate.now());
-            po.setDeliveryDate(LocalDate.now().plusDays(20));
-            po.setTransportRemark("港口自提");
-            po.setTotalFreight(new BigDecimal("800"));
-            po.setStatus(0);
-        });
-        if (po2 != null) {
-            Long poId2 = po2.getId();
-            // 加工项
-            insertPurchaseItemIfAbsent(poId2, "I型钢 加工", new BigDecimal("50000"));
-            insertPurchaseItemIfAbsent(poId2, "包装加固", new BigDecimal("5000"));
-            // 物料明细
-            insertPurchaseDetailIfAbsent(poId2, "I200×150", detail -> {
-                detail.setProductType("I型钢");
-                detail.setMaterial("SS400");
-                detail.setLength("6");
-                detail.setTolerance("±1.5mm");
-                detail.setSettlementPrice(new BigDecimal("1600"));
-                detail.setPriceTotal(new BigDecimal("40000"));
-                detail.setPackaging("托盘");
-                detail.setOriginPlace("武钢");
-                detail.setNetWeight(new BigDecimal("25"));
-                detail.setGrossWeight(new BigDecimal("25.8"));
-                detail.setBundleCount(5);
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("欧洲出口规格");
-            });
-            insertPurchaseDetailIfAbsent(poId2, "I160×82", detail -> {
-                detail.setProductType("I型钢");
-                detail.setMaterial("SS400");
-                detail.setLength("6");
-                detail.setTolerance("±1mm");
-                detail.setSettlementPrice(new BigDecimal("1500"));
-                detail.setPriceTotal(new BigDecimal("30000"));
-                detail.setPackaging("托盘");
-                detail.setOriginPlace("武钢");
-                detail.setNetWeight(new BigDecimal("20"));
-                detail.setGrossWeight(new BigDecimal("20.5"));
-                detail.setBundleCount(4);
-                detail.setMeasurementMethod("实重");
-                detail.setRemark("欧洲出口辅助规格");
-            });
-        }
-    }
+    
 
     // ----------------------------------------------------------------
     // 辅助方法
     // ----------------------------------------------------------------
-
-    private SalesOrder getOrCreateSalesOrder(String orderNo, java.util.function.Consumer<SalesOrder> setter) {
-        // 先按正常逻辑查（自动过滤 is_deleted=0）
-        LambdaQueryWrapper<SalesOrder> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SalesOrder::getOrderNo, orderNo);
-        SalesOrder exists = salesOrderMapper.selectOne(wrapper);
-        if (exists != null) {
-            return exists;
-        }
-        // 物理删除可能残留的同名软删除记录（唯一索引会阻止重复插入）
-        jdbcTemplate.update("DELETE FROM biz_sales_order WHERE order_no = ? AND is_deleted = 1", orderNo);
-        SalesOrder so = new SalesOrder();
-        so.setOrderNo(orderNo);
-        setter.accept(so);
-        salesOrderMapper.insert(so);
-        return so;
-    }
-
-    private void insertSalesDetailIfAbsent(Long orderId, String spec, java.util.function.Consumer<SalesOrderDetail> setter) {
-        LambdaQueryWrapper<SalesOrderDetail> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SalesOrderDetail::getOrderId, orderId)
-               .eq(SalesOrderDetail::getSpec, spec);
-        Long count = salesOrderDetailMapper.selectCount(wrapper);
-        if (count > 0) return;
-        SalesOrderDetail detail = new SalesOrderDetail();
-        detail.setOrderId(orderId);
-        detail.setSpec(spec);
-        setter.accept(detail);
-        salesOrderDetailMapper.insert(detail);
-    }
-
-    private PurchaseOrder getOrCreatePurchaseOrder(String poNo, java.util.function.Consumer<PurchaseOrder> setter) {
-        LambdaQueryWrapper<PurchaseOrder> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PurchaseOrder::getPoNo, poNo);
-        PurchaseOrder exists = purchaseOrderMapper.selectOne(wrapper);
-        if (exists != null) {
-            return exists;
-        }
-        // 物理删除可能残留的同名软删除记录（唯一索引会阻止重复插入）
-        jdbcTemplate.update("DELETE FROM biz_purchase_order WHERE po_no = ? AND is_deleted = 1", poNo);
-        PurchaseOrder po = new PurchaseOrder();
-        po.setPoNo(poNo);
-        setter.accept(po);
-        purchaseOrderMapper.insert(po);
-        return po;
-    }
-
-    private void insertPurchaseItemIfAbsent(Long purchaseOrderId, String content, BigDecimal amount) {
-        LambdaQueryWrapper<PurchaseOrderItem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PurchaseOrderItem::getPurchaseOrderId, purchaseOrderId)
-               .eq(PurchaseOrderItem::getContent, content);
-        Long count = purchaseOrderItemMapper.selectCount(wrapper);
-        if (count > 0) return;
-        PurchaseOrderItem item = new PurchaseOrderItem();
-        item.setPurchaseOrderId(purchaseOrderId);
-        item.setContent(content);
-        item.setAmount(amount);
-        purchaseOrderItemMapper.insert(item);
-    }
-
-    private void insertPurchaseDetailIfAbsent(Long purchaseOrderId, String spec,
-                                              java.util.function.Consumer<PurchaseOrderDetail> setter) {
-        LambdaQueryWrapper<PurchaseOrderDetail> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId)
-               .eq(PurchaseOrderDetail::getSpec, spec);
-        Long count = purchaseOrderDetailMapper.selectCount(wrapper);
-        if (count > 0) return;
-        PurchaseOrderDetail detail = new PurchaseOrderDetail();
-        detail.setPurchaseOrderId(purchaseOrderId);
-        detail.setSpec(spec);
-        setter.accept(detail);
-        purchaseOrderDetailMapper.insert(detail);
-    }
 
     private User getOrCreateUser(String username, String password, String realName) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();

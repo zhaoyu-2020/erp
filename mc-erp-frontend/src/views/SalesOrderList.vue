@@ -606,7 +606,7 @@ const rules = {
   operatorId: [{ required: true, message: '请选择操作员', trigger: 'change' }],
   currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
   destinationPort: [{ required: true, message: '请输入目的港', trigger: 'blur' }],
-  depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
+  // depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
   // contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
   depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
   // receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],

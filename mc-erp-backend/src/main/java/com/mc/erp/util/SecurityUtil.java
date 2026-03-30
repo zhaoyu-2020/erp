@@ -52,4 +52,14 @@ public class SecurityUtil {
         return auth.getAuthorities().stream()
                 .anyMatch(a -> "ROLE_admin".equals(a.getAuthority()));
     }
+
+    /**
+     * 判断当前登录用户是否拥有指定角色（roleCode）。
+     */
+    public static boolean hasRole(String roleCode) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> ("ROLE_" + roleCode).equals(a.getAuthority()));
+    }
 }

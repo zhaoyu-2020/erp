@@ -42,8 +42,8 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         Page<Customer> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<>();
 
-        // 只有管理员可以查看所有客户；普通用户仅查看归属自己的客户
-        if (!SecurityUtil.isAdmin()) {
+        // 管理员和操作员可以查看所有客户；其他用户仅查看归属自己的客户
+        if (!SecurityUtil.isAdmin() && !SecurityUtil.hasRole("operator")) {
             wrapper.eq(Customer::getSalesUserId, currentUserId);
         }
 
@@ -132,7 +132,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             return null;
         }
 
-        if (!SecurityUtil.isAdmin() && !currentUserId.equals(cust.getSalesUserId())) {
+        if (!SecurityUtil.isAdmin() && !SecurityUtil.hasRole("operator") && !currentUserId.equals(cust.getSalesUserId())) {
             throw new AccessDeniedException("无操作权限");
         }
 
