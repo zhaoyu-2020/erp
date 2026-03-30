@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 /**
  * 采购订单状态枚举
- * 状态流转：新建 → 生产中 → 待发货 → 已完成
+ * 状态流转：新建 → 生产中 → 待发货 → 已付尾款 → 已完成
  */
 @Getter
 public enum PurchaseOrderStatus {
@@ -23,8 +23,11 @@ public enum PurchaseOrderStatus {
     PENDING_DELIVERY(3, "待发货", "warning",
             List.of(2)),
 
-    COMPLETED(4, "已完成", "success",
-            List.of(3));
+    FINAL_PAID(4, "已付尾款", "success",
+            List.of(3)),
+
+    COMPLETED(5, "已完成", "success",
+            List.of(4));
 
     private final int code;
     private final String label;

@@ -68,7 +68,7 @@ export function useOrderStatus(type: 'sales' | 'purchase') {
 
         // 采购订单流转到「已完成」(code=4)，且当前运费为空（null/undefined）时，弹输入框要求填写运费
         let freightToSubmit: number | null = null
-        if (type === 'purchase' && targetCode === 4 && row?.totalFreight == null) {
+        if (type === 'purchase' && targetCode === 5 && row?.totalFreight == null) {
             try {
                 const result = await ElMessageBox.prompt(
                     `即将完成订单「${row?.poNo ?? id}」，当前无运费记录，请先填写运费金额（元）`,

@@ -5,6 +5,7 @@ import com.mc.erp.dto.ReportQuery;
 import com.mc.erp.entity.Customer;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
+import com.mc.erp.enums.PurchaseOrderStatus;
 import com.mc.erp.enums.SalesOrderStatus;
 import com.mc.erp.service.*;
 import com.mc.erp.vo.*;
@@ -289,7 +290,17 @@ public class ReportServiceImpl implements ReportService {
                     })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal purchaseDeposit = linked.stream()
-                    .map(p -> p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO)
+                    .map(p -> {
+                        // 已付尾款或已完成状态，视为全额已付，余款为0
+                        if (p.getStatus() != null &&
+                                (p.getStatus() == PurchaseOrderStatus.FINAL_PAID.getCode() ||
+                                 p.getStatus() == PurchaseOrderStatus.COMPLETED.getCode())) {
+                            BigDecimal settlement = p.getSettlementTotalAmount();
+                            BigDecimal total = p.getTotalAmount() != null ? p.getTotalAmount() : BigDecimal.ZERO;
+                            return (settlement != null && settlement.compareTo(BigDecimal.ZERO) > 0) ? settlement : total;
+                        }
+                        return p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO;
+                    })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             return new IncompleteOrderFinanceVO(o.getOrderNo(), salesContract, salesReceived, purchaseContract, purchaseDeposit);
@@ -364,9 +375,15 @@ public class ReportServiceImpl implements ReportService {
             }
 
             // 计算该时间段的预计付款（采购订单 deliveryDate 落在此区间 → 到期需付尾款）
+            // 已付尾款(5)或已完成(4)的采购订单不再产生预计付款
             BigDecimal payment = BigDecimal.ZERO;
             List<String> paymentOrders = new ArrayList<>();
             for (PurchaseOrder p : linkedPurchases) {
+                if (p.getStatus() != null &&
+                        (p.getStatus() == PurchaseOrderStatus.FINAL_PAID.getCode() ||
+                         p.getStatus() == PurchaseOrderStatus.COMPLETED.getCode())) {
+                    continue;
+                }
                 if (p.getDeliveryDate() != null
                         && !p.getDeliveryDate().isBefore(periodStart)
                         && !p.getDeliveryDate().isAfter(periodEnd)) {
