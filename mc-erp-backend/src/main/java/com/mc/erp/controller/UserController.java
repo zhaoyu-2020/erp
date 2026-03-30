@@ -1,11 +1,13 @@
 package com.mc.erp.controller;
 
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.ChangePasswordDTO;
 import com.mc.erp.dto.UpdateUserRolesDTO;
 import com.mc.erp.dto.UserQuery;
 import com.mc.erp.entity.User;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.service.UserService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.UserVO;
@@ -47,18 +49,21 @@ public class UserController {
         return Result.success(userService.getById(id));
     }
 
+    @OperLog(module = "用户管理", type = OperationType.ADD, description = "新增用户")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @PostMapping
     public Result<Boolean> save(@Valid @RequestBody User user) {
         return Result.success(userService.save(user));
     }
 
+    @OperLog(module = "用户管理", type = OperationType.MODIFY, description = "修改用户")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody User user) {
         return Result.success(userService.updateById(user));
     }
 
+    @OperLog(module = "用户管理", type = OperationType.DELETE, description = "删除用户")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
@@ -71,6 +76,7 @@ public class UserController {
         return Result.success(userService.getRoleIds(id));
     }
 
+    @OperLog(module = "用户管理", type = OperationType.AUTH_CHANGE, description = "分配用户角色")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @PutMapping("/{id}/roles")
     public Result<Boolean> updateUserRoles(@PathVariable Long id, @Valid @RequestBody UpdateUserRolesDTO dto) {
@@ -80,6 +86,7 @@ public class UserController {
     /**
      * 修改当前登录用户的密码（本人操作，无需特殊权限）
      */
+    @OperLog(module = "用户管理", type = OperationType.MODIFY, description = "修改密码")
     @PutMapping("/change-password")
     public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
         Long userId = SecurityUtil.getCurrentUserId();

@@ -1,6 +1,7 @@
 package com.mc.erp.controller;
 
 import com.alibaba.excel.EasyExcel;
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.ImportResult;
@@ -8,6 +9,7 @@ import com.mc.erp.dto.PurchaseOrderDetailImportRow;
 import com.mc.erp.dto.PurchaseOrderImportRow;
 import com.mc.erp.dto.PurchaseOrderQuery;
 import com.mc.erp.entity.PurchaseOrder;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.PurchaseOrderVO;
@@ -39,11 +41,13 @@ public class PurchaseOrderController {
         return Result.success(purchaseOrderService.getById(id));
     }
 
+    @OperLog(module = "采购订单", type = OperationType.ADD, description = "新增采购订单")
     @PostMapping
     public Result<Boolean> save(@Valid @RequestBody PurchaseOrder purchaseOrder) {
         return Result.success(purchaseOrderService.save(purchaseOrder));
     }
 
+    @OperLog(module = "采购订单", type = OperationType.MODIFY, description = "修改采购订单")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody PurchaseOrder purchaseOrder) {
         return Result.success(purchaseOrderService.updateById(purchaseOrder));
@@ -53,6 +57,7 @@ public class PurchaseOrderController {
      * 专用状态流转接口：PATCH /api/v1/purchase-orders/{id}/status
      * body: { "status": 2 } 或 { "status": 4, "totalFreight": 1200.00 }
      */
+    @OperLog(module = "采购订单", type = OperationType.STATUS_CHANGE, description = "变更采购订单状态")
     @PatchMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Object> body) {
         Integer targetStatus = (Integer) body.get("status");
@@ -64,6 +69,7 @@ public class PurchaseOrderController {
         return Result.success(null);
     }
 
+    @OperLog(module = "采购订单", type = OperationType.DELETE, description = "删除采购订单")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         if (!SecurityUtil.isAdmin()) {
@@ -74,11 +80,13 @@ public class PurchaseOrderController {
 
     // ---- Excel 导入 ----
 
+    @OperLog(module = "采购订单", type = OperationType.IMPORT, description = "导入采购订单合同")
     @PostMapping("/import/contract")
     public Result<ImportResult> importContract(@RequestParam("file") MultipartFile file) throws Exception {
         return Result.success(purchaseOrderService.importContracts(file));
     }
 
+    @OperLog(module = "采购订单", type = OperationType.IMPORT, description = "导入采购订单明细")
     @PostMapping("/import/details")
     public Result<ImportResult> importDetails(@RequestParam("file") MultipartFile file) throws Exception {
         return Result.success(purchaseOrderService.importDetails(file));

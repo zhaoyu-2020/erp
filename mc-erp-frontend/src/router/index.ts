@@ -141,6 +141,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '菜单管理', icon: 'Menu' }
             },
             {
+                path: 'system/log',
+                name: 'OperationLogList',
+                component: () => import('@/views/system/log/index.vue'),
+                meta: { title: '操作日志', icon: 'Document' }
+            },
+            {
                 path: 'profile',
                 name: 'Profile',
                 component: () => import('@/views/profile/index.vue'),

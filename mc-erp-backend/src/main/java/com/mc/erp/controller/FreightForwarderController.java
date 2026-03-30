@@ -1,9 +1,11 @@
 package com.mc.erp.controller;
 
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FreightForwarderQuery;
 import com.mc.erp.entity.FreightForwarder;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.service.FreightForwarderService;
 import com.mc.erp.vo.FreightForwarderVO;
 import jakarta.validation.Valid;
@@ -41,16 +43,19 @@ public class FreightForwarderController {
         return Result.success(vo);
     }
 
+    @OperLog(module = "货代管理", type = OperationType.ADD, description = "新增货代")
     @PostMapping
     public Result<Boolean> save(@Valid @RequestBody FreightForwarder freightForwarder) {
         return Result.success(freightForwarderService.save(freightForwarder));
     }
 
+    @OperLog(module = "货代管理", type = OperationType.MODIFY, description = "修改货代")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody FreightForwarder freightForwarder) {
         return Result.success(freightForwarderService.updateById(freightForwarder));
     }
 
+    @OperLog(module = "货代管理", type = OperationType.DELETE, description = "删除货代")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(freightForwarderService.removeById(id));

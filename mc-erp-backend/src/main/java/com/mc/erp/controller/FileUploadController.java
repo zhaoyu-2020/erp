@@ -1,6 +1,8 @@
 package com.mc.erp.controller;
 
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.Result;
+import com.mc.erp.enums.OperationType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,7 @@ public class FileUploadController {
     @Value("${file.base-url:http://localhost:8080/uploads}")
     private String baseUrl;
 
+    @OperLog(module = "文件管理", type = OperationType.OTHER, description = "上传文件", saveParams = false)
     @PostMapping("/upload")
     public Result<List<String>> upload(@RequestParam("files") List<MultipartFile> files) throws IOException {
         File dir = new File(uploadDir);

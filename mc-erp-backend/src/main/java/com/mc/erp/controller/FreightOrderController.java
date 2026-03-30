@@ -1,5 +1,6 @@
 package com.mc.erp.controller;
 
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FreightOrderQuery;
@@ -7,6 +8,7 @@ import com.mc.erp.dto.FreightOrderRequest;
 import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.entity.FreightOrderLog;
 import com.mc.erp.enums.FreightOrderStatus;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.service.FreightOrderLogService;
 import com.mc.erp.service.FreightOrderService;
 import com.mc.erp.vo.FreightOrderVO;
@@ -49,6 +51,7 @@ public class FreightOrderController {
     /**
      * 创建海运订单
      */
+    @OperLog(module = "海运订单", type = OperationType.ADD, description = "创建海运订单")
     @PostMapping
     public Result<Long> create(@Valid @RequestBody FreightOrderRequest request) {
         FreightOrder order = toOrder(request);
@@ -58,6 +61,7 @@ public class FreightOrderController {
     /**
      * 修改海运订单
      */
+    @OperLog(module = "海运订单", type = OperationType.MODIFY, description = "修改海运订单")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody FreightOrderRequest request) {
         FreightOrder order = toOrder(request);
@@ -67,6 +71,7 @@ public class FreightOrderController {
     /**
      * 删除海运订单（仅草稿）
      */
+    @OperLog(module = "海运订单", type = OperationType.DELETE, description = "删除海运订单")
     @DeleteMapping("/{orderId}")
     public Result<Boolean> delete(@PathVariable Long orderId) {
         return Result.success(freightOrderService.deleteOrder(orderId));
@@ -75,6 +80,7 @@ public class FreightOrderController {
     /**
      * 提交订单（草稿 → 已提交）
      */
+    @OperLog(module = "海运订单", type = OperationType.STATUS_CHANGE, description = "提交海运订单")
     @PutMapping("/{orderId}/submit")
     public Result<Boolean> submit(@PathVariable Long orderId) {
         return Result.success(freightOrderService.submitOrder(orderId));
@@ -83,6 +89,7 @@ public class FreightOrderController {
     /**
      * 结算订单（已提交 → 已结算）
      */
+    @OperLog(module = "海运订单", type = OperationType.STATUS_CHANGE, description = "结算海运订单")
     @PutMapping("/{orderId}/settle")
     public Result<Boolean> settle(@PathVariable Long orderId) {
         return Result.success(freightOrderService.settleOrder(orderId));
@@ -91,6 +98,7 @@ public class FreightOrderController {
     /**
      * 作废订单
      */
+    @OperLog(module = "海运订单", type = OperationType.STATUS_CHANGE, description = "作废海运订单")
     @PutMapping("/{orderId}/cancel")
     public Result<Boolean> cancel(@PathVariable Long orderId, @RequestBody Map<String, String> body) {
         String cancelReason = body.get("cancelReason");

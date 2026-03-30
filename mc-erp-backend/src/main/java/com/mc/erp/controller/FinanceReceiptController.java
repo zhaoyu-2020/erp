@@ -1,9 +1,11 @@
 package com.mc.erp.controller;
 
+import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
 import com.mc.erp.dto.FinanceReceiptQuery;
 import com.mc.erp.dto.FinanceReceiptSaveDTO;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.service.FinanceReceiptService;
 import com.mc.erp.vo.FinanceReceiptVO;
 import jakarta.validation.Valid;
@@ -29,18 +31,21 @@ public class FinanceReceiptController {
         return Result.success(financeReceiptService.getWithDetails(id));
     }
 
+    @OperLog(module = "财务收款", type = OperationType.ADD, description = "新增收款单")
     @PostMapping
     public Result<Void> save(@Valid @RequestBody FinanceReceiptSaveDTO dto) {
         financeReceiptService.saveWithDetails(dto);
         return Result.success(null);
     }
 
+    @OperLog(module = "财务收款", type = OperationType.MODIFY, description = "修改收款单")
     @PutMapping
     public Result<Void> update(@Valid @RequestBody FinanceReceiptSaveDTO dto) {
         financeReceiptService.updateWithDetails(dto);
         return Result.success(null);
     }
 
+    @OperLog(module = "财务收款", type = OperationType.DELETE, description = "删除收款单")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         financeReceiptService.deleteWithDetails(id);

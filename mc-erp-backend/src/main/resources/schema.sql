@@ -488,7 +488,34 @@ CREATE TABLE IF NOT EXISTS `erp_freight_order_log` (
   KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='海运订单操作日志表';
 
--- 15. 销售订单详情表
+-- 15. 系统操作日志表
+CREATE TABLE IF NOT EXISTS `sys_operation_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+  `log_type` varchar(20) NOT NULL DEFAULT 'OPERATION' COMMENT '日志类型(OPERATION-操作日志,LOGIN-登录日志,EXCEPTION-异常日志)',
+  `module` varchar(50) DEFAULT NULL COMMENT '操作模块',
+  `operation_type` varchar(20) DEFAULT NULL COMMENT '操作类型(LOGIN/LOGOUT/ADD/MODIFY/DELETE/QUERY/EXPORT/AUTH_CHANGE/STATUS_CHANGE/IMPORT)',
+  `description` varchar(500) DEFAULT NULL COMMENT '操作描述',
+  `request_method` varchar(10) DEFAULT NULL COMMENT '请求方法(GET/POST/PUT/DELETE/PATCH)',
+  `request_url` varchar(500) DEFAULT NULL COMMENT '请求URL',
+  `request_params` text DEFAULT NULL COMMENT '请求参数(JSON)',
+  `response_result` text DEFAULT NULL COMMENT '响应结果(JSON)',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '操作状态(1成功 0失败)',
+  `error_msg` text DEFAULT NULL COMMENT '错误信息',
+  `operator_id` bigint(20) DEFAULT NULL COMMENT '操作用户ID',
+  `operator_name` varchar(50) DEFAULT NULL COMMENT '操作用户名',
+  `operator_ip` varchar(50) DEFAULT NULL COMMENT '操作IP',
+  `elapsed_time` bigint(20) DEFAULT NULL COMMENT '耗时(毫秒)',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_log_type` (`log_type`),
+  KEY `idx_module` (`module`),
+  KEY `idx_operation_type` (`operation_type`),
+  KEY `idx_operator_id` (`operator_id`),
+  KEY `idx_create_time` (`create_time`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统操作日志表';
+
+-- 16. 销售订单详情表
 CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `order_id` bigint(20) NOT NULL COMMENT '销售订单ID',

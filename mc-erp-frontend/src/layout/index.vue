@@ -110,6 +110,10 @@
               <el-icon><Menu /></el-icon>
               <template #title>菜单管理</template>
             </el-menu-item>
+            <el-menu-item index="/system/log">
+              <el-icon><Notebook /></el-icon>
+              <template #title>操作日志</template>
+            </el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-scrollbar>
