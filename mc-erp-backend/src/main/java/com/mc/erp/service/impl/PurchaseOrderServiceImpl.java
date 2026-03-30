@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mc.erp.common.DateUtils;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.ImportResult;
 import com.mc.erp.dto.PurchaseOrderDetailImportRow;
@@ -26,7 +27,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import com.mc.erp.enums.PurchaseOrderStatus;
@@ -146,15 +146,16 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 order.setTransportRemark(row.getTransportRemark());
                 order.setTotalFreight(parseBD(row.getTotalFreight()));
                 if (StringUtils.hasText(row.getOrderDate())) {
-                    order.setOrderDate(LocalDate.parse(row.getOrderDate().trim()));
+                    order.setOrderDate(DateUtils.parseLocalDate(row.getOrderDate().trim()));
                 }
                 if (StringUtils.hasText(row.getDeliveryDate())) {
-                    order.setDeliveryDate(LocalDate.parse(row.getDeliveryDate().trim()));
+                    order.setDeliveryDate(DateUtils.parseLocalDate(row.getDeliveryDate().trim()));
                 }
                 order.setStatus(1);
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
+                e.printStackTrace();
                 result.addError(rowNum, e.getMessage());
             }
         }
@@ -297,6 +298,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     result.setSuccessCount(result.getSuccessCount() + 1);
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 result.addError(rowNum, e.getMessage());
             }
         }
