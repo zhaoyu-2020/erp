@@ -18,16 +18,16 @@ public class PurchaseOrderImportRow {
     @ExcelProperty("关联销售订单号")
     private String salesOrderNo;
 
-    @ExcelProperty("业务员姓名")
+    @ExcelProperty("业务员姓名？")
     private String salespersonName;
 
     @ExcelProperty("币种")
     private String currency;
 
-    @ExcelProperty("订单金额(RMB)")
+    @ExcelProperty("订单金额")
     private String totalAmount;
 
-    @ExcelProperty("结算总金额(RMB)")
+    @ExcelProperty("结算总金额")
     private String settlementTotalAmount;
 
     @ExcelProperty("定金比例(%)")
