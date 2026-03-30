@@ -471,6 +471,28 @@
         <el-button type="primary" @click="detailDialogVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 导入结果弹窗 -->
+    <el-dialog v-model="importResultVisible" title="导入结果" width="600px" destroy-on-close>
+      <el-alert
+        :title="`成功 ${importResultData.successCount} 条${importResultData.updateCount ? '，更新 ' + importResultData.updateCount + ' 条' : ''}，失败 ${importResultData.errorCount} 条`"
+        :type="importResultData.errorCount > 0 ? 'warning' : 'success'"
+        show-icon
+        :closable="false"
+        style="margin-bottom: 16px"
+      />
+      <div v-if="importResultData.errors?.length">
+        <el-text type="danger" tag="b">错误详情：</el-text>
+        <el-scrollbar max-height="350px" style="margin-top: 8px">
+          <div v-for="(err, idx) in importResultData.errors" :key="idx" style="padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #f56c6c;">
+            {{ err }}
+          </div>
+        </el-scrollbar>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="importResultVisible = false">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -869,8 +891,7 @@ const handleContractFile = async (e: Event) => {
   try {
     const res = await importSalesOrderContract(file)
     const r = res.data
-    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
-    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    showImportResult(r)
     getList()
   } catch (err) {
     ElMessage.error('导入失败')
@@ -885,13 +906,27 @@ const handleDetailsFile = async (e: Event) => {
   try {
     const res = await importSalesOrderDetails(file)
     const r = res.data
-    ElMessage.success(`导入完成：成功 ${r.successCount} 条，失败 ${r.errorCount} 条`)
-    if (r.errors?.length) console.warn('导入错误:', r.errors)
+    showImportResult(r)
     getList()
   } catch (err) {
     ElMessage.error('导入失败')
   } finally {
     ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+/** 导入结果展示 */
+const importResultVisible = ref(false)
+const importResultData = ref<{ successCount: number; updateCount?: number; errorCount: number; errors: string[] }>({ successCount: 0, errorCount: 0, errors: [] })
+
+const showImportResult = (r: any) => {
+  importResultData.value = r
+  if (r.errors?.length) {
+    importResultVisible.value = true
+  } else {
+    const parts = [`成功 ${r.successCount} 条`]
+    if (r.updateCount) parts.push(`更新 ${r.updateCount} 条`)
+    ElMessage.success(`导入完成：${parts.join('，')}`)
   }
 }
 
