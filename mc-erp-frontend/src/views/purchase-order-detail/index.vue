@@ -298,6 +298,8 @@ const form = reactive<any>({
   volume: null,
   originPlace: '',
   settlementPrice: null,
+  priceTotal: null,
+  settlementAmount: null,
   packagingWeight: null,
   packaging: '',
   coilInnerDiameter: '',
@@ -419,6 +421,8 @@ const handleEdit = (row: any) => {
     volume: row.volume ?? null,
     originPlace: row.originPlace ?? '',
     settlementPrice: row.settlementPrice ?? null,
+    priceTotal: row.priceTotal ?? null,
+    settlementAmount: row.settlementAmount ?? null,
     packagingWeight: row.packagingWeight ?? null,
     packaging: row.packaging ?? '',
     coilInnerDiameter: row.coilInnerDiameter ?? '',
@@ -455,6 +459,8 @@ const resetForm = () => {
   form.volume = null
   form.originPlace = ''
   form.packagingWeight = null
+  form.priceTotal = null
+  form.settlementAmount = null
   form.packaging = ''
   form.coilInnerDiameter = ''
   form.processingItems = ''
@@ -475,6 +481,8 @@ const handleSubmit = async () => {
   submitLoading.value = true
   try {
     const { poNo: _poNo, ...payload } = { ...form }
+    payload.priceTotal = computedPriceTotal.value ? parseFloat(computedPriceTotal.value) : null
+    payload.settlementAmount = computedSettlementAmount.value ? parseFloat(computedSettlementAmount.value) : null
     if (payload.id) {
       await updatePurchaseOrderDetail(payload)
     } else {

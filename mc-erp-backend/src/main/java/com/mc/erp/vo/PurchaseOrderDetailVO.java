@@ -19,6 +19,7 @@ public class PurchaseOrderDetailVO {
     private BigDecimal settlementPrice;
     private String measurementMethod;
     private BigDecimal priceTotal;
+    private BigDecimal settlementAmount;
     private BigDecimal packagingWeight;
     private String packaging;
     private String coilInnerDiameter;
