@@ -64,7 +64,7 @@
         <el-table-column label="合同总吨数" prop="contractTotalQty" width="120" align="right" />
         <el-table-column label="结算总金额" prop="settlementTotalAmount" width="120" align="right" />
         <el-table-column label="结算总数量" prop="settlementTotalQty" width="120" align="right" />
-        <el-table-column label="实际金额" prop="actualAmount" width="120" align="right" />
+        <!-- <el-table-column label="实际金额" prop="actualAmount" width="120" align="right" /> -->
         <el-table-column label="定金比例(%)" prop="depositRate" width="120" align="right" />
         <el-table-column label="定金金额" prop="depositAmount" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
@@ -217,11 +217,11 @@
         </el-row>
 
         <el-row :gutter="16">
-          <el-col :span="12">
+          <!-- <el-col :span="12">
             <el-form-item label="实际金额" prop="actualAmount">
               <el-input v-model="form.actualAmount" placeholder="输入实际金额" />
             </el-form-item>
-          </el-col>
+          </el-col> -->
            <el-col :span="12">
             <el-form-item label="运输备注" prop="transportRemark">
               <el-input v-model="form.transportRemark" placeholder="输入运输备注" />
@@ -403,7 +403,7 @@
         <el-descriptions-item label="合同总吨数">{{ detailData.contractTotalQty ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="结算总金额">{{ detailData.settlementTotalAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="结算总数量">{{ detailData.settlementTotalQty ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="实际金额">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item>
+        <!-- <el-descriptions-item label="实际金额">{{ detailData.actualAmount ?? '-' }}</el-descriptions-item> -->
         <el-descriptions-item label="定金比例(%)">{{ detailData.depositRate ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="定金金额">{{ detailData.depositAmount ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="订单日期">{{ detailData.orderDate || '-' }}</el-descriptions-item>
@@ -875,7 +875,7 @@ const handleExport = async () => {
     { label: '合同总吨数', key: 'contractTotalQty' },
     { label: '结算总金额', key: 'settlementTotalAmount' },
     { label: '结算总数量', key: 'settlementTotalQty' },
-    { label: '实际金额', key: 'actualAmount' },
+    // { label: '实际金额', key: 'actualAmount' },
     { label: '定金比例(%)', key: 'depositRate' },
     { label: '定金金额', key: 'depositAmount' },
     { label: '订单日期', key: 'orderDate' },

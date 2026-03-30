@@ -116,12 +116,12 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         wrapper.eq(PurchaseOrder::getSalesOrderNo, salesOrder.getOrderNo());
         List<PurchaseOrder> purchaseOrders = purchaseOrderService.list(wrapper);
 
-        // 计算采购成本：所有采购订单的实际金额+运费总和
+        // 计算采购成本：所有采购订单的结算金额+运费总和
         BigDecimal totalPurchaseCost = purchaseOrders.stream()
                 .map(po -> {
-                    BigDecimal actualAmount = po.getActualAmount() != null ? po.getActualAmount() : BigDecimal.ZERO;
+                    BigDecimal settBigDecimal = po.getSettlementTotalAmount() != null ? po.getSettlementTotalAmount() : BigDecimal.ZERO;
                     BigDecimal freight = po.getTotalFreight() != null ? po.getTotalFreight() : BigDecimal.ZERO;
-                    return actualAmount.add(freight);
+                    return settBigDecimal.add(freight);
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
