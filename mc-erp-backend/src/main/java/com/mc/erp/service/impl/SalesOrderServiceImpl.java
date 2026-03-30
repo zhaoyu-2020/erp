@@ -14,6 +14,7 @@ import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.Customer;
 import com.mc.erp.entity.FinanceReceipt;
 import com.mc.erp.entity.FinanceReceiptDetail;
+import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.SalesOrderDetail;
@@ -21,6 +22,7 @@ import com.mc.erp.entity.User;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.CustomerService;
+import com.mc.erp.service.FreightOrderService;
 import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.service.SalesOrderDetailService;
 import com.mc.erp.service.SalesOrderService;
@@ -50,6 +52,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private PurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private FreightOrderService freightOrderService;
 
     @Autowired
     private SalesOrderDetailService salesOrderDetailService;
@@ -256,12 +261,12 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             uw.set(SalesOrder::getFinalExchangeRate, avgFinalRate);
         }
 
-        // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
-        if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
-            uw.set(SalesOrder::getStatus, 6);
-        } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0 && order.getStatus() < 2) {
-            uw.set(SalesOrder::getStatus, 2);
-        }
+        // // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
+        // if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
+        //     uw.set(SalesOrder::getStatus, 6);
+        // } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0 && order.getStatus() < 2) {
+        //     uw.set(SalesOrder::getStatus, 2);
+        // }
 
         this.update(null, uw);
     }
@@ -289,6 +294,22 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 throw new RuntimeException("订单 " + order.getOrderNo() + " 必须至少有一条关联的采购合同，才能流转到「已采购」状态");
             }
         }
+        // 当状态改为已发运时，校验订单必须处于「待发运」状态，且所有关联采购合同状态为「待发货」
+        if (SalesOrderStatus.SHIPPED.getCode() == targetStatus) {
+            LambdaQueryWrapper<PurchaseOrder> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(PurchaseOrder::getSalesOrderNo, order.getOrderNo());
+            List<PurchaseOrder> pos = purchaseOrderService.list(wrapper);
+            if (pos.isEmpty() || pos.stream().anyMatch(po -> po.getStatus() == null || po.getStatus() != 4)) {
+                throw new RuntimeException("订单 " + order.getOrderNo() + " 的所有关联采购合同必须处于「待发货」状态，才能流转到「已发运」状态");
+            }
+            // 同时必须有海运订单
+            LambdaQueryWrapper<FreightOrder> freightWrapper = new LambdaQueryWrapper<>();
+            freightWrapper.eq(FreightOrder::getSaleOrderCode, order.getOrderNo());
+            if (freightOrderService.count(freightWrapper) == 0) {
+                throw new RuntimeException("订单 " + order.getOrderNo() + " 必须至少有一条关联的海运订单，才能流转到「已发运」状态");
+            }
+        }
+
         // 当状态被更改为已收款时，校验尾款金额必须大于0
         if (SalesOrderStatus.PAYMENT_RECEIVED.getCode() == targetStatus) {
             if (order.getFinalPaymentAmount() == null || order.getFinalPaymentAmount().compareTo(BigDecimal.ZERO) <= 0) {
