@@ -1,6 +1,7 @@
 package com.mc.erp.controller;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mc.erp.common.OperLog;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.common.Result;
@@ -9,7 +10,9 @@ import com.mc.erp.dto.SalesOrderDetailImportRow;
 import com.mc.erp.dto.SalesOrderImportRow;
 import com.mc.erp.dto.SalesOrderQuery;
 import com.mc.erp.entity.SalesOrder;
+import com.mc.erp.entity.SalesOrderDetail;
 import com.mc.erp.enums.OperationType;
+import com.mc.erp.service.SalesOrderDetailService;
 import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.SalesOrderVO;
@@ -21,8 +24,12 @@ import org.springframework.util.StringUtils;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @Validated
@@ -32,6 +39,9 @@ public class SalesOrderController {
     @Autowired
     private SalesOrderService salesOrderService;
 
+    @Autowired
+    private SalesOrderDetailService salesOrderDetailService;
+
     @GetMapping("/page")
     public Result<PageResult<SalesOrderVO>> getOrderPage(SalesOrderQuery query) {
         return Result.success(salesOrderService.getPage(query));
@@ -40,6 +50,35 @@ public class SalesOrderController {
     @GetMapping("/{id}")
     public Result<SalesOrder> getById(@PathVariable Long id) {
         return Result.success(salesOrderService.getById(id));
+    }
+
+    /**
+     * 根据销售订单号查询创建海运订单所需的默认值：
+     * - transportType: 销售订单的运输方式（含"散货"则为散货船）
+     * - tradeTerm: 贸易条款
+     * - settlementTotalQuantity: 结算总数量（散货重量默认值）
+     * - totalVolume: 明细体积合计（散货体积默认值）
+     */
+    @GetMapping("/freight-defaults/{orderNo}")
+    public Result<Map<String, Object>> getFreightDefaults(@PathVariable String orderNo) {
+        SalesOrder order = salesOrderService.getOne(
+                new LambdaQueryWrapper<SalesOrder>().eq(SalesOrder::getOrderNo, orderNo));
+        if (order == null) {
+            return Result.error(404, "销售订单不存在");
+        }
+
+        List<SalesOrderDetail> details = salesOrderDetailService.list(
+                new LambdaQueryWrapper<SalesOrderDetail>().eq(SalesOrderDetail::getOrderId, order.getId()));
+        BigDecimal totalVolume = details.stream()
+                .map(d -> d.getVolume() != null ? d.getVolume() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("transportType", order.getTransportType());
+        result.put("tradeTerm", order.getTradeTerm());
+        result.put("settlementTotalQuantity", order.getSettlementTotalQuantity());
+        result.put("totalVolume", totalVolume);
+        return Result.success(result);
     }
 
     @OperLog(module = "销售订单", type = OperationType.ADD, description = "新增销售订单")

@@ -382,7 +382,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
@@ -396,7 +396,7 @@ import {
   settleFreightOrder,
   cancelFreightOrder
 } from '@/api/freightOrder'
-import { getOrderPage } from '@/api/salesOrder'
+import { getOrderPage, getSalesOrderFreightDefaults } from '@/api/salesOrder'
 import { getFreightForwarderPage } from '@/api/freightForwarder'
 
 // ============ 状态映射 ============
@@ -458,6 +458,40 @@ const searchSalesOrders = async (keyword: string) => {
   const res = await getOrderPage({ pageNum: 1, pageSize: 50, orderNo: keyword })
   salesOrderList.value = res.data.list || []
 }
+
+// 根据销售订单号自动填充运输类型、散货重量/体积、购买保险
+const applyFreightDefaults = async (orderNo: string) => {
+  if (!orderNo || editingOrder.value) return
+  try {
+    const res = await getSalesOrderFreightDefaults(orderNo)
+    const d = res.data
+    if (!d) return
+    // 运输类型：含"散货"关键字则为散货船(2)，否则集装箱船(1)
+    const isBulk = typeof d.transportType === 'string' && d.transportType.includes('散货')
+    form.transportType = isBulk ? 2 : 1
+    // 散货船时填充重量和体积
+    if (isBulk) {
+      form.bulkWeight = d.settlementTotalQuantity ?? 0
+      form.bulkVolume = d.totalVolume ?? 0
+    }
+    // 贸易条款为CIF时默认购买保险
+    if (typeof d.tradeTerm === 'string' && d.tradeTerm.toUpperCase().includes('CIF')) {
+      form.needInsurance = 1
+    }
+  } catch {
+    // 忽略查询失败，不影响表单操作
+  }
+}
+
+// 监听销售订单号变化（新建时）
+watch(
+  () => form.saleOrderCode,
+  (val) => {
+    if (val && !editingOrder.value) {
+      applyFreightDefaults(val)
+    }
+  }
+)
 
 const loadForwarders = async () => {
   const res = await getFreightForwarderPage({ pageNum: 1, pageSize: 1000 })

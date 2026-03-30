@@ -8,6 +8,10 @@ export function getOrderPage(params: any) {
     })
 }
 
+export function getSalesOrderFreightDefaults(orderNo: string) {
+    return request({ url: `/sales-orders/freight-defaults/${encodeURIComponent(orderNo)}`, method: 'get' })
+}
+
 export function saveSalesOrder(data: any) {
     return request({ url: '/sales-orders', method: 'post', data })
 }
