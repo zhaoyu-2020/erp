@@ -361,7 +361,7 @@
 
            <el-col :span="12">
             <el-form-item label="海运费(USD)" prop="seaFreight">
-              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)，关联货代订单自动计算" />
+              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)，关联海运订单自动计算" />
             </el-form-item>
           </el-col>
           
@@ -376,7 +376,7 @@
           </el-col>
            <el-col :span="12">
             <el-form-item label="港杂费" prop="portFee">
-              <el-input v-model="form.portFee" placeholder="输入港杂费，关联货代订单自动计算" />
+              <el-input v-model="form.portFee" placeholder="输入港杂费，关联海运订单自动计算" />
             </el-form-item>
           </el-col>
            
@@ -385,12 +385,12 @@
         <el-row :gutter="16">
            <el-col :span="12">
             <el-form-item label="保额" prop="insuranceAmount">
-              <el-input v-model="form.insuranceAmount" placeholder="输入保额，关联货代订单自动计算" />
+              <el-input v-model="form.insuranceAmount" placeholder="输入保额，关联海运订单自动计算" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="保险费用" prop="insuranceFee">
-              <el-input v-model="form.insuranceFee" placeholder="输入保险费用，关联货代订单自动计算" />
+              <el-input v-model="form.insuranceFee" placeholder="输入保险费用，关联海运订单自动计算" />
             </el-form-item>
           </el-col>
          

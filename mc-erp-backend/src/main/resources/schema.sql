@@ -411,12 +411,12 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
   PRIMARY KEY (`role_id`,`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关联表';
 
--- ========== 货代订单模块 ==========
+-- ========== 海运订单模块 ==========
 
--- 货代订单主表
+-- 海运订单主表
 CREATE TABLE IF NOT EXISTS `erp_freight_order` (
-  `order_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '货代订单唯一ID',
-  `order_code` varchar(32) NOT NULL COMMENT '货代订单编号(HD+年月日+6位流水号)',
+  `order_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '海运订单唯一ID',
+  `order_code` varchar(32) NOT NULL COMMENT '海运订单编号(HD+年月日+6位流水号)',
   `sale_order_code` varchar(50) NOT NULL COMMENT '关联销售订单号',
   `supplier_id` bigint(20) NOT NULL COMMENT '关联供应商ID(货代类型)',
   `supplier_name` varchar(64) NOT NULL COMMENT '供应商名称',
@@ -454,12 +454,12 @@ CREATE TABLE IF NOT EXISTS `erp_freight_order` (
   UNIQUE KEY `uk_order_code` (`order_code`),
   KEY `idx_sale_order_code` (`sale_order_code`),
   KEY `idx_supplier_id` (`supplier_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代订单主表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='海运订单主表';
 
 -- 货代费用明细表
 CREATE TABLE IF NOT EXISTS `erp_freight_fee_item` (
   `item_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '费用明细ID',
-  `order_id` bigint(20) NOT NULL COMMENT '关联货代订单ID',
+  `order_id` bigint(20) NOT NULL COMMENT '关联海运订单ID',
   `fee_type` tinyint(4) NOT NULL COMMENT '费用类型:1-海运费,2-地面费用',
   `fee_name` varchar(64) NOT NULL COMMENT '费用名称',
   `fee_amount` decimal(18,2) NOT NULL COMMENT '费用金额',
@@ -472,11 +472,11 @@ CREATE TABLE IF NOT EXISTS `erp_freight_fee_item` (
   KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代费用明细表';
 
--- 货代订单操作日志表
+-- 海运订单操作日志表
 CREATE TABLE IF NOT EXISTS `erp_freight_order_log` (
   `log_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志ID',
-  `order_id` bigint(20) NOT NULL COMMENT '关联货代订单ID',
-  `order_code` varchar(32) DEFAULT NULL COMMENT '关联货代订单编号',
+  `order_id` bigint(20) NOT NULL COMMENT '关联海运订单ID',
+  `order_code` varchar(32) DEFAULT NULL COMMENT '关联海运订单编号',
   `operator` varchar(32) DEFAULT NULL COMMENT '操作人',
   `operator_id` bigint(20) DEFAULT NULL COMMENT '操作人ID',
   `operate_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
@@ -486,7 +486,7 @@ CREATE TABLE IF NOT EXISTS `erp_freight_order_log` (
   `operate_remark` varchar(500) DEFAULT NULL COMMENT '操作备注',
   PRIMARY KEY (`log_id`),
   KEY `idx_order_id` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='货代订单操作日志表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='海运订单操作日志表';
 
 -- 15. 销售订单详情表
 CREATE TABLE IF NOT EXISTS `biz_sales_order_detail` (

@@ -36,7 +36,7 @@
     <!-- 列表区域 -->
     <el-card shadow="never" class="table-wrap">
       <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新建货代订单</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新建海运订单</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
       </div>
 
@@ -287,7 +287,7 @@
     </el-dialog>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" title="货代订单详情" width="900px" destroy-on-close>
+    <el-dialog v-model="detailVisible" title="海运订单详情" width="900px" destroy-on-close>
       <template v-if="detailData">
         <!-- 区域1：基础关联 -->
         <el-divider content-position="left">基础关联信息</el-divider>
@@ -541,7 +541,7 @@ const resetForm = () => {
 
 const handleAdd = () => {
   resetForm()
-  dialogTitle.value = '新建货代订单'
+  dialogTitle.value = '新建海运订单'
   dialogVisible.value = true
 }
 
@@ -579,7 +579,7 @@ const handleEdit = async (row: any) => {
   if (d.saleOrderCode) {
     salesOrderList.value = [{ orderNo: d.saleOrderCode }]
   }
-  dialogTitle.value = '编辑货代订单'
+  dialogTitle.value = '编辑海运订单'
   dialogVisible.value = true
 }
 
@@ -619,7 +619,7 @@ const handleDetail = async (row: any) => {
 
 // ============ 状态操作 ============
 const handleSubmit = (row: any) => {
-  ElMessageBox.confirm('确认提交该货代订单？提交后核心字段将不可修改。', '提示', { type: 'warning' }).then(async () => {
+  ElMessageBox.confirm('确认提交该海运订单？提交后核心字段将不可修改。', '提示', { type: 'warning' }).then(async () => {
     await submitFreightOrder(row.orderId)
     ElMessage.success('提交成功')
     getList()
@@ -627,7 +627,7 @@ const handleSubmit = (row: any) => {
 }
 
 const handleSettle = (row: any) => {
-  ElMessageBox.confirm('确认结算该货代订单？结算后所有费用和核心字段将锁定。', '提示', { type: 'warning' }).then(async () => {
+  ElMessageBox.confirm('确认结算该海运订单？结算后所有费用和核心字段将锁定。', '提示', { type: 'warning' }).then(async () => {
     await settleFreightOrder(row.orderId)
     ElMessage.success('结算成功')
     getList()
@@ -664,7 +664,7 @@ const confirmCancel = async () => {
 
 // ============ 删除 ============
 const handleDelete = (row: any) => {
-  ElMessageBox.confirm('确认删除该货代订单？删除后将移入回收站，可由管理员恢复。', '提示', { type: 'warning' }).then(async () => {
+  ElMessageBox.confirm('确认删除该海运订单？删除后将移入回收站，可由管理员恢复。', '提示', { type: 'warning' }).then(async () => {
     await deleteFreightOrder(row.orderId)
     ElMessage.success('删除成功')
     getList()
@@ -675,7 +675,7 @@ const handleDelete = (row: any) => {
 const handleExport = async () => {
   const res = await getFreightOrderPage({ ...queryParams, pageNum: 1, pageSize: 10000 })
   const rows = res.data.list || []
-  exportToCsv('货代订单导出', rows, [
+  exportToCsv('海运订单导出', rows, [
     { label: '订单编号', key: 'orderCode' },
     { label: '销售订单号', key: 'saleOrderCode' },
     { label: '货代', key: 'forwarderName' },

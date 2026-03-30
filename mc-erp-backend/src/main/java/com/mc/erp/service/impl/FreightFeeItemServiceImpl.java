@@ -35,7 +35,7 @@ public class FreightFeeItemServiceImpl extends ServiceImpl<FreightFeeItemMapper,
     public boolean saveFeeItems(Long orderId, List<FreightFeeItem> items) {
         FreightOrder order = freightOrderService.getById(orderId);
         if (order == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
         if (order.getOrderStatus() != null && order.getOrderStatus() == 2) {
             throw new IllegalStateException("已结算订单不允许修改费用");

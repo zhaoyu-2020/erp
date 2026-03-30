@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// ============ 货代订单 ============
+// ============ 海运订单 ============
 
 export function getFreightOrderPage(params: any) {
     return request({ url: '/freight-orders/page', method: 'get', params })

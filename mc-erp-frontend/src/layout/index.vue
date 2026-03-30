@@ -32,7 +32,7 @@
           </el-menu-item>
             <el-menu-item index="/freight-orders">
             <el-icon><Ship /></el-icon>
-            <template #title>货代订单</template>
+            <template #title>海运订单</template>
           </el-menu-item>
           <el-menu-item index="/customers">
             <el-icon><User /></el-icon>

@@ -108,7 +108,7 @@ const routes: Array<RouteRecordRaw> = [
                 path: 'freight-orders',
                 name: 'FreightOrderList',
                 component: () => import('@/views/freight-order/index.vue'),
-                meta: { title: '货代订单', icon: 'Ship' }
+                meta: { title: '海运订单', icon: 'Ship' }
             },
             {
                 path: 'documents',

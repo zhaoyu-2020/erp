@@ -31,7 +31,7 @@ public class FreightOrderController {
     private FreightOrderLogService logService;
 
     /**
-     * 分页查询货代订单
+     * 分页查询海运订单
      */
     @GetMapping("/page")
     public Result<PageResult<FreightOrderVO>> getPage(FreightOrderQuery query) {
@@ -39,7 +39,7 @@ public class FreightOrderController {
     }
 
     /**
-     * 查询货代订单详情
+     * 查询海运订单详情
      */
     @GetMapping("/{orderId}")
     public Result<FreightOrderVO> getDetail(@PathVariable Long orderId) {
@@ -47,7 +47,7 @@ public class FreightOrderController {
     }
 
     /**
-     * 创建货代订单
+     * 创建海运订单
      */
     @PostMapping
     public Result<Long> create(@Valid @RequestBody FreightOrderRequest request) {
@@ -56,7 +56,7 @@ public class FreightOrderController {
     }
 
     /**
-     * 修改货代订单
+     * 修改海运订单
      */
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody FreightOrderRequest request) {
@@ -65,7 +65,7 @@ public class FreightOrderController {
     }
 
     /**
-     * 删除货代订单（仅草稿）
+     * 删除海运订单（仅草稿）
      */
     @DeleteMapping("/{orderId}")
     public Result<Boolean> delete(@PathVariable Long orderId) {

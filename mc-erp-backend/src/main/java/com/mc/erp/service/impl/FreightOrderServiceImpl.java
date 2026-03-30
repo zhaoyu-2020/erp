@@ -128,7 +128,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         this.save(order);
 
         // 记录日志
-        logService.log(order.getOrderId(), order.getOrderCode(), "CREATE", null, null, "创建货代订单");
+        logService.log(order.getOrderId(), order.getOrderCode(), "CREATE", null, null, "创建海运订单");
 
         return order.getOrderId();
     }
@@ -140,7 +140,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public boolean updateOrder(FreightOrder order) {
         FreightOrder existing = this.getById(order.getOrderId());
         if (existing == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
 
         int status = existing.getOrderStatus();
@@ -245,13 +245,13 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public boolean deleteOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
         if (order.getOrderStatus() != FreightOrderStatus.DRAFT.getCode()) {
             throw new IllegalStateException("仅草稿状态的订单支持删除");
         }
 
-        logService.log(orderId, order.getOrderCode(), "DELETE", null, null, "删除货代订单");
+        logService.log(orderId, order.getOrderCode(), "DELETE", null, null, "删除海运订单");
         return this.removeById(orderId);
     }
 
@@ -262,7 +262,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public boolean submitOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
 
         FreightOrderStatus.validateTransition(order.getOrderStatus(), FreightOrderStatus.SUBMITTED.getCode());
@@ -274,7 +274,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        logService.log(orderId, order.getOrderCode(), "SUBMIT", null, null, "提交货代订单");
+        logService.log(orderId, order.getOrderCode(), "SUBMIT", null, null, "提交海运订单");
         return true;
     }
 
@@ -285,7 +285,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public boolean settleOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
 
         FreightOrderStatus.validateTransition(order.getOrderStatus(), FreightOrderStatus.SETTLED.getCode());
@@ -294,7 +294,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        logService.log(orderId, order.getOrderCode(), "SETTLE", null, null, "结算货代订单");
+        logService.log(orderId, order.getOrderCode(), "SETTLE", null, null, "结算海运订单");
         return true;
     }
 
@@ -305,7 +305,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     public boolean cancelOrder(Long orderId, String cancelReason) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
-            throw new IllegalArgumentException("货代订单不存在");
+            throw new IllegalArgumentException("海运订单不存在");
         }
         if (!StringUtils.hasText(cancelReason)) {
             throw new IllegalArgumentException("作废原因不能为空");
@@ -325,7 +325,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
-        logService.log(orderId, order.getOrderCode(), "CANCEL", null, null, "作废货代订单，原因：" + cancelReason);
+        logService.log(orderId, order.getOrderCode(), "CANCEL", null, null, "作废海运订单，原因：" + cancelReason);
         return true;
     }
 

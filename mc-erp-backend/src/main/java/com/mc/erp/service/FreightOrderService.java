@@ -9,27 +9,27 @@ import com.mc.erp.vo.FreightOrderVO;
 public interface FreightOrderService extends IService<FreightOrder> {
 
     /**
-     * 分页查询货代订单
+     * 分页查询海运订单
      */
     PageResult<FreightOrderVO> getPage(FreightOrderQuery query);
 
     /**
-     * 查询货代订单详情（含操作日志）
+     * 查询海运订单详情（含操作日志）
      */
     FreightOrderVO getDetail(Long orderId);
 
     /**
-     * 创建货代订单
+     * 创建海运订单
      */
     Long createOrder(FreightOrder order);
 
     /**
-     * 修改货代订单（按状态限制可编辑字段）
+     * 修改海运订单（按状态限制可编辑字段）
      */
     boolean updateOrder(FreightOrder order);
 
     /**
-     * 删除货代订单（仅草稿状态）
+     * 删除海运订单（仅草稿状态）
      */
     boolean deleteOrder(Long orderId);
 

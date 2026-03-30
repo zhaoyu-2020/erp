@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 货代订单状态枚举
+ * 海运订单状态枚举
  * 状态流转：草稿 → 已提交 → 已结算
  *          草稿/已提交 → 已作废
  *          已结算 → 已作废（仅管理员）
@@ -35,7 +35,7 @@ public enum FreightOrderStatus {
         return Arrays.stream(values())
                 .filter(s -> s.code == code)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("未知货代订单状态: " + code));
+                .orElseThrow(() -> new IllegalArgumentException("未知海运订单状态: " + code));
     }
 
     public static void validateTransition(Integer fromCode, Integer toCode) {

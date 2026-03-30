@@ -17,6 +17,8 @@ public class SalesOrderDetailVO {
     private String tolerance;
     private BigDecimal settlementPrice;
     private BigDecimal priceTotal;
+    /** 结算金额小计 */
+    private BigDecimal settlementAmount;
     private BigDecimal packagingWeight;
     private String packaging;
     private String coilInnerDiameter;
