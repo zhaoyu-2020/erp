@@ -329,6 +329,10 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         BigDecimal premium = order.getPremium() != null ? order.getPremium() : BigDecimal.ZERO;
         salesOrder.setInsuranceFee(premium);
 
+        // 保额回写
+        BigDecimal insuredAmount = order.getInsuredAmount() != null ? order.getInsuredAmount() : BigDecimal.ZERO;
+        salesOrder.setInsuranceAmount(insuredAmount);
+
         // 目的港回写（仅当销售订单目的港为空时填充）
         if (!StringUtils.hasText(salesOrder.getDestinationPort()) && StringUtils.hasText(order.getDestinationPort())) {
             salesOrder.setDestinationPort(order.getDestinationPort());
