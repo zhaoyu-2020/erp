@@ -126,22 +126,32 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 利润计算公式：
-        // 利润 = 定金收款金额*定金汇率 + (尾款收款金额-海运费-保险费用)*尾款汇率 - 港杂费 - 采购成本
-        BigDecimal depositIncome = (salesOrder.getReceivedAmount() != null ? salesOrder.getReceivedAmount() : BigDecimal.ZERO)
-                .multiply(salesOrder.getDepositExchangeRate() != null ? salesOrder.getDepositExchangeRate() : BigDecimal.ZERO);
+        // 利润 = 定金收款金额 × 定金汇率
+        //       + 尾款收款金额 × 尾款汇率
+        //       - (海运费 + 保险费) × 定金汇率   ← 海运费/保险费为美金，使用定金汇率换算为人民币
+        //       - 港杂费
+        //       - 采购成本
+        BigDecimal depositExchangeRate = salesOrder.getDepositExchangeRate() != null ? salesOrder.getDepositExchangeRate() : BigDecimal.ZERO;
+        BigDecimal finalExchangeRate = salesOrder.getFinalExchangeRate() != null ? salesOrder.getFinalExchangeRate() : BigDecimal.ZERO;
 
-        BigDecimal finalPayment = salesOrder.getFinalPaymentAmount() != null ? salesOrder.getFinalPaymentAmount() : BigDecimal.ZERO;
+        BigDecimal depositIncome = (salesOrder.getReceivedAmount() != null ? salesOrder.getReceivedAmount() : BigDecimal.ZERO)
+                .multiply(depositExchangeRate);
+
+        BigDecimal finalIncome = (salesOrder.getFinalPaymentAmount() != null ? salesOrder.getFinalPaymentAmount() : BigDecimal.ZERO)
+                .multiply(finalExchangeRate);
+
         BigDecimal seaFreight = salesOrder.getSeaFreight() != null ? salesOrder.getSeaFreight() : BigDecimal.ZERO;
         BigDecimal insuranceFee = salesOrder.getInsuranceFee() != null ? salesOrder.getInsuranceFee() : BigDecimal.ZERO;
-        BigDecimal finalExchangeRate = salesOrder.getFinalExchangeRate() != null ? salesOrder.getFinalExchangeRate() : BigDecimal.ZERO;
-        
-        BigDecimal finalIncome = finalPayment.subtract(seaFreight).subtract(insuranceFee)
-                .multiply(finalExchangeRate);
+        // 海运费和保险费为美金，使用定金汇率换算为人民币后扣除
+        BigDecimal freightAndInsuranceCNY = seaFreight.add(insuranceFee).multiply(depositExchangeRate);
 
         BigDecimal portFee = salesOrder.getPortFee() != null ? salesOrder.getPortFee() : BigDecimal.ZERO;
 
-        BigDecimal profit = depositIncome.add(finalIncome).subtract(portFee).subtract(totalPurchaseCost);
-        System.out.println("Calculated profit for Sales Order " + salesOrder.getOrderNo() + ": " + depositIncome + " (deposit) + " + finalIncome + " (final) - " + portFee + " (port fee) - " + totalPurchaseCost + " (purchase cost) = " + profit);
+        BigDecimal profit = depositIncome.add(finalIncome).subtract(freightAndInsuranceCNY).subtract(portFee).subtract(totalPurchaseCost);
+        System.out.println("Calculated profit for Sales Order " + salesOrder.getOrderNo() + ": "
+                + depositIncome + " (deposit) + " + finalIncome + " (final) - "
+                + freightAndInsuranceCNY + " (freight+insurance×rate) - "
+                + portFee + " (port fee) - " + totalPurchaseCost + " (purchase cost) = " + profit);
         // 更新销售订单的利润
         salesOrder.setProfit(profit);
         this.updateById(salesOrder);

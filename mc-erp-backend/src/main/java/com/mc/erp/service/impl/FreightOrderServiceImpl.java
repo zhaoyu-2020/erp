@@ -294,8 +294,49 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         order.setUpdateTime(LocalDateTime.now());
         this.updateById(order);
 
+        // 结算后将关键费用数据回写到对应的销售订单
+        syncToSalesOrder(order);
+
         logService.log(orderId, order.getOrderCode(), "SETTLE", null, null, "结算海运订单");
         return true;
+    }
+
+    /**
+     * 将海运订单的结算数据同步回销售订单：
+     *  - 海运费（totalOceanFreight） → seaFreight
+     *  - 地面费用（totalGroundFee）  → portFee
+     *  - 保险费（premium）          → insuranceFee
+     *  - 目的港（destinationPort）   → destinationPort（仅当销售订单该字段为空时）
+     * 同步完成后触发利润重新计算。
+     */
+    private void syncToSalesOrder(FreightOrder order) {
+        if (!StringUtils.hasText(order.getSaleOrderCode())) return;
+
+        LambdaQueryWrapper<SalesOrder> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SalesOrder::getOrderNo, order.getSaleOrderCode());
+        SalesOrder salesOrder = salesOrderService.getOne(wrapper);
+        if (salesOrder == null) return;
+
+        // 海运费回写
+        BigDecimal oceanFreight = order.getTotalOceanFreight() != null ? order.getTotalOceanFreight() : BigDecimal.ZERO;
+        salesOrder.setSeaFreight(oceanFreight);
+
+        // 地面费用 → 港杂费回写
+        BigDecimal groundFee = order.getTotalGroundFee() != null ? order.getTotalGroundFee() : BigDecimal.ZERO;
+        salesOrder.setPortFee(groundFee);
+
+        // 保险费回写
+        BigDecimal premium = order.getPremium() != null ? order.getPremium() : BigDecimal.ZERO;
+        salesOrder.setInsuranceFee(premium);
+
+        // 目的港回写（仅当销售订单目的港为空时填充）
+        if (!StringUtils.hasText(salesOrder.getDestinationPort()) && StringUtils.hasText(order.getDestinationPort())) {
+            salesOrder.setDestinationPort(order.getDestinationPort());
+        }
+
+        salesOrderService.updateById(salesOrder);
+        // 重新计算利润
+        salesOrderService.calculateAndUpdateProfit(salesOrder.getId());
     }
 
     // ============ 作废订单 ============
