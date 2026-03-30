@@ -35,7 +35,6 @@ public class SalesOrder {
     private String paymentMethod;
     private String currency;
 
-    @NotNull(message = "定金汇率不能为空")
     private BigDecimal depositExchangeRate;
 
     private BigDecimal finalExchangeRate;
