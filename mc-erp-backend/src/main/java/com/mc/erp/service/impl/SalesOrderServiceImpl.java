@@ -171,16 +171,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         List<SalesOrderDetail> details = salesOrderDetailService.list(wrapper);
 
         BigDecimal totalDetailPrice = details.stream()
-                .map(d -> d.getPriceTotal() != null ? d.getPriceTotal() : BigDecimal.ZERO)
+                .map(d -> d.getSettlementAmount() != null ? d.getSettlementAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 损耗 = 定金收款金额 + 尾款金额 - 明细价格汇总之和
-        BigDecimal receivedAmount = salesOrder.getReceivedAmount() != null ? salesOrder.getReceivedAmount() : BigDecimal.ZERO;
-        BigDecimal finalPayment = salesOrder.getFinalPaymentAmount() != null ? salesOrder.getFinalPaymentAmount() : BigDecimal.ZERO;
+        // 损耗 = 实际收款（明细价格总和）- 总收款（actualAmount）
+        BigDecimal actualAmount = salesOrder.getActualAmount() != null ? salesOrder.getActualAmount() : BigDecimal.ZERO;
 
-        BigDecimal loss = receivedAmount.add(finalPayment).subtract(totalDetailPrice);
+        BigDecimal loss = totalDetailPrice.subtract(actualAmount);
         System.out.println("Calculated loss for Sales Order " + salesOrder.getOrderNo() + ": "
-                + receivedAmount + " (deposit) + " + finalPayment + " (final) - " + totalDetailPrice + " (detail total) = " + loss);
+                + totalDetailPrice + " (detail total) - " + actualAmount + " (actualAmount) = " + loss);
 
         salesOrder.setLoss(loss);
         this.updateById(salesOrder);
