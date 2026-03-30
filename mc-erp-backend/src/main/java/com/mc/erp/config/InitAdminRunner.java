@@ -27,6 +27,9 @@ import com.mc.erp.mapper.SalesOrderMapper;
 import com.mc.erp.mapper.SalesOrderDetailMapper;
 import com.mc.erp.mapper.PurchaseOrderMapper;
 import com.mc.erp.mapper.PurchaseOrderItemMapper;
+import com.mc.erp.entity.FreightForwarder;
+import com.mc.erp.mapper.FreightForwarderMapper;
+import com.mc.erp.service.FreightForwarderService;
 import com.mc.erp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -79,6 +82,12 @@ public class InitAdminRunner implements ApplicationRunner {
 
     @Autowired
     private PurchaseOrderItemMapper purchaseOrderItemMapper;
+
+    @Autowired
+    private FreightForwarderService freightForwarderService;
+
+    @Autowired
+    private FreightForwarderMapper freightForwarderMapper;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -225,6 +234,9 @@ public class InitAdminRunner implements ApplicationRunner {
         // ====== 供应商 ======
         Long supplierId1 = getOrCreateSupplier("TSYY", "月羿", "安", "13900000001", "唐山市路南区");
 
+        // ====== 货代 ======
+        getOrCreateFreightForwarder("gy", "郭颖", "散货", "非洲,欧洲", "张三", "13800000100", "上海市浦东新区");
+
         // ====== 产品类型 ======
         getOrCreateProductType("热轧卷");
         getOrCreateProductType("冷轧卷");
@@ -335,6 +347,28 @@ public class InitAdminRunner implements ApplicationRunner {
         supplier.setAddress(address);
         supplierService.save(supplier);
         return supplier.getId();
+    }
+
+    private void getOrCreateFreightForwarder(String forwarderCode, String name, String freightType,
+                                              String marketAdvantage, String contactPerson,
+                                              String phone, String address) {
+        LambdaQueryWrapper<FreightForwarder> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FreightForwarder::getForwarderCode, forwarderCode);
+        FreightForwarder exists = freightForwarderService.getOne(wrapper);
+        if (exists != null) {
+            return;
+        }
+        // 物理删除可能残留的同编码软删除记录
+        jdbcTemplate.update("DELETE FROM biz_freight_forwarder WHERE forwarder_code = ? AND is_deleted = 1", forwarderCode);
+        FreightForwarder ff = new FreightForwarder();
+        ff.setForwarderCode(forwarderCode);
+        ff.setName(name);
+        ff.setFreightType(freightType);
+        ff.setMarketAdvantage(marketAdvantage);
+        ff.setContactPerson(contactPerson);
+        ff.setPhone(phone);
+        ff.setAddress(address);
+        freightForwarderMapper.insert(ff);
     }
 
     private void getOrCreateProductType(String typeName) {
