@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mc.erp.common.DateUtils;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.ImportResult;
 import com.mc.erp.dto.SalesOrderDetailImportRow;
@@ -33,7 +34,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -314,7 +314,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 .collect(Collectors.toMap(User::getRealName, User::getId, (a, b) -> a));
         Map<String, Long> customerNameToId = customerService.list().stream()
                 .filter(c -> StringUtils.hasText(c.getName()))
-                .collect(Collectors.toMap(Customer::getName, Customer::getId, (a, b) -> a));
+                .collect(Collectors.toMap(c -> c.getName().trim().toLowerCase(), Customer::getId, (a, b) -> a));
 
         ImportResult result = new ImportResult();
         for (int i = 0; i < rows.size(); i++) {
@@ -352,7 +352,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 }
                 // 客户
                 if (StringUtils.hasText(row.getCustomerName())) {
-                    Long cid = customerNameToId.get(row.getCustomerName().trim());
+                    Long cid = customerNameToId.get(row.getCustomerName().trim().toLowerCase());
                     if (cid == null) {
                         result.addError(rowNum, "客户名称不存在: " + row.getCustomerName());
                         continue;
@@ -375,15 +375,16 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 order.setSeaFreight(parseBD(row.getSeaFreight()));
                 order.setPortFee(parseBD(row.getPortFee()));
                 if (StringUtils.hasText(row.getExpectedReceiptDays())) {
-                    order.setExpectedReceiptDays(LocalDate.parse(row.getExpectedReceiptDays().trim()));
+                    order.setExpectedReceiptDays(DateUtils.parseLocalDate(row.getExpectedReceiptDays().trim()));
                 }
                 if (StringUtils.hasText(row.getDeliveryDate())) {
-                    order.setDeliveryDate(LocalDate.parse(row.getDeliveryDate().trim()));
+                    order.setDeliveryDate(DateUtils.parseLocalDate(row.getDeliveryDate().trim()));
                 }
                 order.setStatus(1); // 新建
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
+                e.printStackTrace();
                 result.addError(rowNum, e.getMessage());
             }
         }
