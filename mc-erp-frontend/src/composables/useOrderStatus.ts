@@ -61,24 +61,51 @@ export function useOrderStatus(type: 'sales' | 'purchase') {
      * @param id         订单 ID
      * @param targetCode 目标状态码
      * @param onSuccess  成功回调（一般用于刷新列表）
+     * @param row        当前行数据（采购订单流转到「已完成」时用于判断是否需要填写运费）
      */
-    async function changeStatus(id: number, targetCode: number, onSuccess?: () => void) {
+    async function changeStatus(id: number, targetCode: number, onSuccess?: () => void, row?: any) {
         const targetLabel = getLabel(targetCode)
-        try {
-            await ElMessageBox.confirm(
-                `确认将状态变更为「${targetLabel}」？`,
-                '状态变更',
-                { type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消' }
-            )
-        } catch {
-            return // 用户取消
+
+        // 采购订单流转到「已完成」(code=4)，且当前运费为空（null/undefined）时，弹输入框要求填写运费
+        let freightToSubmit: number | null = null
+        if (type === 'purchase' && targetCode === 4 && row?.totalFreight == null) {
+            try {
+                const result = await ElMessageBox.prompt(
+                    `即将完成订单「${row?.poNo ?? id}」，当前无运费记录，请先填写运费金额（元）`,
+                    '填写运费 · 完成订单',
+                    {
+                        confirmButtonText: '确认完成',
+                        cancelButtonText: '取消',
+                        inputPlaceholder: '请输入运费金额，例如：1200.00',
+                        inputValidator: (val) => {
+                            if (!val || val.trim() === '') return '运费不能为空'
+                            if (isNaN(Number(val)) || Number(val) < 0) return '请输入有效的非负数字'
+                            return true
+                        }
+                    }
+                ) as { value: string }
+                freightToSubmit = Number(result.value)
+            } catch {
+                return // 用户取消
+            }
+        } else {
+            // 正常确认弹窗
+            try {
+                await ElMessageBox.confirm(
+                    `确认将状态变更为「${targetLabel}」？`,
+                    '状态变更',
+                    { type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消' }
+                )
+            } catch {
+                return // 用户取消
+            }
         }
 
         try {
             if (type === 'sales') {
                 await updateSalesOrderStatus(id, targetCode)
             } else {
-                await updatePurchaseOrderStatus(id, targetCode)
+                await updatePurchaseOrderStatus(id, targetCode, freightToSubmit)
             }
             ElMessage.success(`已变更为「${targetLabel}」`)
             onSuccess?.()

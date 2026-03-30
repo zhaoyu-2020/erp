@@ -126,6 +126,13 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
     }
 
     @Override
+    public boolean hasSettledQuantity(Long purchaseOrderId) {
+        return this.count(new LambdaQueryWrapper<PurchaseOrderDetail>()
+                .eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId)
+                .isNotNull(PurchaseOrderDetail::getActualQuantity)) > 0;
+    }
+
+    @Override
     @Transactional
     public void recalculateOrderTotals(Long purchaseOrderId) {
         List<PurchaseOrderDetail> details = this.list(new LambdaQueryWrapper<PurchaseOrderDetail>()

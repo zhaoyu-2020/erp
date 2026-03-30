@@ -81,12 +81,34 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     }
 
     @Override
-    public void updateStatus(Long id, Integer targetStatus) {
+    public void updateStatus(Long id, Integer targetStatus, BigDecimal totalFreight) {
         PurchaseOrder order = this.getById(id);
         if (order == null) {
             throw new RuntimeException("采购订单不存在: " + id);
         }
         PurchaseOrderStatus.validateTransition(order.getStatus(), targetStatus);
+        // 当状态改为待发货时，对应的采购订单明细必须有结算数量
+        if (targetStatus.equals(PurchaseOrderStatus.PENDING_DELIVERY.getCode())) {
+            if (!purchaseOrderDetailService.hasSettledQuantity(id)) {
+                throw new RuntimeException("无法将订单状态改为待发货：请先填写结算数量");
+            }
+        }
+
+        // 当状态更改为已完成时，必须校验运费不能为空
+        if (targetStatus.equals(PurchaseOrderStatus.COMPLETED.getCode())) {
+            // 优先使用订单已有运费，否则使用前端传入的运费
+            BigDecimal freight = order.getTotalFreight() != null ? order.getTotalFreight() : totalFreight;
+            if (freight == null) {
+                throw new RuntimeException("无法完成订单：请先填写运费");
+            }
+            // 若运费是由前端新传入的，一并更新到订单
+            if (order.getTotalFreight() == null) {
+                PurchaseOrder freightUpdate = new PurchaseOrder();
+                freightUpdate.setId(id);
+                freightUpdate.setTotalFreight(freight);
+                this.updateById(freightUpdate);
+            }
+        }
 
         PurchaseOrder update = new PurchaseOrder();
         update.setId(id);

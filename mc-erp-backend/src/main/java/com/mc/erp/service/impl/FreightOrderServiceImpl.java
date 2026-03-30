@@ -13,6 +13,7 @@ import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FreightOrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,6 +36,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     private FreightForwarderService freightForwarderService;
 
     @Autowired
+    @Lazy
     private SalesOrderService salesOrderService;
 
     // ============ 分页查询 ============

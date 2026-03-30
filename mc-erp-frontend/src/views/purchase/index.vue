@@ -81,7 +81,7 @@
               <!-- <el-button v-if="isAdmin" size="small" @click="handleEdit(scope.row)">编辑</el-button> -->
               <el-dropdown
                 v-if="getAllowedNextStatuses(scope.row.status).length > 0"
-                @command="(code: number) => changeStatus(scope.row.id, code, getList)"
+                @command="(code: number) => changeStatus(scope.row.id, code, getList, scope.row)"
                 trigger="click"
               >
                 <el-button size="small" type="warning">变更状态</el-button>
@@ -537,7 +537,7 @@ const form = reactive<any>({
   orderDate: null,
   deliveryDate: null,
   transportRemark: '',
-  totalFreight: 0,
+  totalFreight: null,
   photos: '',
   materialSheet: '',
   invoice: '',
@@ -563,7 +563,7 @@ const detailData = reactive<any>({
   orderDate: null,
   deliveryDate: null,
   transportRemark: '',
-  totalFreight: 0,
+  totalFreight: null,
   photos: '',
   materialSheet: '',
   invoice: '',
@@ -720,7 +720,7 @@ const resetForm = () => {
   form.orderDate = null
   form.deliveryDate = null
   form.transportRemark = ''
-  form.totalFreight = 0
+  form.totalFreight = null
   form.photos = ''
   form.materialSheet = ''
   form.invoice = ''
@@ -761,7 +761,7 @@ const handleDetail = (row: any) => {
     orderDate: row.orderDate ?? null,
     deliveryDate: row.deliveryDate ?? null,
     transportRemark: row.transportRemark ?? '',
-    totalFreight: row.totalFreight ?? 0,
+    totalFreight: row.totalFreight ?? null,
     photos: row.photos ?? '',
     materialSheet: row.materialSheet ?? '',
     invoice: row.invoice ?? '',
@@ -799,7 +799,7 @@ const handleEdit = (row: any) => {
     orderDate: row.orderDate ?? null,
     deliveryDate: row.deliveryDate ?? null,
     transportRemark: row.transportRemark ?? '',
-    totalFreight: row.totalFreight ?? 0,
+    totalFreight: row.totalFreight ?? null,
     photos: row.photos ?? '',
     materialSheet: row.materialSheet ?? '',
     invoice: row.invoice ?? '',

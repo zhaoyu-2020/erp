@@ -15,4 +15,7 @@ public interface PurchaseOrderDetailService extends IService<PurchaseOrderDetail
     boolean updateDetail(PurchaseOrderDetail detail);
     /** 重新计算并更新采购订单的合同总吨数、合同总金额、结算总数量、结算总金额 */
     void recalculateOrderTotals(Long purchaseOrderId);
+
+    /** 检查指定采购订单是否至少有一条明细填写了结算数量（actualQuantity） */
+    boolean hasSettledQuantity(Long purchaseOrderId);
 }

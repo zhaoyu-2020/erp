@@ -51,12 +51,16 @@ public class PurchaseOrderController {
 
     /**
      * 专用状态流转接口：PATCH /api/v1/purchase-orders/{id}/status
-     * body: { "status": 2 }
+     * body: { "status": 2 } 或 { "status": 4, "totalFreight": 1200.00 }
      */
     @PatchMapping("/{id}/status")
-    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Integer> body) {
-        Integer targetStatus = body.get("status");
-        purchaseOrderService.updateStatus(id, targetStatus);
+    public Result<Void> updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, Object> body) {
+        Integer targetStatus = (Integer) body.get("status");
+        java.math.BigDecimal totalFreight = null;
+        if (body.get("totalFreight") != null) {
+            totalFreight = new java.math.BigDecimal(body.get("totalFreight").toString());
+        }
+        purchaseOrderService.updateStatus(id, targetStatus, totalFreight);
         return Result.success(null);
     }
 

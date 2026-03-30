@@ -12,6 +12,8 @@ export function updateSalesOrderStatus(id: number, status: number) {
     return request({ url: `/sales-orders/${id}/status`, method: 'patch', data: { status } })
 }
 
-export function updatePurchaseOrderStatus(id: number, status: number) {
-    return request({ url: `/purchase-orders/${id}/status`, method: 'patch', data: { status } })
+export function updatePurchaseOrderStatus(id: number, status: number, totalFreight?: number | null) {
+    const data: Record<string, unknown> = { status }
+    if (totalFreight != null) data.totalFreight = totalFreight
+    return request({ url: `/purchase-orders/${id}/status`, method: 'patch', data })
 }
