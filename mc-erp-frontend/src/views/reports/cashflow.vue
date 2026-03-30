@@ -80,7 +80,7 @@ function renderChart(data: CashFlowItem[]) {
 
         // 预计收款
         const cAmt = Number(item.expectedCollection) || 0
-        html += `<div style="margin-bottom:4px">${arr[0]?.marker || ''}<span style="font-weight:500">预计收款：</span><b style="color:#1976d2">¥${cAmt.toLocaleString()}</b></div>`
+        html += `<div style="margin-bottom:4px">${arr[0]?.marker || ''}<span style="font-weight:500">预计收款：</span><b style="color:#1976d2">$${cAmt.toLocaleString()}</b></div>`
         if (item.collectionOrderNos?.length) {
           html += `<div style="color:#666;font-size:12px;padding-left:16px;margin-bottom:6px">订单：${item.collectionOrderNos.join('、')}</div>`
         }

@@ -135,7 +135,7 @@ function renderChart(data: OrderFinanceItem[]) {
         itemStyle: { color: '#1976d2' },
         label: {
           show: true, position: 'inside', color: '#fff', fontSize: 11,
-          formatter: (p: any) => p.value > 0 ? '¥' + Number(p.value).toLocaleString() : ''
+          formatter: (p: any) => p.value > 0 ? '$' + Number(p.value).toLocaleString() : ''
         }
       },
       {
@@ -147,7 +147,7 @@ function renderChart(data: OrderFinanceItem[]) {
         itemStyle: { color: '#bbdefb', borderRadius: [0, 4, 4, 0] },
         label: {
           show: true, position: 'inside', color: '#1565c0', fontSize: 11,
-          formatter: (p: any) => p.value > 0 ? '¥' + Number(p.value).toLocaleString() : ''
+          formatter: (p: any) => p.value > 0 ? '$' + Number(p.value).toLocaleString() : ''
         }
       },
       {
