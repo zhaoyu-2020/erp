@@ -23,7 +23,6 @@ public class PurchaseOrderVO {
     private BigDecimal contractTotalQty;
     private BigDecimal settlementTotalAmount;
     private BigDecimal settlementTotalQty;
-    private BigDecimal actualAmount;
     private BigDecimal depositRate;
     private BigDecimal depositAmount;
     private LocalDate orderDate;

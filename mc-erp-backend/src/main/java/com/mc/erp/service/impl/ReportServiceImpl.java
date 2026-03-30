@@ -106,7 +106,7 @@ public class ReportServiceImpl implements ReportService {
         BigDecimal totalPayables = allPurchaseOrders.stream()
                 .filter(p -> p.getStatus() != 4) // 未完结
                 .map(p -> {
-                    BigDecimal actual = p.getActualAmount() != null ? p.getActualAmount() : BigDecimal.ZERO;
+                    BigDecimal actual = p.getSettlementTotalAmount() != null ? p.getSettlementTotalAmount() : BigDecimal.ZERO;
                     BigDecimal deposit = p.getDepositAmount() != null ? p.getDepositAmount() : BigDecimal.ZERO;
                     return actual.subtract(deposit);
                 })
@@ -282,10 +282,10 @@ public class ReportServiceImpl implements ReportService {
             List<PurchaseOrder> linked = purchaseByOrderNo.getOrDefault(o.getOrderNo(), java.util.Collections.emptyList());
             BigDecimal purchaseContract = linked.stream()
                     .map(p -> {
-                        BigDecimal actual = p.getActualAmount();
+                        BigDecimal settlement = p.getSettlementTotalAmount();
                         BigDecimal total = p.getTotalAmount() != null ? p.getTotalAmount() : BigDecimal.ZERO;
-                        // actual_amount 为 null 或 0 时，使用 total_amount（合同总金额）
-                        return (actual != null && actual.compareTo(BigDecimal.ZERO) > 0) ? actual : total;
+                        // settlement_total_amount 为 null 或 0 时，使用 total_amount（合同总金额）
+                        return (settlement != null && settlement.compareTo(BigDecimal.ZERO) > 0) ? settlement : total;
                     })
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal purchaseDeposit = linked.stream()

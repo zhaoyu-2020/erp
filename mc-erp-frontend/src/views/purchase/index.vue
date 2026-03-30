@@ -532,7 +532,6 @@ const form = reactive<any>({
   contractTotalQty: null,
   settlementTotalAmount: null,
   settlementTotalQty: null,
-  actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
   orderDate: null,
@@ -559,7 +558,6 @@ const detailData = reactive<any>({
   contractTotalQty: null,
   settlementTotalAmount: null,
   settlementTotalQty: null,
-  actualAmount: 0,
   depositRate: 0,
   depositAmount: 0,
   orderDate: null,
@@ -717,7 +715,6 @@ const resetForm = () => {
   form.contractTotalQty = null
   form.settlementTotalAmount = null
   form.settlementTotalQty = null
-  form.actualAmount = 0
   form.depositRate = 0
   form.depositAmount = 0
   form.orderDate = null
@@ -759,7 +756,6 @@ const handleDetail = (row: any) => {
     contractTotalQty: row.contractTotalQty ?? 0,
     settlementTotalAmount: row.settlementTotalAmount ?? 0,
     settlementTotalQty: row.settlementTotalQty ?? 0,
-    actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
     orderDate: row.orderDate ?? null,
@@ -798,7 +794,6 @@ const handleEdit = (row: any) => {
     contractTotalQty: row.contractTotalQty ?? 0,
     settlementTotalAmount: row.settlementTotalAmount ?? 0,
     settlementTotalQty: row.settlementTotalQty ?? 0,
-    actualAmount: row.actualAmount ?? 0,
     depositRate: row.depositRate ?? 0,
     depositAmount: row.depositAmount ?? 0,
     orderDate: row.orderDate ?? null,

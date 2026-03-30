@@ -140,7 +140,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 }
                 order.setCurrency(StringUtils.hasText(row.getCurrency()) ? row.getCurrency().trim() : "RMB");
                 order.setTotalAmount(parseBD(row.getTotalAmount()));
-                order.setActualAmount(parseBD(row.getActualAmount()));
+                order.setSettlementTotalAmount(parseBD(row.getSettlementTotalAmount()));
                 order.setDepositRate(parseBD(row.getDepositRate()));
                 order.setDepositAmount(parseBD(row.getDepositAmount()));
                 order.setTransportRemark(row.getTransportRemark());

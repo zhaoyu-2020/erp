@@ -201,7 +201,6 @@ CREATE TABLE IF NOT EXISTS `biz_purchase_order` (
   `contract_total_qty` decimal(15,3) DEFAULT '0.000' COMMENT '合同总数量（由明细订货数量汇总）',
   `settlement_total_amount` decimal(15,2) DEFAULT '0.00' COMMENT '结算总金额（由明细实际交货数据汇总）',
   `settlement_total_qty` decimal(15,3) DEFAULT '0.000' COMMENT '结算总数量（由明细actual_quantity汇总）',
-  `actual_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '实际金额',
   `deposit_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT '定金比例(%)',
   `deposit_amount` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT '定金金额',
   `order_date` date DEFAULT NULL COMMENT '订单日期',

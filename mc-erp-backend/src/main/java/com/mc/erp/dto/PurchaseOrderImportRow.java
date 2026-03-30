@@ -27,8 +27,8 @@ public class PurchaseOrderImportRow {
     @ExcelProperty("订单金额(RMB)")
     private String totalAmount;
 
-    @ExcelProperty("实际金额(RMB)")
-    private String actualAmount;
+    @ExcelProperty("结算总金额(RMB)")
+    private String settlementTotalAmount;
 
     @ExcelProperty("定金比例(%)")
     private String depositRate;

@@ -49,9 +49,6 @@ public class PurchaseOrder {
     /** 结算总数量（由明细 actual_quantity 汇总） */
     private BigDecimal settlementTotalQty;
 
-    // 实际金额
-    private BigDecimal actualAmount;
-
     @NotNull(message = "定金比例不能为空")
     private BigDecimal depositRate;
 
