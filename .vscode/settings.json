@@ -35,7 +35,8 @@
   "http.proxy": "http://127.0.0.1:7890",
   "https.proxy": "http://127.0.0.1:7890",
   "http.proxyStrictSSL": false,
-  "http.proxySupport": "override" // 强制覆盖系统代理
+  "http.proxySupport": "override",
+  "java.configuration.updateBuildConfiguration": "interactive" // 强制覆盖系统代理
 
 
 

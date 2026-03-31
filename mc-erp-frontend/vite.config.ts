@@ -9,6 +9,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  build: {
+    outDir: '../mc-erp-backend/src/main/resources/static',
+    emptyOutDir: true
+  },
   server: {
     host: true,
     port: 3000,

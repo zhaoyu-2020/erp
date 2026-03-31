@@ -13,8 +13,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 上传文件（本地磁盘）
         String location = "file:" + new java.io.File(uploadDir).getAbsolutePath() + "/";
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(location);
+
+        // 前端静态资源（classpath:/static/）
+        registry.addResourceHandler("/assets/**")
+                .addResourceLocations("classpath:/static/assets/");
+        registry.addResourceHandler("/*.js", "/*.css", "/*.ico",
+                        "/*.png", "/*.svg", "/*.woff", "/*.woff2", "/vite.svg")
+                .addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/index.html")
+                .addResourceLocations("classpath:/static/");
     }
 }

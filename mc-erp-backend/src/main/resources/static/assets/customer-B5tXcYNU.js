@@ -1,0 +1,1 @@
+import{r as t}from"./request-DxOgsyGH.js";function u(e){return t({url:"/customers/page",method:"get",params:e})}function s(e){return t({url:"/customers",method:"post",data:e})}function o(e){return t({url:"/customers",method:"put",data:e})}function m(e){return t({url:`/customers/${e}`,method:"delete"})}export{m as d,u as g,s,o as u};

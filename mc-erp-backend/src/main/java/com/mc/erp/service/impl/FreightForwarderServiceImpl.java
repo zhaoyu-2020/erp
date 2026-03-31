@@ -16,6 +16,7 @@ import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.FreightForwarderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,6 +27,7 @@ public class FreightForwarderServiceImpl extends ServiceImpl<FreightForwarderMap
         implements FreightForwarderService {
 
     @Autowired
+    @Lazy
     private FreightOrderService freightOrderService;
 
     @Autowired

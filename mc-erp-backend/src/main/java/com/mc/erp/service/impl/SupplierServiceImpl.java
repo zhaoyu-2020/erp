@@ -16,6 +16,7 @@ import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.SupplierVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class SupplierServiceImpl extends ServiceImpl<SupplierMapper, Supplier> implements SupplierService {
 
+    @Lazy
     @Autowired
     private PurchaseOrderService purchaseOrderService;
 

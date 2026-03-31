@@ -53,8 +53,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll() // 登录接口无需认证
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll() // 静态文件无需认证
-                        .anyRequest().authenticated() // 其他接口需登录
+                        .requestMatchers("/uploads/**").permitAll() // 上传文件无需认证
+                        // 前端静态资源无需认证
+                        .requestMatchers("/", "/index.html", "/assets/**", "/*.js", "/*.css",
+                                "/*.ico", "/*.png", "/*.svg", "/*.woff", "/*.woff2").permitAll()
+                        .requestMatchers("/api/**").authenticated() // 所有 API 需要认证
+                        .anyRequest().permitAll() // 其他（前端路由）放行，由 SPA Fallback 处理
                 )
                 // 未认证返回 401，已认证但无权限返回 403
                 .exceptionHandling(ex -> ex
