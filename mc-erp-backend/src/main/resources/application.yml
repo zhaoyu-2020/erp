@@ -23,6 +23,10 @@ file:
   upload-dir: uploads
   base-url: http://localhost:8080/uploads
 
+jwt:
+  secret: mc-erp-secret-key-must-be-at-least-256-bits-long!
+  expiration-ms: 86400000
+
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   global-config:

@@ -15,11 +15,14 @@ import com.mc.erp.entity.PurchaseOrderDetail;
 import com.mc.erp.entity.Supplier;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.PurchaseOrderMapper;
+import com.mc.erp.service.OperationLogService;
 import com.mc.erp.service.PurchaseOrderDetailService;
 import com.mc.erp.service.PurchaseOrderService;
 import com.mc.erp.service.SupplierService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.vo.PurchaseOrderVO;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import org.springframework.beans.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,9 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
 
     @Autowired
     private PurchaseOrderDetailService purchaseOrderDetailService;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public PageResult<PurchaseOrderVO> getPage(PurchaseOrderQuery query) {
@@ -93,13 +99,17 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     public void updateStatus(Long id, Integer targetStatus, BigDecimal totalFreight) {
         PurchaseOrder order = this.getById(id);
         if (order == null) {
-            throw new RuntimeException("采购订单不存在: " + id);
+            String errMsg = "采购订单不存在: " + id;
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("采购订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
         PurchaseOrderStatus.validateTransition(order.getStatus(), targetStatus);
         // 当状态改为待发货时，对应的采购订单明细必须有结算数量
         if (targetStatus.equals(PurchaseOrderStatus.PENDING_DELIVERY.getCode())) {
             if (!purchaseOrderDetailService.hasSettledQuantity(id)) {
-                throw new RuntimeException("无法将订单状态改为待发货：请先填写结算数量");
+                String errMsg = "无法将订单状态改为待发货：请先填写结算数量";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("采购订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
         }
 
@@ -108,7 +118,9 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
             // 优先使用订单已有运费，否则使用前端传入的运费
             BigDecimal freight = order.getTotalFreight() != null ? order.getTotalFreight() : totalFreight;
             if (freight == null) {
-                throw new RuntimeException("无法完成订单：请先填写运费");
+                String errMsg = "无法完成订单：请先填写运费";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("采购订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
             // 若运费是由前端新传入的，一并更新到订单
             if (order.getTotalFreight() == null) {
@@ -123,6 +135,10 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         update.setId(id);
         update.setStatus(targetStatus);
         this.updateById(update);
+
+        // 记录状态变更成功日志
+        String statusDesc = "采购订单ID " + id + " 状态从 " + order.getStatus() + " 变更为 " + targetStatus;
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("采购订单", OperationType.STATUS_CHANGE, statusDesc));
     }
 
     @Override
@@ -183,7 +199,9 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
-                logger.error("采购订单导入第{}行失败: {}", rowNum, e.getMessage(), e);
+                String errorDesc = String.format("采购订单导入第%d行失败: %s", rowNum, e.getMessage());
+                logger.error(errorDesc, e);
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("采购订单", OperationType.IMPORT, errorDesc, e.getMessage()));
                 result.addError(rowNum, e.getMessage());
             }
         }
@@ -326,7 +344,9 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     result.setSuccessCount(result.getSuccessCount() + 1);
                 }
             } catch (Exception e) {
-                logger.error("采购订单明细导入第{}行失败: {}", rowNum, e.getMessage(), e);
+                String errorDesc = String.format("采购订单明细导入第%d行失败: %s", rowNum, e.getMessage());
+                logger.error(errorDesc, e);
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("采购订单明细", OperationType.IMPORT, errorDesc, e.getMessage()));
                 result.addError(rowNum, e.getMessage());
             }
         }

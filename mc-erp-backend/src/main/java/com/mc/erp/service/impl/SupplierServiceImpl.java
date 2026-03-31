@@ -9,7 +9,10 @@ import com.mc.erp.entity.PurchaseOrder;
 import com.mc.erp.entity.Supplier;
 import com.mc.erp.mapper.SupplierMapper;
 import com.mc.erp.service.PurchaseOrderService;
+import com.mc.erp.service.OperationLogService;
 import com.mc.erp.service.SupplierService;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.SupplierVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,9 @@ public class SupplierServiceImpl extends ServiceImpl<SupplierMapper, Supplier> i
 
     @Autowired
     private PurchaseOrderService purchaseOrderService;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public PageResult<SupplierVO> getPage(SupplierQuery query) {
@@ -51,7 +57,9 @@ public class SupplierServiceImpl extends ServiceImpl<SupplierMapper, Supplier> i
         long refCount = purchaseOrderService.count(new LambdaQueryWrapper<PurchaseOrder>()
                 .eq(PurchaseOrder::getSupplierId, id));
         if (refCount > 0) {
-            throw new RuntimeException("该供应商下还有 " + refCount + " 个采购订单，无法删除");
+            String errMsg = "该供应商下还有 " + refCount + " 个采购订单，无法删除";
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("供应商", OperationType.DELETE, "删除供应商失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
         return super.removeById(id);
     }

@@ -50,12 +50,6 @@ public class SalesOrderDetailController {
     @OperLog(module = "销售订单明细", type = OperationType.DELETE, description = "删除销售订单明细")
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
-        SalesOrderDetail detail = salesOrderDetailService.getById(id);
-        Long orderId = detail != null ? detail.getOrderId() : null;
-        boolean result = salesOrderDetailService.removeById(id);
-        if (result && orderId != null) {
-            salesOrderDetailService.recalculateOrderSummary(orderId);
-        }
-        return Result.success(result);
+        return Result.success(salesOrderDetailService.deleteDetail(id));
     }
 }

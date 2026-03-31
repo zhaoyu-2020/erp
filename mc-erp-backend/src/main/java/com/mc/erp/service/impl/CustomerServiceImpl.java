@@ -10,9 +10,12 @@ import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.CustomerMapper;
 import com.mc.erp.service.CustomerService;
+import com.mc.erp.service.OperationLogService;
 import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
+import com.mc.erp.util.LogHelper;
 import com.mc.erp.util.SecurityUtil;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.CustomerVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +39,14 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Autowired
     private SalesOrderService salesOrderService;
 
+    @Autowired
+    private OperationLogService operationLogService;
+
     @Override
     public PageResult<CustomerVO> getPage(CustomerQuery query) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.QUERY, "查询客户列表失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
 
@@ -78,6 +85,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         normalizeCustomerPayload(entity);
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.ADD, "新增客户失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
         if (!SecurityUtil.isAdmin()) {
@@ -92,6 +100,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         normalizeCustomerPayload(entity);
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.MODIFY, "修改客户失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
         Customer exist = this.getById(entity.getId());
@@ -99,6 +108,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             return false;
         }
         if (!SecurityUtil.isAdmin() && !currentUserId.equals(exist.getSalesUserId())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.MODIFY, "修改客户失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
         // 普通用户只能修改属于自己的客户
@@ -112,6 +122,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     public boolean removeById(Serializable id) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.DELETE, "删除客户失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
         Customer exist = this.getById(id);
@@ -119,13 +130,16 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
             return false;
         }
         if (!SecurityUtil.isAdmin() && !currentUserId.equals(exist.getSalesUserId())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.DELETE, "删除客户失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
         // 校验是否有关联的销售订单
         long refCount = salesOrderService.count(new LambdaQueryWrapper<SalesOrder>()
                 .eq(SalesOrder::getCustomerId, id));
         if (refCount > 0) {
-            throw new RuntimeException("该客户下还有 " + refCount + " 个销售订单，无法删除");
+            String errMsg = "该客户下还有 " + refCount + " 个销售订单，无法删除";
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.DELETE, "删除客户失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
         return super.removeById(id);
     }
@@ -134,6 +148,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     public CustomerVO getByIdWithSalesUser(Long id) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
         if (currentUserId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.QUERY, "查询客户详情失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
 
@@ -143,6 +158,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         }
 
         if (!SecurityUtil.isAdmin() && !SecurityUtil.hasRole("operator") && !currentUserId.equals(cust.getSalesUserId())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("客户管理", OperationType.QUERY, "查询客户详情失败", "无操作权限"));
             throw new AccessDeniedException("无操作权限");
         }
 

@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -94,6 +95,9 @@ public class InitAdminRunner implements ApplicationRunner {
 
     @Autowired
     private PurchaseOrderDetailMapper purchaseOrderDetailMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -275,7 +279,7 @@ public class InitAdminRunner implements ApplicationRunner {
         jdbcTemplate.update("DELETE FROM sys_user WHERE username = ? AND is_deleted = 1", username);
         User user = new User();
         user.setUsername(username);
-        user.setPassword(password);
+        user.setPassword(passwordEncoder.encode(password));
         user.setRealName(realName);
         boolean saved = userService.save(user);
         return saved ? user : null;

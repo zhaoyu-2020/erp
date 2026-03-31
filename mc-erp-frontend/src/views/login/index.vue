@@ -89,8 +89,7 @@ const handleLogin = async () => {
           ElMessage.error(res.message || '登录失败')
         }
       } catch (error) {
-        // error handled by global interceptor if defined, or explicitly here
-        ElMessage.error('登录失败')
+        // 错误已由全局拦截器处理，此处无需重复提示
       } finally {
         loading.value = false
       }

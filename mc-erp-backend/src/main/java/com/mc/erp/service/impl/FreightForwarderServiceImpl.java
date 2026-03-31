@@ -10,6 +10,9 @@ import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.mapper.FreightForwarderMapper;
 import com.mc.erp.service.FreightForwarderService;
 import com.mc.erp.service.FreightOrderService;
+import com.mc.erp.service.OperationLogService;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.FreightForwarderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,9 @@ public class FreightForwarderServiceImpl extends ServiceImpl<FreightForwarderMap
 
     @Autowired
     private FreightOrderService freightOrderService;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public PageResult<FreightForwarderVO> getPage(FreightForwarderQuery query) {
@@ -52,7 +58,9 @@ public class FreightForwarderServiceImpl extends ServiceImpl<FreightForwarderMap
         long refCount = freightOrderService.count(new LambdaQueryWrapper<FreightOrder>()
                 .eq(FreightOrder::getForwarderId, id));
         if (refCount > 0) {
-            throw new RuntimeException("该货代下还有 " + refCount + " 个海运订单，无法删除");
+            String errMsg = "该货代下还有 " + refCount + " 个海运订单，无法删除";
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("货代管理", OperationType.DELETE, "删除货代失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
         return super.removeById(id);
     }

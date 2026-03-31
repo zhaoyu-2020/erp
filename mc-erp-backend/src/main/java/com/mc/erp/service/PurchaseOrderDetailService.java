@@ -13,6 +13,7 @@ public interface PurchaseOrderDetailService extends IService<PurchaseOrderDetail
     List<PurchaseOrderDetailVO> listByOrderId(Long orderId);
     boolean saveDetail(PurchaseOrderDetail detail);
     boolean updateDetail(PurchaseOrderDetail detail);
+    boolean deleteDetail(Long id);
     /** 重新计算并更新采购订单的合同总吨数、合同总金额、结算总数量、结算总金额 */
     void recalculateOrderTotals(Long purchaseOrderId);
 

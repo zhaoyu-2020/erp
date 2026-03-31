@@ -28,7 +28,10 @@ import com.mc.erp.service.SalesOrderDetailService;
 import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.mapper.SalesOrderMapper;
+import com.mc.erp.service.OperationLogService;
 import com.mc.erp.vo.SalesOrderVO;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -69,6 +72,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
 
     @Autowired
     private FinanceReceiptMapper financeReceiptMapper;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Override
     public PageResult<SalesOrderVO> getPage(SalesOrderQuery query) {
@@ -119,7 +125,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         // 获取销售订单信息
         SalesOrder salesOrder = this.getById(salesOrderId);
         if (salesOrder == null) {
-            throw new RuntimeException("销售订单不存在: " + salesOrderId);
+            String errMsg = "销售订单不存在: " + salesOrderId;
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.OTHER, "利润计算失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
 
         // 查询所有关联到此销售订单的采购订单
@@ -159,8 +167,11 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         BigDecimal portFee = salesOrder.getPortFee() != null ? salesOrder.getPortFee() : BigDecimal.ZERO;
 
         BigDecimal profit = depositIncome.add(finalIncome).subtract(freightAndInsuranceCNY).subtract(portFee).subtract(totalPurchaseCost);
-        logger.info("Calculated profit for Sales Order {}: {} (deposit) + {} (final) - {} (freight+insurance×rate) - {} (port fee) - {} (purchase cost) = {}",
+
+        String profitDesc = String.format("销售订单[%s]利润计算: 定金收入(%s) + 尾款收入(%s) - 海运保险(%s) - 港杂费(%s) - 采购成本(%s) = 利润(%s)",
                 salesOrder.getOrderNo(), depositIncome, finalIncome, freightAndInsuranceCNY, portFee, totalPurchaseCost, profit);
+        logger.info(profitDesc);
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("销售订单", OperationType.OTHER, profitDesc));
         // 更新销售订单的利润
         salesOrder.setProfit(profit);
         this.updateById(salesOrder);
@@ -172,7 +183,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         // 获取销售订单信息
         SalesOrder salesOrder = this.getById(salesOrderId);
         if (salesOrder == null) {
-            throw new RuntimeException("销售订单不存在: " + salesOrderId);
+            String errMsg = "销售订单不存在: " + salesOrderId;
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.OTHER, "损耗计算失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
 
         // 查询该订单所有明细，汇总价格
@@ -188,8 +201,11 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         BigDecimal actualAmount = salesOrder.getActualAmount() != null ? salesOrder.getActualAmount() : BigDecimal.ZERO;
 
         BigDecimal loss = totalDetailPrice.subtract(actualAmount);
-        logger.info("Calculated loss for Sales Order {}: {} (detail total) - {} (actualAmount) = {}",
+
+        String lossDesc = String.format("销售订单[%s]损耗计算: 明细总计(%s) - 实际收款(%s) = 损耗(%s)",
                 salesOrder.getOrderNo(), totalDetailPrice, actualAmount, loss);
+        logger.info(lossDesc);
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("销售订单", OperationType.OTHER, lossDesc));
 
         salesOrder.setLoss(loss);
         this.updateById(salesOrder);
@@ -275,7 +291,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     public void updateStatus(Long id, Integer targetStatus) {
         SalesOrder order = this.getById(id);
         if (order == null) {
-            throw new RuntimeException("销售订单不存在: " + id);
+            String errMsg = "销售订单不存在: " + id;
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+            throw new RuntimeException(errMsg);
         }
         // 状态机校验：非法流转直接抛异常，由 GlobalExceptionHandler 统一返回 400
         SalesOrderStatus.validateTransition(order.getStatus(), targetStatus);
@@ -283,7 +301,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         // 当状态被更改为收定金时，校验收款单必须大于0
         if (SalesOrderStatus.DEPOSIT_RECEIVED.getCode() == targetStatus) {
             if (order.getReceivedAmount() == null || order.getReceivedAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("订单 " + order.getOrderNo() + " 的收款金额必须大于0，才能流转到「收定金」状态");
+                String errMsg = "订单 " + order.getOrderNo() + " 的收款金额必须大于0，才能流转到「收定金」状态";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
         }
         // 当状态被更改为已采购时，校验至少有一条关联的采购合同
@@ -291,7 +311,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             LambdaQueryWrapper<PurchaseOrder> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(PurchaseOrder::getSalesOrderNo, order.getOrderNo());
             if (purchaseOrderService.count(wrapper) == 0) {
-                throw new RuntimeException("订单 " + order.getOrderNo() + " 必须至少有一条关联的采购合同，才能流转到「已采购」状态");
+                String errMsg = "订单 " + order.getOrderNo() + " 必须至少有一条关联的采购合同，才能流转到「已采购」状态";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
         }
         // 当状态改为已发运时，校验订单必须处于「待发运」状态，且所有关联采购合同状态为「待发货」
@@ -300,20 +322,26 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
             wrapper.eq(PurchaseOrder::getSalesOrderNo, order.getOrderNo());
             List<PurchaseOrder> pos = purchaseOrderService.list(wrapper);
             if (pos.isEmpty() || pos.stream().anyMatch(po -> po.getStatus() == null || po.getStatus() != 4)) {
-                throw new RuntimeException("订单 " + order.getOrderNo() + " 的所有关联采购合同必须处于「待发货」状态，才能流转到「已发运」状态");
+                String errMsg = "订单 " + order.getOrderNo() + " 的所有关联采购合同必须处于「待发货」状态，才能流转到「已发运」状态";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
             // 同时必须有海运订单
             LambdaQueryWrapper<FreightOrder> freightWrapper = new LambdaQueryWrapper<>();
             freightWrapper.eq(FreightOrder::getSaleOrderCode, order.getOrderNo());
             if (freightOrderService.count(freightWrapper) == 0) {
-                throw new RuntimeException("订单 " + order.getOrderNo() + " 必须至少有一条关联的海运订单，才能流转到「已发运」状态");
+                String errMsg = "订单 " + order.getOrderNo() + " 必须至少有一条关联的海运订单，才能流转到「已发运」状态";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
         }
 
         // 当状态被更改为已收款时，校验尾款金额必须大于0
         if (SalesOrderStatus.PAYMENT_RECEIVED.getCode() == targetStatus) {
             if (order.getFinalPaymentAmount() == null || order.getFinalPaymentAmount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("订单 " + order.getOrderNo() + " 的尾款金额必须大于0，才能流转到「收尾款」状态");
+                String errMsg = "订单 " + order.getOrderNo() + " 的尾款金额必须大于0，才能流转到「收尾款」状态";
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.STATUS_CHANGE, "状态变更失败", errMsg));
+                throw new RuntimeException(errMsg);
             }
         }
 
@@ -323,6 +351,10 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         update.setId(id);
         update.setStatus(targetStatus);
         this.updateById(update);
+
+        // 记录状态变更成功日志
+        String statusDesc = "订单 " + order.getOrderNo() + " 状态从 " + order.getStatus() + " 变更为 " + targetStatus;
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("销售订单", OperationType.STATUS_CHANGE, statusDesc));
 
         // 流转到「已完成」时自动计算利润和损耗
         if (SalesOrderStatus.COMPLETED.getCode() == targetStatus) {
@@ -414,7 +446,9 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
-                logger.error("销售订单导入第{}行失败: {}", rowNum, e.getMessage(), e);
+                String errorDesc = String.format("销售订单导入第%d行失败: %s", rowNum, e.getMessage());
+                logger.error(errorDesc, e);
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("销售订单", OperationType.IMPORT, errorDesc, e.getMessage()));
                 result.addError(rowNum, e.getMessage());
             }
         }

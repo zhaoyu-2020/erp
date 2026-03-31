@@ -2,6 +2,8 @@ package com.mc.erp.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -15,11 +17,18 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    // 签名密钥（生产环境应从配置文件读取）
-    private static final String SECRET = "mc-erp-secret-key-must-be-at-least-256-bits-long!";
-    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000L; // 24小时
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    @Value("${jwt.expiration-ms:86400000}")
+    private long expirationMs;
+
+    private SecretKey key;
+
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     /**
      * 生成 JWT Token
@@ -37,7 +46,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

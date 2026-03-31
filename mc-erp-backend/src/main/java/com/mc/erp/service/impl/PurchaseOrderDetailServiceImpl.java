@@ -98,7 +98,7 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveDetail(PurchaseOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
@@ -112,7 +112,7 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateDetail(PurchaseOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
@@ -133,7 +133,19 @@ public class PurchaseOrderDetailServiceImpl extends ServiceImpl<PurchaseOrderDet
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteDetail(Long id) {
+        PurchaseOrderDetail detail = this.getById(id);
+        Long purchaseOrderId = detail != null ? detail.getPurchaseOrderId() : null;
+        boolean result = this.removeById(id);
+        if (result && purchaseOrderId != null) {
+            recalculateOrderTotals(purchaseOrderId);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void recalculateOrderTotals(Long purchaseOrderId) {
         List<PurchaseOrderDetail> details = this.list(new LambdaQueryWrapper<PurchaseOrderDetail>()
                 .eq(PurchaseOrderDetail::getPurchaseOrderId, purchaseOrderId));

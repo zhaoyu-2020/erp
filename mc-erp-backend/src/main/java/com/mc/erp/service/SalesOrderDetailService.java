@@ -13,5 +13,6 @@ public interface SalesOrderDetailService extends IService<SalesOrderDetail> {
     List<SalesOrderDetailVO> listByOrderId(Long orderId);
     boolean saveDetail(SalesOrderDetail detail);
     boolean updateDetail(SalesOrderDetail detail);
+    boolean deleteDetail(Long id);
     void recalculateOrderSummary(Long orderId);
 }

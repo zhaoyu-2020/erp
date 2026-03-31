@@ -14,10 +14,14 @@ import com.mc.erp.mapper.RoleMapper;
 import com.mc.erp.mapper.UserMapper;
 import com.mc.erp.mapper.UserRoleMapper;
 import com.mc.erp.service.UserService;
+import com.mc.erp.service.OperationLogService;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.UserVO;
 import com.mc.erp.vo.UserWithRoleVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -35,6 +39,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private OperationLogService operationLogService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public PageResult<UserVO> getPage(UserQuery query) {
@@ -77,7 +87,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, loginDTO.getUsername());
         User user = this.getOne(wrapper);
-        if (user == null || !user.getPassword().equals(loginDTO.getPassword())) {
+        if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("用户管理", OperationType.LOGIN, "用户登录失败", "用户名或密码错误"));
             throw new RuntimeException("用户名或密码错误");
         }
 
@@ -163,14 +174,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void changePassword(Long userId, ChangePasswordDTO dto) {
         User user = this.getById(userId);
         if (user == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("用户管理", OperationType.MODIFY, "修改密码失败", "用户不存在"));
             throw new RuntimeException("用户不存在");
         }
-        if (!user.getPassword().equals(dto.getOldPassword())) {
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("用户管理", OperationType.MODIFY, "修改密码失败", "旧密码错误"));
             throw new RuntimeException("旧密码错误");
         }
         User update = new User();
         update.setId(userId);
-        update.setPassword(dto.getNewPassword());
+        update.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         this.updateById(update);
     }
 }

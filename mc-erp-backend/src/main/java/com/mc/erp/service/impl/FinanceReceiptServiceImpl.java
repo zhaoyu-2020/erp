@@ -12,7 +12,10 @@ import com.mc.erp.entity.FinanceReceiptDetail;
 import com.mc.erp.mapper.FinanceReceiptDetailMapper;
 import com.mc.erp.mapper.FinanceReceiptMapper;
 import com.mc.erp.service.FinanceReceiptService;
+import com.mc.erp.service.OperationLogService;
 import com.mc.erp.service.SalesOrderService;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FinanceReceiptDetailVO;
 import com.mc.erp.vo.FinanceReceiptVO;
@@ -37,6 +40,9 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
 
     @Autowired
     private SalesOrderService salesOrderService;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     /** 状态标签 */
     private String statusLabel(Integer status) {
@@ -135,13 +141,14 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
                 .map(d -> d.getBoundAmount() != null ? d.getBoundAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (boundSum.compareTo(totalAmount) > 0) {
-            throw new IllegalArgumentException(
-                    "明细绑定金额合计（" + boundSum.toPlainString() + "）超过收款金额（" + totalAmount.toPlainString() + "），请调整后重试");
+            String errMsg = "明细绑定金额合计（" + boundSum.toPlainString() + "）超过收款金额（" + totalAmount.toPlainString() + "），请调整后重试";
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("收款管理", OperationType.OTHER, "校验失败", errMsg));
+            throw new IllegalArgumentException(errMsg);
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void saveWithDetails(FinanceReceiptSaveDTO dto) {
         validateBoundSum(dto.getAmount(), dto.getDetails());
         FinanceReceipt receipt = new FinanceReceipt();
@@ -159,14 +166,18 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
                     .distinct()
                     .forEach(salesOrderService::syncClaimAmounts);
         }
+
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("收款管理", OperationType.ADD,
+                "新增收款单成功，金额：" + dto.getAmount()));
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateWithDetails(FinanceReceiptSaveDTO dto) {
         // 收款已完成时，非管理员不允许修改认领明细
         FinanceReceipt existing = this.getById(dto.getId());
         if (existing != null && Integer.valueOf(3).equals(existing.getStatus()) && !SecurityUtil.isAdmin()) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("收款管理", OperationType.MODIFY, "修改收款单失败", "收款已完成，无权修改认领明细"));
             throw new AccessDeniedException("收款已完成，无权修改认领明细");
         }
         validateBoundSum(dto.getAmount(), dto.getDetails());
@@ -190,10 +201,13 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
                     .distinct()
                     .forEach(salesOrderService::syncClaimAmounts);
         }
+
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("收款管理", OperationType.MODIFY,
+                "修改收款单成功，ID：" + dto.getId()));
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteWithDetails(Long id) {
         // 查出明细中涉及的销售订单号（用于后续同步）
         LambdaQueryWrapper<FinanceReceiptDetail> dw = new LambdaQueryWrapper<>();
@@ -212,6 +226,9 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
 
         // 同步受影响的销售订单认领金额和状态
         affectedOrderNos.forEach(salesOrderService::syncClaimAmounts);
+
+        operationLogService.asyncSaveLog(LogHelper.buildSuccessLog("收款管理", OperationType.DELETE,
+                "删除收款单成功，ID：" + id));
     }
 
     private void saveDetails(Long receiptId, FinanceReceiptSaveDTO dto) {

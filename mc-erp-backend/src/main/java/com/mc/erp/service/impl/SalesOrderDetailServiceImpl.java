@@ -100,7 +100,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean saveDetail(SalesOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
@@ -114,7 +114,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateDetail(SalesOrderDetail detail) {
         ensureProductType(detail.getProductType());
         detail.setProductId(findOrCreateProduct(detail));
@@ -152,7 +152,19 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteDetail(Long id) {
+        SalesOrderDetail detail = this.getById(id);
+        Long orderId = detail != null ? detail.getOrderId() : null;
+        boolean result = this.removeById(id);
+        if (result && orderId != null) {
+            recalculateOrderSummary(orderId);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void recalculateOrderSummary(Long orderId) {
         List<SalesOrderDetail> details = this.list(
                 new LambdaQueryWrapper<SalesOrderDetail>().eq(SalesOrderDetail::getOrderId, orderId));

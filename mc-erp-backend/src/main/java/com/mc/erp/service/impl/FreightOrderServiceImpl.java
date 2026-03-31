@@ -9,6 +9,8 @@ import com.mc.erp.entity.*;
 import com.mc.erp.enums.FreightOrderStatus;
 import com.mc.erp.mapper.FreightOrderMapper;
 import com.mc.erp.service.*;
+import com.mc.erp.util.LogHelper;
+import com.mc.erp.enums.OperationType;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.FreightOrderVO;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +36,9 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
     @Autowired
     private FreightForwarderService freightForwarderService;
+
+    @Autowired
+    private OperationLogService operationLogService;
 
     @Autowired
     @Lazy
@@ -96,7 +101,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 创建订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Long createOrder(FreightOrder order) {
         // 校验销售订单
         validateSaleOrderCode(order.getSaleOrderCode());
@@ -138,16 +143,18 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 修改订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateOrder(FreightOrder order) {
         FreightOrder existing = this.getById(order.getOrderId());
         if (existing == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.MODIFY, "修改海运订单失败", "海运订单不存在"));
             throw new IllegalArgumentException("海运订单不存在");
         }
 
         int status = existing.getOrderStatus();
 
         if (status == FreightOrderStatus.CANCELLED.getCode()) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.MODIFY, "修改海运订单失败", "已作废订单不允许修改"));
             throw new IllegalStateException("已作废订单不允许修改");
         }
 
@@ -243,14 +250,17 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 删除订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.DELETE, "删除海运订单失败", "海运订单不存在"));
             throw new IllegalArgumentException("海运订单不存在");
         }
         if (order.getOrderStatus() != FreightOrderStatus.DRAFT.getCode()) {
-            throw new IllegalStateException("仅草稿状态的订单支持删除");
+            String errMsg = "仅草稿状态的订单支持删除";
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.DELETE, "删除海运订单失败", errMsg));
+            throw new IllegalStateException(errMsg);
         }
 
         logService.log(orderId, order.getOrderCode(), "DELETE", null, null, "删除海运订单");
@@ -260,10 +270,11 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 提交订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean submitOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "提交海运订单失败", "海运订单不存在"));
             throw new IllegalArgumentException("海运订单不存在");
         }
 
@@ -283,10 +294,11 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 结算订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean settleOrder(Long orderId) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "结算海运订单失败", "海运订单不存在"));
             throw new IllegalArgumentException("海运订单不存在");
         }
 
@@ -348,13 +360,15 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     // ============ 作废订单 ============
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean cancelOrder(Long orderId, String cancelReason) {
         FreightOrder order = this.getById(orderId);
         if (order == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "作废海运订单失败", "海运订单不存在"));
             throw new IllegalArgumentException("海运订单不存在");
         }
         if (!StringUtils.hasText(cancelReason)) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "作废海运订单失败", "作废原因不能为空"));
             throw new IllegalArgumentException("作废原因不能为空");
         }
 
@@ -363,6 +377,7 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         // 已结算 → 已作废仅管理员可操作
         if (order.getOrderStatus() == FreightOrderStatus.SETTLED.getCode()) {
             if (!SecurityUtil.isAdmin()) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "作废海运订单失败", "仅管理员可作废已结算订单"));
                 throw new IllegalStateException("仅管理员可作废已结算订单");
             }
         }
@@ -424,22 +439,26 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
     private void validateSaleOrderCode(String saleOrderCode) {
         if (!StringUtils.hasText(saleOrderCode)) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "销售订单号不能为空"));
             throw new IllegalArgumentException("销售订单号不能为空");
         }
         LambdaQueryWrapper<SalesOrder> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SalesOrder::getOrderNo, saleOrderCode);
         long count = salesOrderService.count(wrapper);
         if (count == 0) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "销售订单不存在或已失效，请重新选择"));
             throw new IllegalArgumentException("销售订单不存在或已失效，请重新选择");
         }
     }
 
     private FreightForwarder validateForwarder(Long forwarderId) {
         if (forwarderId == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "货代ID不能为空"));
             throw new IllegalArgumentException("货代ID不能为空");
         }
         FreightForwarder forwarder = freightForwarderService.getById(forwarderId);
         if (forwarder == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "货代不存在"));
             throw new IllegalArgumentException("货代不存在");
         }
         return forwarder;
@@ -447,21 +466,26 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
 
     private void validateTransportType(FreightOrder order) {
         if (order.getTransportType() == null || (order.getTransportType() != 1 && order.getTransportType() != 2)) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "运输类型必须为集装箱船(1)或散货船(2)"));
             throw new IllegalArgumentException("运输类型必须为集装箱船(1)或散货船(2)");
         }
         if (order.getTransportType() == 1) {
             if (!StringUtils.hasText(order.getContainerType())) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "集装箱船运输必须录入柜型"));
                 throw new IllegalArgumentException("集装箱船运输必须录入柜型");
             }
             if (order.getContainerQty() == null || order.getContainerQty() <= 0) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "集装箱船运输必须录入柜量（正整数）"));
                 throw new IllegalArgumentException("集装箱船运输必须录入柜量（正整数）");
             }
         }
         if (order.getTransportType() == 2) {
             if (order.getBulkWeight() == null || order.getBulkWeight().compareTo(BigDecimal.ZERO) <= 0) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "散货船运输必须录入散货重量"));
                 throw new IllegalArgumentException("散货船运输必须录入散货重量");
             }
             if (order.getBulkVolume() == null || order.getBulkVolume().compareTo(BigDecimal.ZERO) <= 0) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "散货船运输必须录入散货体积"));
                 throw new IllegalArgumentException("散货船运输必须录入散货体积");
             }
         }
@@ -470,9 +494,11 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
     private void validateInsurance(FreightOrder order) {
         if (order.getNeedInsurance() != null && order.getNeedInsurance() == 1) {
             if (order.getInsuredAmount() == null || order.getInsuredAmount().signum() < 0) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "保额不能为负数"));
                 throw new IllegalArgumentException("保额不能为负数");
             }
             if (order.getPremium() == null || order.getPremium().signum() < 0) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "保费不能为负数"));
                 throw new IllegalArgumentException("保费不能为负数");
             }
         }
@@ -487,23 +513,28 @@ public class FreightOrderServiceImpl extends ServiceImpl<FreightOrderMapper, Fre
         }
         long count = this.count(wrapper);
         if (count > 0) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.OTHER, "校验失败", "该销售订单已关联此货代的订单，不允许重复创建"));
             throw new IllegalArgumentException("该销售订单已关联此货代的订单，不允许重复创建");
         }
     }
 
     private void validateForSubmit(FreightOrder order) {
         if (!StringUtils.hasText(order.getSaleOrderCode())) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "提交海运订单失败", "销售订单号缺失"));
             throw new IllegalArgumentException("提交失败：销售订单号缺失");
         }
         if (order.getForwarderId() == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "提交海运订单失败", "货代ID缺失"));
             throw new IllegalArgumentException("提交失败：货代ID缺失");
         }
         if (order.getTransportType() == null) {
+            operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "提交海运订单失败", "运输类型缺失"));
             throw new IllegalArgumentException("提交失败：运输类型缺失");
         }
         validateTransportType(order);
         if (order.getNeedInsurance() != null && order.getNeedInsurance() == 1) {
             if (order.getInsuredAmount() == null || order.getPremium() == null) {
+                operationLogService.asyncSaveLog(LogHelper.buildErrorLog("海运订单", OperationType.STATUS_CHANGE, "提交海运订单失败", "购买保险时保额和保费为必填项"));
                 throw new IllegalArgumentException("提交失败：购买保险时保额和保费为必填项");
             }
         }

@@ -22,7 +22,7 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateRoleMenus(Long roleId, List<Long> menuIds) {
         if (roleId == null) return false;
         this.remove(new LambdaQueryWrapper<RoleMenu>().eq(RoleMenu::getRoleId, roleId));
