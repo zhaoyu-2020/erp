@@ -19,6 +19,7 @@ import com.mc.erp.enums.OperationType;
 import com.mc.erp.vo.CustomerVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -36,6 +37,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     @Autowired
     private UserService userService;
 
+    @Lazy
     @Autowired
     private SalesOrderService salesOrderService;
 
