@@ -21,8 +21,11 @@ import com.mc.erp.service.SupplierService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.vo.PurchaseOrderVO;
 import org.springframework.beans.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,11 +38,16 @@ import com.mc.erp.enums.PurchaseOrderStatus;
 public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, PurchaseOrder>
         implements PurchaseOrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseOrderServiceImpl.class);
+
     @Autowired
     private SupplierService supplierService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PurchaseOrderDetailService purchaseOrderDetailService;
 
     @Override
     public PageResult<PurchaseOrderVO> getPage(PurchaseOrderQuery query) {
@@ -81,6 +89,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, Integer targetStatus, BigDecimal totalFreight) {
         PurchaseOrder order = this.getById(id);
         if (order == null) {
@@ -115,9 +124,6 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
         update.setStatus(targetStatus);
         this.updateById(update);
     }
-
-    @Autowired
-    private PurchaseOrderDetailService purchaseOrderDetailService;
 
     @Override
     public ImportResult importContracts(MultipartFile file) throws Exception {
@@ -177,7 +183,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("采购订单导入第{}行失败: {}", rowNum, e.getMessage(), e);
                 result.addError(rowNum, e.getMessage());
             }
         }
@@ -320,7 +326,7 @@ public class PurchaseOrderServiceImpl extends ServiceImpl<PurchaseOrderMapper, P
                     result.setSuccessCount(result.getSuccessCount() + 1);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("采购订单明细导入第{}行失败: {}", rowNum, e.getMessage(), e);
                 result.addError(rowNum, e.getMessage());
             }
         }

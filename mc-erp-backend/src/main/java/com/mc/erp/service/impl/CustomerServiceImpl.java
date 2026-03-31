@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.CustomerQuery;
 import com.mc.erp.entity.Customer;
+import com.mc.erp.entity.SalesOrder;
 import com.mc.erp.entity.User;
 import com.mc.erp.mapper.CustomerMapper;
 import com.mc.erp.service.CustomerService;
+import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.util.SecurityUtil;
 import com.mc.erp.vo.CustomerVO;
@@ -20,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +32,9 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SalesOrderService salesOrderService;
 
     @Override
     public PageResult<CustomerVO> getPage(CustomerQuery query) {
@@ -116,6 +120,12 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         }
         if (!SecurityUtil.isAdmin() && !currentUserId.equals(exist.getSalesUserId())) {
             throw new AccessDeniedException("无操作权限");
+        }
+        // 校验是否有关联的销售订单
+        long refCount = salesOrderService.count(new LambdaQueryWrapper<SalesOrder>()
+                .eq(SalesOrder::getCustomerId, id));
+        if (refCount > 0) {
+            throw new RuntimeException("该客户下还有 " + refCount + " 个销售订单，无法删除");
         }
         return super.removeById(id);
     }

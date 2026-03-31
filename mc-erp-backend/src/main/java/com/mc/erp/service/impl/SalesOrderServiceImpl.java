@@ -245,12 +245,12 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 ? finalWeightedSum.divide(totalFinal, 4, java.math.RoundingMode.HALF_UP)
                 : null;
 
-        // 计算应收定金和应收尾款（用于状态判断）
-        BigDecimal contractAmount = order.getContractAmount() != null ? order.getContractAmount() : BigDecimal.ZERO;
-        BigDecimal depositRate = order.getDepositRate() != null ? order.getDepositRate() : BigDecimal.ZERO;
-        BigDecimal expectedDeposit = contractAmount.multiply(depositRate)
-                .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
-        BigDecimal expectedFinal = contractAmount.subtract(expectedDeposit);
+        // 计算应收定金和应收尾款（用于状态判断，暂未启用自动状态流转）
+        // BigDecimal contractAmount = order.getContractAmount() != null ? order.getContractAmount() : BigDecimal.ZERO;
+        // BigDecimal depositRate = order.getDepositRate() != null ? order.getDepositRate() : BigDecimal.ZERO;
+        // BigDecimal expectedDeposit = contractAmount.multiply(depositRate)
+        //         .divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+        // BigDecimal expectedFinal = contractAmount.subtract(expectedDeposit);
 
         // 只更新认领相关字段，不覆盖其他字段
         LambdaUpdateWrapper<SalesOrder> uw = new LambdaUpdateWrapper<SalesOrder>()
@@ -266,13 +266,6 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         if (avgFinalRate != null) {
             uw.set(SalesOrder::getFinalExchangeRate, avgFinalRate);
         }
-
-        // // 更新状态：尾款足额 → 6，定金足额 → 2，否则不改
-        // if (expectedFinal.compareTo(BigDecimal.ZERO) > 0 && totalFinal.compareTo(expectedFinal) >= 0) {
-        //     uw.set(SalesOrder::getStatus, 6);
-        // } else if (expectedDeposit.compareTo(BigDecimal.ZERO) > 0 && totalDeposit.compareTo(expectedDeposit) >= 0 && order.getStatus() < 2) {
-        //     uw.set(SalesOrder::getStatus, 2);
-        // }
 
         this.update(null, uw);
     }
@@ -421,7 +414,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
                 this.save(order);
                 result.setSuccessCount(result.getSuccessCount() + 1);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("销售订单导入第{}行失败: {}", rowNum, e.getMessage(), e);
                 result.addError(rowNum, e.getMessage());
             }
         }

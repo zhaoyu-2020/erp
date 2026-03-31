@@ -94,8 +94,8 @@ public class SalesOrderController {
     @OperLog(module = "销售订单", type = OperationType.MODIFY, description = "修改销售订单")
     @PutMapping
     public Result<Boolean> update(@Valid @RequestBody SalesOrder salesOrder) {
-        // 获取更新前的订单信息
-        SalesOrder oldOrder = salesOrderService.getById(salesOrder.getId());
+        // 禁止通过update接口修改状态，状态变更须走专用的PATCH /status接口
+        salesOrder.setStatus(null);
 
         // 更新订单
         boolean success = salesOrderService.updateById(salesOrder);
@@ -103,16 +103,7 @@ public class SalesOrderController {
         if (success && StringUtils.hasText(salesOrder.getOrderNo())) {
             salesOrderService.syncClaimAmounts(salesOrder.getOrderNo());
         }
-        
-        // 如果状态变更为已完成（7），自动计算利润和损耗
-        if (success && salesOrder.getStatus() != null && salesOrder.getStatus() == 7) {
-            // 检查是否是状态发生变更
-            if (oldOrder == null || !Integer.valueOf(7).equals(oldOrder.getStatus())) {
-                salesOrderService.calculateAndUpdateProfit(salesOrder.getId());
-                salesOrderService.calculateAndUpdateLoss(salesOrder.getId());
-            }
-        }
-        
+
         return Result.success(success);
     }
 

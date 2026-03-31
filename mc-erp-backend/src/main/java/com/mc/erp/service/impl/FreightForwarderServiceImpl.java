@@ -6,16 +6,24 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.common.PageResult;
 import com.mc.erp.dto.FreightForwarderQuery;
 import com.mc.erp.entity.FreightForwarder;
+import com.mc.erp.entity.FreightOrder;
 import com.mc.erp.mapper.FreightForwarderMapper;
 import com.mc.erp.service.FreightForwarderService;
+import com.mc.erp.service.FreightOrderService;
 import com.mc.erp.vo.FreightForwarderVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.io.Serializable;
 
 @Service
 public class FreightForwarderServiceImpl extends ServiceImpl<FreightForwarderMapper, FreightForwarder>
         implements FreightForwarderService {
+
+    @Autowired
+    private FreightOrderService freightOrderService;
 
     @Override
     public PageResult<FreightForwarderVO> getPage(FreightForwarderQuery query) {
@@ -37,5 +45,15 @@ public class FreightForwarderServiceImpl extends ServiceImpl<FreightForwarderMap
         }).toList();
 
         return new PageResult<>(resultPage.getTotal(), voList);
+    }
+
+    @Override
+    public boolean removeById(Serializable id) {
+        long refCount = freightOrderService.count(new LambdaQueryWrapper<FreightOrder>()
+                .eq(FreightOrder::getForwarderId, id));
+        if (refCount > 0) {
+            throw new RuntimeException("该货代下还有 " + refCount + " 个海运订单，无法删除");
+        }
+        return super.removeById(id);
     }
 }

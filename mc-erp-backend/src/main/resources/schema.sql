@@ -19,8 +19,7 @@ CREATE TABLE IF NOT EXISTS `biz_product` (
   `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
   `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除:0否 1是',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_id` (`id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='外贸产品主数据表';
 
 -- 1-1. 产品类型表
@@ -34,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `biz_product_type` (
   `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
   `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_type_name` (`type_name`,`type_name_en`)
+  UNIQUE KEY `uk_type_name` (`type_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='产品品名字典表';
 
 -- 2. 销售订单主表
