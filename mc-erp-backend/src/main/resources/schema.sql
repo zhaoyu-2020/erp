@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `biz_sales_order` (
   `loss` decimal(15,2) DEFAULT NULL COMMENT '损耗(定金+尾款-明细价格汇总之和)',
   `contract_total_quantity` decimal(15,3) DEFAULT NULL COMMENT '合同总数量',
   `settlement_total_quantity` decimal(15,3) DEFAULT NULL COMMENT '结算总数量',
+  `settlement_total_amount` decimal(15,2) DEFAULT NULL COMMENT '结算总金额(所有明细结算金额小计之和)',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1新建 2已收定金 3已采购 4待发运 5已发运 6已收款 7已完成',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

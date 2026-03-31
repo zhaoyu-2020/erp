@@ -106,7 +106,11 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
         detail.setSettlementAmount(computeSettlementAmount(detail));
-        return this.save(detail);
+        boolean result = this.save(detail);
+        if (result && detail.getOrderId() != null) {
+            recalculateOrderSummary(detail.getOrderId());
+        }
+        return result;
     }
 
     @Override
@@ -116,7 +120,11 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         detail.setProductId(findOrCreateProduct(detail));
         detail.setPriceTotal(computePriceTotal(detail));
         detail.setSettlementAmount(computeSettlementAmount(detail));
-        return this.updateById(detail);
+        boolean result = this.updateById(detail);
+        if (result && detail.getOrderId() != null) {
+            recalculateOrderSummary(detail.getOrderId());
+        }
+        return result;
     }
 
     private BigDecimal computePriceTotal(SalesOrderDetail detail) {
@@ -152,6 +160,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         BigDecimal totalOrdered = BigDecimal.ZERO;
         BigDecimal totalActual = BigDecimal.ZERO;
         BigDecimal contractAmount = BigDecimal.ZERO;
+        BigDecimal settlementTotalAmount = BigDecimal.ZERO;
 
         for (SalesOrderDetail detail : details) {
             // 补全产品类型、产品 ID 以及 priceTotal
@@ -170,6 +179,9 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
             if (detail.getOrderedQuantity() != null && detail.getSettlementPrice() != null) {
                 contractAmount = contractAmount.add(detail.getOrderedQuantity().multiply(detail.getSettlementPrice()));
             }
+            if (detail.getSettlementAmount() != null) {
+                settlementTotalAmount = settlementTotalAmount.add(detail.getSettlementAmount());
+            }
         }
 
         // 更新销售订单的汇总数量
@@ -178,6 +190,7 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         order.setContractTotalQuantity(totalOrdered);
         order.setSettlementTotalQuantity(totalActual);
         order.setContractAmount(contractAmount);
+        order.setSettlementTotalAmount(settlementTotalAmount);
         salesOrderMapper.updateById(order);
     }
 

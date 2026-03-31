@@ -70,6 +70,8 @@ public class SalesOrder {
     private BigDecimal loss;
     private BigDecimal contractTotalQuantity;
     private BigDecimal settlementTotalQuantity;
+    /** 结算总金额(所有明细结算金额小计之和) */
+    private BigDecimal settlementTotalAmount;
 
     private Integer status;
     private LocalDateTime createTime;

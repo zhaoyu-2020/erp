@@ -42,6 +42,7 @@ public class SalesOrderVO {
     private BigDecimal loss;
     private BigDecimal contractTotalQuantity;
     private BigDecimal settlementTotalQuantity;
+    private BigDecimal settlementTotalAmount;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
