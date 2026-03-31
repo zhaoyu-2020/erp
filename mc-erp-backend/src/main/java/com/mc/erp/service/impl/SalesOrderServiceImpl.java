@@ -29,9 +29,12 @@ import com.mc.erp.service.SalesOrderService;
 import com.mc.erp.service.UserService;
 import com.mc.erp.mapper.SalesOrderMapper;
 import com.mc.erp.vo.SalesOrderVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,6 +46,8 @@ import com.mc.erp.enums.SalesOrderStatus;
 
 @Service
 public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOrder> implements SalesOrderService {
+
+    private static final Logger logger = LoggerFactory.getLogger(SalesOrderServiceImpl.class);
 
     @Autowired
     private UserService userService;
@@ -109,6 +114,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void calculateAndUpdateProfit(Long salesOrderId) {
         // 获取销售订单信息
         SalesOrder salesOrder = this.getById(salesOrderId);
@@ -153,16 +159,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         BigDecimal portFee = salesOrder.getPortFee() != null ? salesOrder.getPortFee() : BigDecimal.ZERO;
 
         BigDecimal profit = depositIncome.add(finalIncome).subtract(freightAndInsuranceCNY).subtract(portFee).subtract(totalPurchaseCost);
-        System.out.println("Calculated profit for Sales Order " + salesOrder.getOrderNo() + ": "
-                + depositIncome + " (deposit) + " + finalIncome + " (final) - "
-                + freightAndInsuranceCNY + " (freight+insurance×rate) - "
-                + portFee + " (port fee) - " + totalPurchaseCost + " (purchase cost) = " + profit);
+        logger.info("Calculated profit for Sales Order {}: {} (deposit) + {} (final) - {} (freight+insurance×rate) - {} (port fee) - {} (purchase cost) = {}",
+                salesOrder.getOrderNo(), depositIncome, finalIncome, freightAndInsuranceCNY, portFee, totalPurchaseCost, profit);
         // 更新销售订单的利润
         salesOrder.setProfit(profit);
         this.updateById(salesOrder);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void calculateAndUpdateLoss(Long salesOrderId) {
         // 获取销售订单信息
         SalesOrder salesOrder = this.getById(salesOrderId);
@@ -183,14 +188,15 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
         BigDecimal actualAmount = salesOrder.getActualAmount() != null ? salesOrder.getActualAmount() : BigDecimal.ZERO;
 
         BigDecimal loss = totalDetailPrice.subtract(actualAmount);
-        System.out.println("Calculated loss for Sales Order " + salesOrder.getOrderNo() + ": "
-                + totalDetailPrice + " (detail total) - " + actualAmount + " (actualAmount) = " + loss);
+        logger.info("Calculated loss for Sales Order {}: {} (detail total) - {} (actualAmount) = {}",
+                salesOrder.getOrderNo(), totalDetailPrice, actualAmount, loss);
 
         salesOrder.setLoss(loss);
         this.updateById(salesOrder);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void syncClaimAmounts(String orderNo) {
         SalesOrder order = this.getOne(new LambdaQueryWrapper<SalesOrder>().eq(SalesOrder::getOrderNo, orderNo));
         if (order == null) return;
@@ -272,6 +278,7 @@ public class SalesOrderServiceImpl extends ServiceImpl<SalesOrderMapper, SalesOr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, Integer targetStatus) {
         SalesOrder order = this.getById(id);
         if (order == null) {

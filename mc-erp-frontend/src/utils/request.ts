@@ -10,7 +10,7 @@ export type ApiResult<T> = {
 
 const request = axios.create({
     baseURL: '/api/v1',
-    timeout: 5000
+    timeout: 30000 // 30秒，兼顾文件上传等耗时请求
 })
 
 request.interceptors.request.use(

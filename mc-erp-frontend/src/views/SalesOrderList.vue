@@ -73,7 +73,6 @@
         </el-table-column>
         <el-table-column label="贸易条款" prop="tradeTerm" width="100" />
         <el-table-column label="付款方式" prop="paymentMethod" width="100" />
-        <!-- <el-table-column label="币种" prop="currency" width="100" /> -->
 
         <el-table-column label="目的港" prop="destinationPort" width="120" align="center" />
         <el-table-column label="运输方式" prop="transportType" width="120" />
@@ -84,21 +83,11 @@
             <span>{{ row.actualAmount }}</span>
           </template>
         </el-table-column>
-       
-
-        
-       
-       
 
         <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
         <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
-        <!-- <el-table-column label="保险费用" prop="insuranceFee" width="120" align="right" />
-        <el-table-column label="保额" prop="insuranceAmount" width="120" align="right" /> -->
         <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
-        
-        <el-table-column label="运输方式" prop="transportType" width="120" />
         <el-table-column label="损耗" prop="loss" width="120" align="right" />
-        <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
         <el-table-column label="结算总数量" prop="settlementTotalQuantity" width="120" align="right" />
         <el-table-column label="结算总金额" prop="settlementTotalAmount" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="150" align="center">

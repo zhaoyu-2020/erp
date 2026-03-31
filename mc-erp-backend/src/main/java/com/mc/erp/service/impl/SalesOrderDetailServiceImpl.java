@@ -213,6 +213,13 @@ public class SalesOrderDetailServiceImpl extends ServiceImpl<SalesOrderDetailMap
         String length = detail.getLength();
         String tolerance = detail.getTolerance();
 
+        // 五项标识字段全部为空时不创建产品记录
+        if (!StringUtils.hasText(spec) && !StringUtils.hasText(type)
+                && !StringUtils.hasText(material) && !StringUtils.hasText(length)
+                && !StringUtils.hasText(tolerance)) {
+            return null;
+        }
+
         // 查找产品品名 ID
         Long productTypeId = null;
         if (StringUtils.hasText(type)) {

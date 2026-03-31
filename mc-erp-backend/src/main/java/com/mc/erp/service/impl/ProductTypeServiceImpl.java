@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mc.erp.dto.ProductTypeCreateDTO;
 import com.mc.erp.dto.ProductTypeUpdateDTO;
+import com.mc.erp.entity.Product;
 import com.mc.erp.entity.ProductType;
+import com.mc.erp.mapper.ProductMapper;
 import com.mc.erp.mapper.ProductTypeMapper;
 import com.mc.erp.service.ProductTypeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -14,6 +17,10 @@ import java.util.List;
 
 @Service
 public class ProductTypeServiceImpl extends ServiceImpl<ProductTypeMapper, ProductType> implements ProductTypeService {
+
+    @Autowired
+    private ProductMapper productMapper;
+
     @Override
     public List<ProductType> listAll() {
         return this.list(new LambdaQueryWrapper<ProductType>()
@@ -68,6 +75,12 @@ public class ProductTypeServiceImpl extends ServiceImpl<ProductTypeMapper, Produ
         ProductType existing = this.getById(id);
         if (existing == null) {
             throw new RuntimeException("产品品名不存在");
+        }
+        // 检查是否有产品引用该品名
+        long refCount = productMapper.selectCount(new LambdaQueryWrapper<Product>()
+                .eq(Product::getProductTypeId, id));
+        if (refCount > 0) {
+            throw new RuntimeException("该品名下还有 " + refCount + " 个产品，无法删除");
         }
         return this.removeById(id);
     }
