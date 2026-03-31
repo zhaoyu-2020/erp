@@ -38,27 +38,30 @@
             <el-icon><User /></el-icon>
             <template #title>客户管理(CRM)</template>
           </el-menu-item>
-          <el-menu-item index="/suppliers">
-            <el-icon><Van /></el-icon>
-            <template #title>供应商管理</template>
-          </el-menu-item>
-          <el-menu-item index="/freight-forwarders">
-            <el-icon><Ship /></el-icon>
-            <template #title>货代管理</template>
-          </el-menu-item>
-              <el-menu-item index="/products">
-            <el-icon><Goods /></el-icon>
-            <template #title>产品管理(PIM)</template>
-          </el-menu-item>
+          <el-sub-menu index="/info">
+            <template #title>
+              <el-icon><Folder /></el-icon>
+              <span>信息管理</span>
+            </template>
+            <el-menu-item index="/suppliers">
+              <el-icon><Van /></el-icon>
+              <template #title>供应商管理</template>
+            </el-menu-item>
+            <el-menu-item index="/freight-forwarders">
+              <el-icon><Ship /></el-icon>
+              <template #title>货代管理</template>
+            </el-menu-item>
+            <el-menu-item index="/products">
+              <el-icon><Goods /></el-icon>
+              <template #title>产品管理(PIM)</template>
+            </el-menu-item>
+          </el-sub-menu>
           <el-menu-item index="/wms">
             <el-icon><Box /></el-icon>
             <template #title>仓储管理(WMS)</template>
           </el-menu-item>
         
-          <el-menu-item index="/documents">
-            <el-icon><DocumentCopy /></el-icon>
-            <template #title>报关单证</template>
-          </el-menu-item>
+          
           <el-menu-item index="/finance">
             <el-icon><Money /></el-icon>
             <template #title>财务收据</template>

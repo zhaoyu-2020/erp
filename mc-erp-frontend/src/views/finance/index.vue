@@ -40,6 +40,11 @@
             <b>{{ row.currency }}</b>&nbsp;{{ row.amount }}
           </template>
         </el-table-column>
+        <el-table-column label="汇率" prop="exchangeRate" width="100" align="right">
+          <template #default="{ row }">
+            {{ row.exchangeRate ?? '-' }}
+          </template>
+        </el-table-column>
         <!-- 将详情直接展示在table中，点击编辑时才打开对话框进行编辑 -->
         <el-table-column label="认领明细" min-width="240">
           <template #default="{ row }">
@@ -55,7 +60,6 @@
                   {{ d.bindType === 1 ? '定金' : d.bindType === 2 ? '尾款' : '-' }}
                 </el-tag>
                 <span>{{ row.currency }} {{ d.boundAmount }}</span>
-                <span v-if="d.exchangeRate" style="color:#999;margin-left:4px">@{{ d.exchangeRate }}</span>
               </div>
             </template>
             <span v-else style="color:#bbb;font-size:13px">暂无认领</span>
@@ -112,6 +116,9 @@
         <el-form-item label="收款银行" prop="receivingBank">
           <el-input v-model="form.receivingBank" placeholder="请输入收款银行" />
         </el-form-item>
+        <el-form-item label="汇率" prop="exchangeRate">
+          <el-input v-model="form.exchangeRate" placeholder="请输入收款汇率（如 7.2500）" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="formDialogVisible = false">取消</el-button>
@@ -129,6 +136,7 @@
           <el-descriptions-item label="收款金额">
             <b>{{ currentReceipt.currency }}</b>&nbsp;{{ currentReceipt.amount }}
           </el-descriptions-item>
+          <el-descriptions-item label="汇率">{{ currentReceipt.exchangeRate ?? '-' }}</el-descriptions-item>
           <el-descriptions-item label="收款日期">{{ currentReceipt.receiptDate }}</el-descriptions-item>
           
           <el-descriptions-item label="状态">
@@ -156,11 +164,6 @@
         <el-table-column label="绑定金额" prop="boundAmount" width="140" align="right">
           <template #default="{ row }">
             {{ currentReceipt?.currency }} {{ row.boundAmount }}
-          </template>
-        </el-table-column>
-        <el-table-column label="汇率" prop="exchangeRate" width="100" align="right">
-          <template #default="{ row }">
-            {{ row.exchangeRate ?? '-' }}
           </template>
         </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160" />
@@ -204,9 +207,6 @@
         <el-form-item label="绑定金额" prop="boundAmount">
           <el-input v-model="detailForm.boundAmount"
             :placeholder="`最多可认领 ${remainingAmount}`" />
-        </el-form-item>
-        <el-form-item label="汇率" prop="exchangeRate">
-          <el-input v-model="detailForm.exchangeRate" placeholder="请输入本笔收款汇率（如 7.2500）" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -302,6 +302,7 @@ const form = reactive<any>({
   currency: 'USD',
   receiptDate: '',
   receivingBank: '',
+  exchangeRate: null,
   status: null
 })
 
@@ -312,7 +313,7 @@ const rules = {
 }
 
 const resetForm = () => {
-  Object.assign(form, { id: null, serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '', status: null })
+  Object.assign(form, { id: null, serialNo: '', amount: 0, currency: 'USD', receiptDate: '', receivingBank: '', exchangeRate: null, status: null })
   formRef.value?.clearValidate()
 }
 
@@ -330,6 +331,7 @@ const handleEdit = (row: any) => {
     currency: row.currency,
     receiptDate: row.receiptDate,
     receivingBank: row.receivingBank,
+    exchangeRate: row.exchangeRate,
     status: row.status
   })
   formDialogTitle.value = '编辑收款单'
@@ -436,8 +438,7 @@ const confirmAddDetail = async () => {
   currentReceipt.value.details.push({
     salesOrderNo: detailForm.salesOrderNo,
     bindType: detailForm.bindType,
-    boundAmount: detailForm.boundAmount,
-    exchangeRate: detailForm.exchangeRate
+    boundAmount: detailForm.boundAmount
   })
   addDetailVisible.value = false
 }
@@ -452,6 +453,7 @@ const handleSaveDetails = async () => {
       currency: currentReceipt.value.currency,
       receiptDate: currentReceipt.value.receiptDate,
       receivingBank: currentReceipt.value.receivingBank,
+      exchangeRate: currentReceipt.value.exchangeRate,
       details: (currentReceipt.value.details || []).map((d: any) => ({
         salesOrderNo: d.salesOrderNo,
         bindType: d.bindType,

@@ -226,20 +226,30 @@ public class InitAdminRunner implements ApplicationRunner {
         }
 
         // ====== 客户 ======
-        Long customerId1 = null;
-        Long customerId2 = null;
+    
         if (salesA != null) {
-            customerId1 = getOrCreateCustomer("Talla", "塞内加尔", "AFRICA", "talla", "talla",
+            getOrCreateCustomer("Talla", "塞内加尔", "AFRICA", "talla", "talla",
                     "talla@example.com", "13800000001", salesA.getId());
+                    
+            getOrCreateCustomer("yann", "加拿大", "NORTH_AMERICA", "yann", "yann",
+                    "yann@example.com", "13800000002", salesA.getId());
+        }
 
-            
+        if (lisa!=null) {
+            getOrCreateCustomer("shive", "黎巴嫩", "AFRICA", "shive", "shive",
+                    "sino@example.com", "13800000002", lisa.getId());
+        }
+
+        if(sophia!=null) {
+            getOrCreateCustomer("Oscar", "圭亚那", "SOUTH_AMERICA", "Oscar", "Oscar",
+                    "sino@example.com", "13800000003", sophia.getId());
         }
 
         // ====== 供应商 ======
-        Long supplierId1 = getOrCreateSupplier("TSYY", "月羿", "安", "13900000001", "唐山市路南区");
+        Long supplierId1 = getOrCreateSupplier("TSYY", "月羿", "安呈华", "13900000001", "唐山市路南区");
 
         // ====== 货代 ======
-        getOrCreateFreightForwarder("gy", "郭颖", "散货", "非洲,欧洲", "张三", "13800000100", "上海市浦东新区");
+        getOrCreateFreightForwarder("RJRD", "荣进睿达", "散货", "非洲,欧洲", "郭颖", "13800000100", "上海市浦东新区");
 
         // ====== 产品类型 ======
         getOrCreateProductType("热轧卷");
@@ -254,7 +264,7 @@ public class InitAdminRunner implements ApplicationRunner {
         getOrCreateProductType("彩涂卷");
 
 
-        System.out.println("====== Seed Data Initialized ======");
+        System.out.println("====== Seed Data Initialized ======");  
     }
 
     

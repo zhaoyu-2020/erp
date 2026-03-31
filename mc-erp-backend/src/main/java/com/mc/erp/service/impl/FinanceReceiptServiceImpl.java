@@ -239,6 +239,10 @@ public class FinanceReceiptServiceImpl extends ServiceImpl<FinanceReceiptMapper,
             BeanUtils.copyProperties(d, detail);
             detail.setReceiptId(receiptId);
             detail.setId(null); // always insert new
+            // 汇率从收款单主表继承
+            if (dto.getExchangeRate() != null) {
+                detail.setExchangeRate(dto.getExchangeRate());
+            }
             detailMapper.insert(detail);
 
         }

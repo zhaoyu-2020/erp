@@ -28,6 +28,9 @@ public class FinanceReceipt {
 
     private String receivingBank;
 
+    /** 收款汇率 */
+    private BigDecimal exchangeRate;
+
     /** 状态: 1=新建, 2=认领中, 3=完成 */
     private Integer status;
 

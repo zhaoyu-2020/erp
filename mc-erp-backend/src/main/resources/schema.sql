@@ -334,6 +334,7 @@ CREATE TABLE IF NOT EXISTS `biz_finance_receipt` (
   `currency` varchar(10) NOT NULL DEFAULT 'USD' COMMENT '币种',
   `receipt_date` date NOT NULL COMMENT '收款日期',
   `receiving_bank` varchar(200) DEFAULT NULL COMMENT '收款银行',
+  `exchange_rate` decimal(10,4) DEFAULT NULL COMMENT '收款汇率',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1新建 2认领中 3完成',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -25,6 +25,9 @@ public class FinanceReceiptSaveDTO {
 
     private String receivingBank;
 
+    /** 收款汇率 */
+    private BigDecimal exchangeRate;
+
     @Valid
     private List<FinanceReceiptDetailDTO> details;
 }
