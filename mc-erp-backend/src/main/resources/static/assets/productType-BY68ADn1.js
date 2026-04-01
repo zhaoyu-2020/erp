@@ -1,0 +1,1 @@
+import{r as e}from"./request-CB1HTDqG.js";function o(){return e({url:"/product-types/list",method:"get"})}function p(t){return e({url:"/product-types",method:"post",data:t})}function d(t,r){return e({url:`/product-types/${t}`,method:"put",data:r})}function s(t){return e({url:`/product-types/${t}`,method:"delete"})}export{s as d,o as g,p as s,d as u};

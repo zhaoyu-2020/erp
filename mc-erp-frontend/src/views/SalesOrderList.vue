@@ -146,302 +146,6 @@
         <el-option :value="100" label="100 条/页" />
       </el-select>
     </div>
-
-    <!-- Add/Edit Dialog -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-divider content-position="left" class="group-divider">预收</el-divider>
-
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="订单号" prop="orderNo">
-              <el-input v-model="form.orderNo" placeholder="输入订单号" :disabled="!!form.id" />
-            </el-form-item>
-          </el-col>
-           <el-col :span="12">
-            <el-form-item label="合同金额" prop="contractAmount">
-              <el-input v-model="form.contractAmount" placeholder="输入合同金额，上传明细可自动填写" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="业务员" prop="salespersonId">
-              <el-select
-                v-model="form.salespersonId"
-                placeholder="选择业务员"
-                filterable
-                clearable
-                style="width: 100%"
-                @change="onSalespersonChange"
-              >
-                <el-option
-                  v-for="item in salespersonOptions"
-                  :key="item.id"
-                  :label="item.realName || item.username"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-         <el-col :span="12">
-            <el-form-item label="定金比例(%)" prop="depositRate">
-              <el-input v-model="form.depositRate" placeholder="输入定金比例" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-           <el-col :span="12">
-            <el-form-item label="操作员" prop="operatorId">
-              <el-select
-                v-model="form.operatorId"
-                placeholder="选择操作员"
-                filterable
-                clearable
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="item in operatorOptions"
-                  :key="item.id"
-                  :label="item.realName || item.username"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="付款方式" prop="paymentMethod">
-              <el-select v-model="form.paymentMethod" placeholder="选择付款方式" clearable>
-                <el-option label="TT" value="TT" />
-                <el-option label="LC" value="LC" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="客户" prop="customerId">
-              <el-select v-model="form.customerId" placeholder="选择客户" filterable clearable style="width: 100%">
-                <el-option
-                  v-for="item in customerOptions"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-           <el-col :span="12">
-            <el-form-item label="定金收款金额" prop="receivedAmount">
-              <el-input v-model="form.receivedAmount" placeholder="输入定金收款金额，绑定收款明细可自动填写" />
-            </el-form-item>
-          </el-col>
-         
-         
-        </el-row>
-
-        <el-row :gutter="16">
-         
-         
-        </el-row>
-
-        <el-row :gutter="16">
-           <el-col :span="12">
-            <el-form-item label="币种" prop="currency">
-              <el-autocomplete
-                v-model="form.currency"
-                :fetch-suggestions="queryCurrency"
-                placeholder="输入或选择币种"
-                clearable
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-           <el-col :span="12">
-            <el-form-item label="定金汇率" prop="depositExchangeRate">
-              <el-input v-model="form.depositExchangeRate" placeholder="输入定金汇率" />
-            </el-form-item>
-          </el-col>
-         
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="贸易条款" prop="tradeTerm">
-              <el-select v-model="form.tradeTerm" placeholder="选择贸易条款">
-                <el-option label="FOB" value="FOB" />
-                <el-option label="CIF" value="CIF" />
-                <el-option label="CFR" value="CFR" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          
-            <el-col :span="12">
-            <el-form-item label="预计尾款日期" prop="expectedReceiptDays">
-              <el-date-picker
-              v-model="form.expectedReceiptDays"
-              type="date"
-              placeholder="选择日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              style="width: 100%"
-              />
-            </el-form-item>
-            </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="目的港" prop="destinationPort">
-              <el-input v-model="form.destinationPort" placeholder="输入目的港（英文）" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="交货期" prop="deliveryDate">
-              <el-date-picker
-                v-model="form.deliveryDate"
-                type="date"
-                placeholder="选择交货期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-
-
-
-          
-        </el-row>
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="合同总数量" prop="contractTotalQuantity">
-              <el-input v-model="form.contractTotalQuantity" placeholder="输入合同总数量，上传明细可自动填写" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="运输方式" prop="transportType">
-              <el-select v-model="form.transportType" placeholder="选择运输方式">
-                <el-option label="20‘集装箱" value="20'集装箱" />
-                <el-option label="40‘集装箱" value="40'集装箱" />
-                <el-option label="散货" value="散货" />
-                <el-option label="铁路" value="铁路" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-
-
-        <el-divider content-position="left" class="group-divider">尾款</el-divider>
-
-        <el-row :gutter="16">
-           <el-col :span="12">
-            <el-form-item label="总收款" prop="actualAmount">
-              <el-input v-model="form.actualAmount" placeholder="输入总收款，绑定收款自动计算" />
-            </el-form-item>
-
-          </el-col>
-         <el-col :span="12">
-            <el-form-item label="结算总数量" prop="settlementTotalQuantity">
-              <el-input v-model="form.settlementTotalQuantity" placeholder="输入结算总数量，完成销售订单明细可自动填写" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="结算总金额" prop="settlementTotalAmount">
-              <el-input v-model="form.settlementTotalAmount" disabled placeholder="所有明细结算金额小计之和（自动计算）" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-         
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="尾款金额" prop="finalPaymentAmount">
-              <el-input v-model="form.finalPaymentAmount" placeholder="输入尾款金额，绑定收款自动计算" />
-            </el-form-item>
-          </el-col>
-
-           <el-col :span="12">
-            <el-form-item label="海运费(USD)" prop="seaFreight">
-              <el-input v-model="form.seaFreight" placeholder="输入海运费(USD)，关联海运订单自动计算" />
-            </el-form-item>
-          </el-col>
-          
-          
-        </el-row>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="尾款汇率" prop="finalExchangeRate">
-              <el-input v-model="form.finalExchangeRate" placeholder="输入尾款汇率" />
-            </el-form-item>
-          </el-col>
-           <el-col :span="12">
-            <el-form-item label="港杂费" prop="portFee">
-              <el-input v-model="form.portFee" placeholder="输入港杂费，关联海运订单自动计算" />
-            </el-form-item>
-          </el-col>
-           
-        </el-row>
-      
-        <el-row :gutter="16">
-           <el-col :span="12">
-            <el-form-item label="保额" prop="insuranceAmount">
-              <el-input v-model="form.insuranceAmount" placeholder="输入保额，关联海运订单自动计算" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="保险费用" prop="insuranceFee">
-              <el-input v-model="form.insuranceFee" placeholder="输入保险费用，关联海运订单自动计算" />
-            </el-form-item>
-          </el-col>
-         
-        </el-row>
-
-        <el-divider content-position="left" class="group-divider">订单后</el-divider>        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="利润" prop="profit">
-              <el-input v-model="form.profit" placeholder="输入利润" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="增值税" prop="vat">
-              <el-input v-model="form.vat" placeholder="输入增值税" />
-            </el-form-item>
-          </el-col>
-         
-        </el-row>
-
-
-        <el-row :gutter="16" >
-          <el-col :span="12">
-            <el-form-item label="损耗" prop="loss">
-              <el-input v-model="form.loss" placeholder="状态变为已完成时自动计算" disabled />
-            </el-form-item>
-          </el-col>
-           <el-col :span="12">
-            <el-form-item label="状态" prop="status">
-              <el-select v-model="form.status" placeholder="选择状态">
-                <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确认</el-button>
-      </template>
-    </el-dialog>
-
     <!-- Detail Dialog -->
     <el-dialog v-model="detailDialogVisible" title="订单详情" width="900px">
       <el-descriptions :column="2" border>
@@ -512,11 +216,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Plus, Download, Refresh, Upload } from '@element-plus/icons-vue'
-import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
-import { getOrderPage, saveSalesOrder, updateSalesOrder, deleteSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
+import { getOrderPage, deleteSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
 import { getUserListWithRoles } from '@/api/system'
-import { getCustomerPage } from '@/api/customer'
 import { useOrderStatus } from '@/composables/useOrderStatus'
 
 const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('sales')
@@ -570,16 +272,11 @@ const checkAdmin = async () => {
 // Data definitions
 const loading = ref(false)
 const router = useRouter()
-const submitLoading = ref(false)
 const orderList = ref([])
 const total = ref(0)
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
 const detailDialogVisible = ref(false)
-const formRef = ref<FormInstance>()
 const salespersonOptions = ref<any[]>([])
 const operatorOptions = ref<any[]>([])
-const customerOptions = ref<any[]>([])
 const allUsers = ref<any[]>([])
 const businessUsers = ref<any[]>([])
 const operatorUsers = ref<any[]>([])
@@ -595,40 +292,6 @@ const queryParams = reactive({
   operatorName: '',
   operatorId: null as number | null,
   status: null as number | null
-})
-
-const form = reactive<any>({
-  id: null,
-  orderNo: '',
-  customerId: null,
-  salespersonId: null,
-  operatorId: null,
-  createId: null,
-  tradeTerm: '',
-  paymentMethod: '',
-  currency: '',
-  depositExchangeRate: null,
-  finalExchangeRate: null,
-  contractAmount: null,
-  actualAmount: null,
-  depositRate: null,
-  receivedAmount: null,
-  finalPaymentAmount: null,
-  insuranceFee: null,
-  insuranceAmount: null,
-  expectedReceiptDays: null,
-  deliveryDate: null,
-  destinationPort: '',
-  transportType: '',
-  seaFreight: null,
-  portFee: null,
-  vat: null,
-  profit: null,
-  loss: null,
-  contractTotalQuantity: null,
-  settlementTotalQuantity: null,
-  settlementTotalAmount: null,
-  status: 1
 })
 
 const detailData = reactive<any>({
@@ -666,25 +329,6 @@ const detailData = reactive<any>({
   updateTime: ''
 })
 
-const rules = {
-  orderNo: [{ required: true, message: '请输入订单号', trigger: 'blur' }],
-  customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
-  tradeTerm: [{ required: true, message: '请选择贸易条款', trigger: 'change' }],
-  salespersonId: [{ required: true, message: '请选择业务员', trigger: 'change' }],
-  operatorId: [{ required: true, message: '请选择操作员', trigger: 'change' }],
-  currency: [{ required: true, message: '请输入币种', trigger: 'blur' }],
-  destinationPort: [{ required: true, message: '请输入目的港', trigger: 'blur' }],
-  // depositExchangeRate: [{ required: true, message: '请输入定金汇率', trigger: 'blur' }],
-  // contractAmount: [{ required: true, message: '请输入合同金额', trigger: 'blur' }],
-  depositRate: [{ required: true, message: '请输入定金比例', trigger: 'blur' }],
-  // receivedAmount: [{ required: true, message: '请输入定金收款金额', trigger: 'blur' }],
-  deliveryDate: [{ required: true, message: '请输入交货日期', trigger: 'blur' }],
-  // contractTotalQuantity: [{ required: true, message: '请输入合同总数量', trigger: 'blur' }],
-  transportType: [{ required: true, message: '请选择运输方式', trigger: 'change' }],
-  expectedReceiptDays: [{ required: true, message: '请输入预计收尾款天数', trigger: 'blur' }],
-  paymentMethod: [{ required: true, message: '请选择付款方式', trigger: 'change' }]
-}
-
 // Fetch logic
 const getList = async () => {
   loading.value = true
@@ -697,15 +341,6 @@ const getList = async () => {
   } finally {
     loading.value = false
   }
-}
-
-// Currency autocomplete
-const currencyOptions = ['USD', 'RMB']
-const queryCurrency = (queryString: string, cb: (results: { value: string }[]) => void) => {
-  const results = queryString
-    ? currencyOptions.filter(c => c.toLowerCase().includes(queryString.toLowerCase())).map(c => ({ value: c }))
-    : currencyOptions.map(c => ({ value: c }))
-  cb(results)
 }
 
 // User autocomplete methods
@@ -754,9 +389,7 @@ const resetQuery = () => {
 }
 
 const handleAdd = () => {
-  resetForm()
-  dialogTitle.value = '新建订单'
-  dialogVisible.value = true
+  router.push({ name: 'SalesOrderCreate' })
 }
 const handleGoDetail = (row: any) => {
   router.push({ name: 'SalesOrderDetail', params: { orderId: row.id }, query: { orderNo: row.orderNo } })
@@ -802,98 +435,7 @@ const handleDetail = (row: any) => {
   detailDialogVisible.value = true
 }
 const handleEdit = async (row: any) => {
-  resetForm()
-  Object.assign(form, {
-    id: row.id,
-    orderNo: row.orderNo,
-    customerId: row.customerId,
-    salespersonId: row.salespersonId,
-    operatorId: row.operatorId,
-    tradeTerm: row.tradeTerm,
-    paymentMethod: row.paymentMethod,
-    currency: row.currency,
-    depositExchangeRate: row.depositExchangeRate ?? null,
-    finalExchangeRate: row.finalExchangeRate ?? null,
-    contractAmount: row.contractAmount ?? null,
-    actualAmount: row.actualAmount ?? null,
-    depositRate: row.depositRate ?? null,
-    receivedAmount: row.receivedAmount ?? null,
-    finalPaymentAmount: row.finalPaymentAmount ?? null,
-    insuranceFee: row.insuranceFee ?? null,
-    insuranceAmount: row.insuranceAmount ?? null,
-    expectedReceiptDays: row.expectedReceiptDays ?? null,
-    deliveryDate: row.deliveryDate ?? null,
-    destinationPort: row.destinationPort ?? '',
-    transportType: row.transportType ?? '',
-    seaFreight: row.seaFreight ?? null,
-    portFee: row.portFee ?? null,
-    vat: row.vat ?? null,
-    loss: row.loss ?? null,
-    profit: row.profit ?? null,
-    contractTotalQuantity: row.contractTotalQuantity ?? null,
-    settlementTotalQuantity: row.settlementTotalQuantity ?? null,
-    settlementTotalAmount: row.settlementTotalAmount ?? null,
-    status: row.status ?? 1
-  })
-  await loadCustomerOptionsBySalespersonId(form.salespersonId)
-  dialogTitle.value = '编辑订单'
-  dialogVisible.value = true
-}
-
-const resetForm = () => {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-  form.id = null
-  form.orderNo = ''
-  form.customerId = null
-  form.salespersonId = null
-  form.operatorId = null
-  form.createId = userInfo.userId || null
-  form.tradeTerm = ''
-  form.paymentMethod = ''
-  form.currency = ''
-  form.depositExchangeRate = null
-  form.finalExchangeRate = null
-  form.contractAmount = null
-  form.actualAmount = null
-  form.depositRate = null
-  form.receivedAmount = null
-  form.finalPaymentAmount = null
-  form.insuranceFee = null
-  form.insuranceAmount = null
-  form.expectedReceiptDays = null
-  form.deliveryDate = null
-  form.destinationPort = ''
-  form.transportType = ''
-  form.seaFreight = null
-  form.portFee = null
-  form.vat = null
-  form.loss = null
-  form.profit = null
-  form.contractTotalQuantity = null
-  form.settlementTotalQuantity = null
-  form.settlementTotalAmount = null
-  form.status = 1
-  customerOptions.value = []
-  formRef.value?.clearValidate()
-}
-
-const handleSubmit = async () => {
-  await formRef.value?.validate()
-  submitLoading.value = true
-  try {
-    if (form.id) {
-      await updateSalesOrder({ ...form })
-    } else {
-      const payload = { ...form }
-      delete payload.id
-      await saveSalesOrder(payload)
-    }
-    ElMessage.success(form.id ? '更新成功' : '创建成功')
-    dialogVisible.value = false
-    getList()
-  } finally {
-    submitLoading.value = false
-  }
+  router.push({ name: 'SalesOrderCreate', query: { id: row.id } })
 }
 
 const handleDelete = async (row: any) => {
@@ -1007,24 +549,6 @@ const loadSalespersonOptions = async () => {
   salespersonOptions.value = list
   // 供新建/编辑表单的操作员下拉
   operatorOptions.value = list
-}
-
-const loadCustomerOptionsBySalespersonId = async (salespersonId: number | null | undefined) => {
-  if (!salespersonId) {
-    customerOptions.value = []
-    return
-  }
-  const res = await getCustomerPage({
-    pageNum: 1,
-    pageSize: 1000,
-    salesUserId: salespersonId
-  })
-  customerOptions.value = res.data?.list || []
-}
-
-const onSalespersonChange = async (salespersonId: number | null) => {
-  form.customerId = null
-  await loadCustomerOptionsBySalespersonId(salespersonId)
 }
 
 // Init

@@ -21,6 +21,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '销售订单', icon: 'Document' }
             },
             {
+                path: 'sales-orders/create',
+                name: 'SalesOrderCreate',
+                component: () => import('@/views/sales-order/create.vue'),
+                meta: { title: '新增销售订单', hidden: true }
+            },
+            {
                 path: 'dashboard',
                 name: 'Dashboard',
                 component: () => import('@/views/reports/dashboard.vue'),

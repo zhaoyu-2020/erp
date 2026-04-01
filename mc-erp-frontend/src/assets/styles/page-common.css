@@ -215,3 +215,171 @@
   gap: 4px;
   flex-wrap: nowrap;
 }
+
+/* ============================================
+   MC ERP — 全页表单风格（新增/编辑）
+   ============================================ */
+
+/* ---- 表单页面容器 ---- */
+.form-page {
+  height: calc(100vh - 50px);
+  margin: -20px;
+  background: #f5f6fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- 顶部导航栏 ---- */
+.form-page-header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  height: 56px;
+  min-height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+.form-page-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: #333;
+  font-size: 18px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+.form-page-back:hover {
+  background: #f0f0f0;
+}
+.form-page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* ---- 表单内容区域 ---- */
+.form-page-body {
+  flex: 1;
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+}
+
+/* ---- 表单分区卡片 ---- */
+.form-section {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e8eaef;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.form-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #fafbfc;
+  border-bottom: 1px solid #e8eaef;
+  cursor: pointer;
+  user-select: none;
+}
+.form-section-header:hover {
+  background: #f5f6fa;
+}
+.form-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background: #4066e0;
+  border-radius: 2px;
+}
+.form-section-arrow {
+  font-size: 14px;
+  color: #999;
+  transition: transform 0.25s;
+}
+.form-section-arrow.collapsed {
+  transform: rotate(-90deg);
+}
+.form-section-body {
+  padding: 20px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.form-section-body.collapsed {
+  max-height: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ---- 三列网格布局 ---- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 24px;
+}
+
+/* ---- 表单项（label 在上） ---- */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+.form-field-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+.form-field-label .required {
+  color: #f56c6c;
+  margin-right: 4px;
+}
+.form-field .el-input,
+.form-field .el-select,
+.form-field .el-autocomplete,
+.form-field .el-date-editor {
+  width: 100%;
+}
+/* 隐藏 el-form-item 默认的 label（我们用自定义 label） */
+.form-field .el-form-item {
+  margin-bottom: 0;
+}
+.form-field .el-form-item__label {
+  display: none;
+}
+.form-field .el-form-item__content {
+  margin-left: 0 !important;
+}
+
+/* ---- 底部操作栏（页面最底部） ---- */
+.form-page-footer {
+  height: 64px;
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 32px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.form-page-footer .el-button {
+  min-width: 88px;
+  height: 36px;
+}

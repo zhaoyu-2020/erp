@@ -1,0 +1,1 @@
+import{r}from"./request-CB1HTDqG.js";function p(e){return r({url:"/suppliers/page",method:"get",params:e})}function t(e){return r({url:"/suppliers",method:"post",data:e})}function s(e){return r({url:"/suppliers",method:"put",data:e})}function l(e){return r({url:`/suppliers/${e}`,method:"delete"})}export{l as d,p as g,t as s,s as u};
