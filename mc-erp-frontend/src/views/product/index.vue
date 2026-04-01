@@ -1,33 +1,34 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="产品品名">
-          <el-select v-model="queryParams.productTypeId" placeholder="选择品名" clearable style="width: 200px">
-            <el-option
-              v-for="item in productTypeList"
-              :key="item.id"
-              :label="item.typeName + (item.typeNameEn ? `：${item.typeNameEn}` : '')"    
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增产品</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">产品管理</h2>
+      </div>
+      <div class="page-header-right">
         <el-button type="warning" icon="CollectionTag" @click="openProductTypeDialog">产品品名</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增产品</el-button>
       </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-select v-model="queryParams.productTypeId" placeholder="产品品名" clearable style="width: 220px" @change="handleQuery">
+          <el-option v-for="item in productTypeList" :key="item.id" :label="item.typeName + (item.typeNameEn ? `：${item.typeNameEn}` : '')" :value="item.id" />
+        </el-select>
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: 500 }" row-class-name="table-row" style="width: 100%">
+        <el-table-column type="selection" width="40" align="center" />
         <el-table-column label="品名（中文）" prop="typeName" min-width="130" />
         <el-table-column label="品名（英文）" prop="typeNameEn" min-width="150" />
         <el-table-column label="规格" prop="spec" width="140" />
@@ -50,16 +51,25 @@
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
+        :page-sizes="[20, 50, 100]"
+        layout="total, prev, pager, next"
+        small
         @current-change="getList"
       />
-    </el-card>
+      <el-select v-model="queryParams.pageSize" class="page-size-select" @change="handleQuery">
+        <el-option :value="20" label="20 条/页" />
+        <el-option :value="50" label="50 条/页" />
+        <el-option :value="100" label="100 条/页" />
+      </el-select>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="680px" @close="resetForm">
@@ -390,9 +400,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 .product-type-input-row { display: flex; gap: 12px; margin-bottom: 12px; }
 </style>

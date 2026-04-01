@@ -1,36 +1,34 @@
 <template>
-  <div class="app-container">
-    <!-- Search Form -->
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams" ref="queryRef">
-        <el-form-item label="订单号" prop="orderNo">
-          <el-input v-model="queryParams.orderNo" placeholder="输入订单号" clearable style="width: 160px" />
-        </el-form-item>
-        <el-form-item label="产品规格" prop="spec">
-          <el-input v-model="queryParams.spec" placeholder="输入产品规格" clearable style="width: 140px" />
-        </el-form-item>
-        <el-form-item label="产品类型" prop="productType">
-          <el-input v-model="queryParams.productType" placeholder="输入产品类型" clearable style="width: 140px" />
-        </el-form-item>
-        <el-form-item label="材质" prop="material">
-          <el-input v-model="queryParams.material" placeholder="输入材质" clearable style="width: 120px" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- Toolbar & Table -->
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增明细</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">销售订单明细</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增明细</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="detailList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.orderNo" placeholder="订单号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.spec" placeholder="产品规格" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.productType" placeholder="产品类型" clearable class="filter-input-sm" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.material" placeholder="材质" clearable class="filter-input-sm" @clear="handleQuery" @keyup.enter="handleQuery" />
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="detailList" stripe>
+        <el-table-column type="index" label="#" width="50" align="center" />
         <el-table-column label="订单号" prop="orderNo" width="160" />
         <el-table-column label="产品规格" prop="spec" min-width="120" />
         <el-table-column label="产品类型" prop="productType" width="120" />
@@ -49,12 +47,12 @@
         <el-table-column label="结算价格" prop="settlementPrice" width="110" align="right" />
         <el-table-column label="合同金额小计" prop="priceTotal" width="120" align="right">
           <template #default="{ row }">
-            <span class="price-total">{{ row.priceTotal ?? '-' }}</span>
+            <span class="amount-text">{{ row.priceTotal ?? '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="结算金额小计" prop="settlementAmount" width="120" align="right">
           <template #default="{ row }">
-            <span class="price-total">{{ row.settlementAmount ?? '-' }}</span>
+            <span class="amount-text">{{ row.settlementAmount ?? '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="包装重量" prop="packagingWeight" width="110" align="right" />
@@ -64,22 +62,27 @@
         <el-table-column label="备注" prop="remark" min-width="150" show-overflow-tooltip />
         <el-table-column label="操作" width="140" fixed="right" align="center">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
+        :page-sizes="[20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
         @current-change="getList"
         @size-change="getList"
       />
-    </el-card>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="860px" @close="resetForm">
@@ -288,7 +291,7 @@ const orderNoOptions = ref<string[]>([])
 
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   orderNo: '',
   spec: '',
   productType: '',
@@ -546,28 +549,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.app-container {
-  padding: 20px;
-}
-.search-wrap {
-  margin-bottom: 16px;
-}
-.table-wrap {
-  margin-top: 0;
-}
-.table-toolbar {
-  margin-bottom: 16px;
-}
-.pagination-container {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
-}
-.price-total {
-  font-weight: bold;
-  color: #e6a23c;
-}
-.group-divider {
-  margin: 8px 0 16px;
-}
+.group-divider { margin: 8px 0 16px; }
 </style>

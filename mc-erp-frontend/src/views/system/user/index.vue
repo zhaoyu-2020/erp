@@ -1,34 +1,34 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="用户名">
-          <el-input v-model="queryParams.username" placeholder="输入用户名" clearable />
-        </el-form-item>
-        <el-form-item label="真实姓名">
-          <el-input v-model="queryParams.realName" placeholder="输入真实姓名" clearable />
-        </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="queryParams.phone" placeholder="输入手机号" clearable />
-        </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="queryParams.email" placeholder="输入邮箱" clearable />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增用户</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">用户管理</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增用户</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.username" placeholder="用户名" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.realName" placeholder="真实姓名" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.phone" placeholder="手机号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.email" placeholder="邮箱" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" stripe>
+        <el-table-column type="index" label="#" width="50" align="center" />
         <el-table-column label="用户名" prop="username" min-width="120" />
         <el-table-column label="真实姓名" prop="realName" min-width="120" />
         <el-table-column label="手机号" prop="phone" min-width="120" />
@@ -47,23 +47,28 @@
         <el-table-column label="创建时间" prop="createTime" width="180" />
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="primary" @click="handleAssignRoles(scope.row)">分配角色</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button link type="primary" @click="handleAssignRoles(scope.row)">分配角色</el-button>
+              <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
+        :page-sizes="[20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
         @current-change="getList"
         @size-change="handleQuery"
       />
-    </el-card>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @close="resetForm">
@@ -134,7 +139,7 @@ const selectedRoleIds = ref<number[]>([])
 
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   username: '',
   realName: '',
   phone: '',
@@ -285,8 +290,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

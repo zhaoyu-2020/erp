@@ -1,39 +1,39 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="货代编码">
-          <el-input v-model="queryParams.forwarderCode" placeholder="输入编码" clearable />
-        </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="queryParams.name" placeholder="输入名称" clearable />
-        </el-form-item>
-        <el-form-item label="货代类型">
-          <el-select v-model="queryParams.freightType" clearable placeholder="全部" style="width: 160px">
-            <el-option label="集装箱" value="集装箱" />
-            <el-option label="散货" value="散货" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="优势市场">
-          <el-select v-model="queryParams.marketAdvantage" clearable placeholder="全部" style="width: 180px">
-            <el-option v-for="item in marketOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增货代</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">货代管理</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增货代</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.forwarderCode" placeholder="货代编码" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.name" placeholder="名称" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-select v-model="queryParams.freightType" clearable placeholder="货代类型" class="filter-input-sm" @change="handleQuery">
+          <el-option label="集装箱" value="集装箱" />
+          <el-option label="散货" value="散货" />
+        </el-select>
+        <el-select v-model="queryParams.marketAdvantage" clearable placeholder="优势市场" class="filter-input" @change="handleQuery">
+          <el-option v-for="item in marketOptions" :key="item" :label="item" :value="item" />
+        </el-select>
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" stripe>
+        <el-table-column type="index" label="#" width="50" align="center" />
         <el-table-column label="编码" prop="forwarderCode" width="140" />
         <el-table-column label="名称" prop="name" min-width="150" />
         <el-table-column label="货代类型" prop="freightType" width="120" />
@@ -43,22 +43,27 @@
         <el-table-column label="地址" prop="address" min-width="200" show-overflow-tooltip />
         <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="warning" @click="handleAccount(scope.row)">账户</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button link type="warning" @click="handleAccount(scope.row)">账户</el-button>
+              <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
+        :page-sizes="[20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
         @current-change="getList"
       />
-    </el-card>
+    </div>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" @close="resetForm">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
@@ -185,7 +190,7 @@ const formRef = ref<FormInstance>()
 
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   forwarderCode: '',
   name: '',
   freightType: '',
@@ -433,9 +438,5 @@ const handleAccountSubmit = async () => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 .account-toolbar { margin-bottom: 12px; }
 </style>

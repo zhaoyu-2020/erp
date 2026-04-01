@@ -1,75 +1,65 @@
 <template>
-  <div class="log-container">
-    <!-- 搜索区域 -->
-    <el-card shadow="never" class="search-card">
-      <el-form :model="queryForm" inline>
-        <el-form-item label="日志类型">
-          <el-select v-model="queryForm.logType" placeholder="全部" clearable style="width: 130px">
-            <el-option label="操作日志" value="OPERATION" />
-            <el-option label="登录日志" value="LOGIN" />
-            <el-option label="异常日志" value="EXCEPTION" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="操作模块">
-          <el-input v-model="queryForm.module" placeholder="请输入模块名" clearable style="width: 140px" />
-        </el-form-item>
-        <el-form-item label="操作类型">
-          <el-select v-model="queryForm.operationType" placeholder="全部" clearable style="width: 130px">
-            <el-option label="登录" value="LOGIN" />
-            <el-option label="退出" value="LOGOUT" />
-            <el-option label="新增" value="ADD" />
-            <el-option label="修改" value="MODIFY" />
-            <el-option label="删除" value="DELETE" />
-            <el-option label="查询" value="QUERY" />
-            <el-option label="导出" value="EXPORT" />
-            <el-option label="导入" value="IMPORT" />
-            <el-option label="权限变更" value="AUTH_CHANGE" />
-            <el-option label="状态变更" value="STATUS_CHANGE" />
-            <el-option label="其他" value="OTHER" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="操作状态">
-          <el-select v-model="queryForm.status" placeholder="全部" clearable style="width: 100px">
-            <el-option label="成功" :value="1" />
-            <el-option label="失败" :value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="操作用户">
-          <el-input v-model="queryForm.operatorName" placeholder="请输入用户名" clearable style="width: 140px" />
-        </el-form-item>
-        <el-form-item label="操作时间">
-          <el-date-picker
-            v-model="timeRange"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 360px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon> 搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon> 重置
-          </el-button>
-          <el-button type="success" @click="handleExport">
-            <el-icon><Download /></el-icon> 导出
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">操作日志</h2>
+      </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+      </div>
+    </div>
 
-    <!-- 列表区域 -->
-    <el-card shadow="never" style="margin-top: 12px">
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-select v-model="queryForm.logType" placeholder="日志类型" clearable class="filter-input-sm" @change="handleSearch">
+          <el-option label="操作日志" value="OPERATION" />
+          <el-option label="登录日志" value="LOGIN" />
+          <el-option label="异常日志" value="EXCEPTION" />
+        </el-select>
+        <el-input v-model="queryForm.module" placeholder="操作模块" clearable class="filter-input-sm" @clear="handleSearch" @keyup.enter="handleSearch" />
+        <el-select v-model="queryForm.operationType" placeholder="操作类型" clearable class="filter-input-sm" @change="handleSearch">
+          <el-option label="登录" value="LOGIN" />
+          <el-option label="退出" value="LOGOUT" />
+          <el-option label="新增" value="ADD" />
+          <el-option label="修改" value="MODIFY" />
+          <el-option label="删除" value="DELETE" />
+          <el-option label="查询" value="QUERY" />
+          <el-option label="导出" value="EXPORT" />
+          <el-option label="导入" value="IMPORT" />
+          <el-option label="权限变更" value="AUTH_CHANGE" />
+          <el-option label="状态变更" value="STATUS_CHANGE" />
+          <el-option label="其他" value="OTHER" />
+        </el-select>
+        <el-select v-model="queryForm.status" placeholder="操作状态" clearable class="filter-input-sm" @change="handleSearch">
+          <el-option label="成功" :value="1" />
+          <el-option label="失败" :value="0" />
+        </el-select>
+        <el-input v-model="queryForm.operatorName" placeholder="操作用户" clearable class="filter-input-sm" @clear="handleSearch" @keyup.enter="handleSearch" />
+        <el-date-picker
+          v-model="timeRange"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          class="filter-date"
+          @change="handleSearch"
+        />
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleSearch">搜索</el-button>
+        <el-button icon="Refresh" @click="handleReset">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
       <el-table
         :data="tableData"
         v-loading="loading"
         stripe
-        border
-        style="width: 100%"
         @row-click="handleRowClick"
         highlight-current-row
       >
@@ -102,20 +92,20 @@
         <el-table-column prop="elapsedTime" label="耗时(ms)" width="100" align="right" />
         <el-table-column prop="createTime" label="操作时间" width="180" />
       </el-table>
+    </div>
 
-      <!-- 分页 -->
-      <div class="pagination-wrapper">
-        <el-pagination
-          v-model:current-page="queryForm.pageNum"
-          v-model:page-size="queryForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSearch"
-          @current-change="handleSearch"
-        />
-      </div>
-    </el-card>
+    <!-- 分页 -->
+    <div class="pagination-bar">
+      <el-pagination
+        v-model:current-page="queryForm.pageNum"
+        v-model:page-size="queryForm.pageSize"
+        :page-sizes="[20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSearch"
+        @current-change="handleSearch"
+      />
+    </div>
 
     <!-- 日志详情弹窗 -->
     <el-dialog v-model="detailVisible" title="日志详情" width="700px" destroy-on-close>
@@ -152,7 +142,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getOperationLogPage, getOperationLogDetail, exportOperationLogs } from '@/api/operationLog'
 
@@ -286,15 +275,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.log-container {
-  padding: 16px;
-}
-.search-card {
-  margin-bottom: 0;
-}
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
 </style>

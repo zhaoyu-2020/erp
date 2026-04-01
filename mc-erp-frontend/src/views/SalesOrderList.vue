@@ -1,113 +1,110 @@
 <template>
-  <div class="app-container">
-    <!-- 1. Search Form -->
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams" ref="queryRef">
-        <el-form-item label="订单号" prop="orderNo">
-          <el-input v-model="queryParams.orderNo" placeholder="输入订单号" clearable />
-        </el-form-item>
-       
-        <el-form-item label="操作人员" prop="operatorName">
-          <el-autocomplete
-            v-model="queryParams.operatorName"
-            :fetch-suggestions="queryOperator"
-            placeholder="输入或选择操作人员"
-            clearable
-            style="width: 160px"
-            @select="onOperatorSelect"
-          />
-        </el-form-item>
-        <el-form-item label="业务人员" prop="salespersonName">
-          <el-autocomplete
-            v-model="queryParams.salespersonName"
-            :fetch-suggestions="querySalesperson"
-            placeholder="输入或选择业务人员"
-            clearable
-            style="width: 160px"
-            @select="onSalespersonSelect"
-          />
-        </el-form-item>
-
-        <el-form-item label="订单状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="选择订单状态" clearable style="width: 120px">
-            <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 2. Toolbar & Table -->
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新建订单</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
-        <el-divider direction="vertical" />
-        <el-button type="warning" icon="Upload" @click="triggerContractUpload">上传销售合同</el-button>
-        <el-button type="warning" icon="Upload" @click="triggerDetailsUpload">上传销售明细</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">销售订单</h2>
+      </div>
+      <div class="page-header-right">
+        <el-button type="warning" :icon="Upload" @click="triggerContractUpload">上传销售合同</el-button>
+        <el-button type="warning" :icon="Upload" @click="triggerDetailsUpload">上传销售明细</el-button>
         <el-button link type="primary" @click="downloadSalesContractTemplate()">[合同模板]</el-button>
         <el-button link type="primary" @click="downloadSalesDetailsTemplate()">[明细模板]</el-button>
+        <el-button type="success" :icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" :icon="Plus" @click="handleAdd">新建订单</el-button>
         <input ref="contractFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handleContractFile" />
         <input ref="detailsFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handleDetailsFile" />
       </div>
+    </div>
 
-      <el-table v-loading="loading" :data="orderList" border stripe>
-        <el-table-column label="订单号" prop="orderNo" min-width="150" />
+    <!-- 状态标签页 -->
+    <div class="status-tabs">
+      <div
+        v-for="tab in statusTabs"
+        :key="String(tab.value)"
+        :class="['status-tab-item', { active: activeStatusTab === tab.value }]"
+        @click="handleTabChange(tab.value)"
+      >
+        {{ tab.label }}({{ tab.count }})
+      </div>
+    </div>
 
-        <el-table-column label="日期" prop="createTime" min-width="120">
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.orderNo" placeholder="订单号" clearable class="filter-input" :prefix-icon="Search" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-autocomplete v-model="queryParams.operatorName" :fetch-suggestions="queryOperator" placeholder="操作人员" clearable class="filter-input" @select="onOperatorSelect" @clear="handleQuery" />
+        <el-autocomplete v-model="queryParams.salespersonName" :fetch-suggestions="querySalesperson" placeholder="业务人员" clearable class="filter-input" @select="onSalespersonSelect" @clear="handleQuery" />
+      </div>
+      <div class="filter-actions">
+        <el-button :icon="Search" type="primary" @click="handleQuery">查询</el-button>
+        <el-button :icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+      <el-table
+        v-loading="loading"
+        :data="orderList"
+        :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: 500 }"
+        row-class-name="table-row"
+        style="width: 100%"
+      >
+        <el-table-column type="selection" width="40" align="center" />
+        <el-table-column label="订单号" prop="orderNo" min-width="150" sortable>
+          <template #default="{ row }">
+            <span class="link-text" @click="handleDetail(row)">{{ row.orderNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="日期" prop="createTime" min-width="120" sortable>
           <template #default="{ row }">
             {{ row.createTime ? row.createTime.slice(0, 10) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="业务员" prop="salespersonName" width="120" />
-        <el-table-column label="操作人员" prop="operatorName" width="120" />
-        <el-table-column label="合同总数量" prop="contractTotalQuantity" width="120" align="right" />
-        <el-table-column label="合同金额" width="160" align="right">
+        <el-table-column label="业务员" prop="salespersonName" width="100" />
+        <el-table-column label="操作人员" prop="operatorName" width="100" />
+        <el-table-column label="合同总数量" prop="contractTotalQuantity" width="110" align="right" />
+        <el-table-column label="合同金额" width="150" align="right" sortable>
           <template #default="{ row }">
-            <span class="currency-text">{{ row.currency }} </span>
-            <span>{{ row.contractAmount }}</span>
+            <span class="currency-label">{{ row.currency }} </span>
+            <span class="amount-text">{{ row.contractAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="贸易条款" prop="tradeTerm" width="100" />
-        <el-table-column label="付款方式" prop="paymentMethod" width="100" />
-
-        <el-table-column label="目的港" prop="destinationPort" width="120" align="center" />
-        <el-table-column label="运输方式" prop="transportType" width="120" />
-        <el-table-column label="交货期" prop="deliveryDate" width="120" align="center" />
-        <el-table-column label="总收款" width="160" align="right">
+        <el-table-column label="贸易条款" prop="tradeTerm" width="90" />
+        <el-table-column label="付款方式" prop="paymentMethod" width="90" />
+        <el-table-column label="目的港" prop="destinationPort" width="100" align="center" />
+        <el-table-column label="运输方式" prop="transportType" width="100" />
+        <el-table-column label="交货期" prop="deliveryDate" width="110" align="center" />
+        <el-table-column label="总收款" width="150" align="right">
           <template #default="{ row }">
-            <span class="currency-text">{{ row.currency }} </span>
-            <span>{{ row.actualAmount }}</span>
+            <span class="currency-label">{{ row.currency }} </span>
+            <span class="amount-text">{{ row.actualAmount }}</span>
           </template>
         </el-table-column>
-
         <el-table-column label="定金收款金额" prop="receivedAmount" width="120" align="right" />
-        <el-table-column label="尾款金额" prop="finalPaymentAmount" width="120" align="right" />
-        <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="140" align="center" />
-        <el-table-column label="损耗" prop="loss" width="120" align="right" />
-        <el-table-column label="结算总数量" prop="settlementTotalQuantity" width="120" align="right" />
-        <el-table-column label="结算总金额" prop="settlementTotalAmount" width="120" align="right" />
-        <el-table-column label="状态" prop="status" width="150" align="center">
+        <el-table-column label="尾款金额" prop="finalPaymentAmount" width="110" align="right" />
+        <el-table-column label="预计尾款日期" prop="expectedReceiptDays" width="120" align="center" />
+        <el-table-column label="损耗" prop="loss" width="100" align="right" />
+        <el-table-column label="结算总数量" prop="settlementTotalQuantity" width="110" align="right" />
+        <el-table-column label="结算总金额" prop="settlementTotalAmount" width="110" align="right" />
+        <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="getTagType(row.status)">{{ getLabel(row.status) }}</el-tag>
+            <el-tag :type="getTagType(row.status)" effect="light" round>{{ getLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="320" fixed="right">
+        <el-table-column label="创建时间" prop="createTime" width="160" sortable />
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="scope">
             <div class="action-btns">
-              <el-button size="small" type="info" @click="handleDetail(scope.row)">详情</el-button>
-              <el-button size="small" type="primary" @click="handleGoDetail(scope.row)">明细</el-button>
-              <!-- <el-button v-if="isAdmin" size="small" @click="handleEdit(scope.row)">编辑</el-button> -->
+              <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
+              <el-button link type="primary" @click="handleGoDetail(scope.row)">明细</el-button>
               <el-dropdown
                 v-if="getAllowedNextStatuses(scope.row.status).length > 0"
                 @command="(targetCode: number) => changeStatus(scope.row.id, targetCode, getList)"
                 trigger="click"
               >
-                <el-button size="small" type="warning">变更状态</el-button>
+                <el-button link type="warning">变更状态</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item
@@ -118,22 +115,37 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-button size="small" type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
-      <!-- 3. Pagination -->
+    <!-- 汇总统计栏 -->
+    <div class="summary-bar">
+      <span class="summary-label">总计：</span>
+      <span class="summary-item">订单 <b>{{ total }}</b> 笔</span>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
+        :page-sizes="[20, 50, 100]"
+        layout="total, prev, pager, next"
+        small
         @current-change="getList"
+        @size-change="getList"
       />
-    </el-card>
+      <el-select v-model="queryParams.pageSize" class="page-size-select" @change="handleQuery">
+        <el-option :value="20" label="20 条/页" />
+        <el-option :value="50" label="50 条/页" />
+        <el-option :value="100" label="100 条/页" />
+      </el-select>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
@@ -496,9 +508,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, Plus, Download, Refresh, Upload } from '@element-plus/icons-vue'
 import type { FormInstance } from 'element-plus'
 import { exportToCsv } from '@/utils/export'
 import { getOrderPage, saveSalesOrder, updateSalesOrder, deleteSalesOrder, importSalesOrderContract, importSalesOrderDetails, downloadSalesContractTemplate as apiDownloadSalesContract, downloadSalesDetailsTemplate as apiDownloadSalesDetails } from '@/api/salesOrder'
@@ -507,6 +520,38 @@ import { getCustomerPage } from '@/api/customer'
 import { useOrderStatus } from '@/composables/useOrderStatus'
 
 const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('sales')
+
+// Status tabs
+const activeStatusTab = ref<number | null>(null)
+const statusCounts = reactive<Record<string, number>>({})
+
+const statusTabs = computed(() => {
+  const tabs = [{ label: '全部', value: null as number | null, count: statusCounts['all'] || 0 }]
+  for (const s of statusList.value) {
+    tabs.push({ label: s.label, value: s.code, count: statusCounts[String(s.code)] || 0 })
+  }
+  return tabs
+})
+
+const getStatusCounts = async () => {
+  try {
+    const baseParams = { ...queryParams, pageNum: 1, pageSize: 1 }
+    const allRes = await getOrderPage({ ...baseParams, status: null })
+    statusCounts['all'] = allRes.data.total || 0
+    const promises = statusList.value.map(async (s: any) => {
+      const res = await getOrderPage({ ...baseParams, status: s.code })
+      statusCounts[String(s.code)] = res.data.total || 0
+    })
+    await Promise.all(promises)
+  } catch { /* ignore */ }
+}
+
+const handleTabChange = (val: number | null) => {
+  activeStatusTab.value = val
+  queryParams.status = val
+  queryParams.pageNum = 1
+  getList()
+}
 
 // Admin check
 const isAdmin = ref(false)
@@ -540,7 +585,7 @@ const businessUsers = ref<any[]>([])
 const operatorUsers = ref<any[]>([])
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   orderNo: '',
   tradeTerm: '',
   createUserName: '',
@@ -987,35 +1032,12 @@ onMounted(() => {
   checkAdmin()
   loadSalespersonOptions()
   getList()
+  getStatusCounts()
 })
 </script>
 
 <style scoped>
-.app-container {
-  padding: 20px;
-}
-.search-wrap {
-  margin-bottom: 16px;
-}
-.table-toolbar {
-  margin-bottom: 16px;
-}
-.pagination-container {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
-}
-.currency-text {
-  font-weight: bold;
-  color: #606266;
-}
 .group-divider {
   margin: 8px 0 16px;
-}
-.action-btns {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
 }
 </style>

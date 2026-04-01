@@ -1,62 +1,58 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="采购单号">
-          <el-input v-model="queryParams.poNo" placeholder="输入采购单号" clearable />
-        </el-form-item>
-        <el-form-item label="关联销售单号">
-          <el-input v-model="queryParams.salesOrderNo" placeholder="输入销售单号" clearable />
-        </el-form-item>
-        <el-form-item label="创建人">
-          <el-autocomplete
-            v-model="queryParams.createUserName"
-            :fetch-suggestions="queryCreateUser"
-            placeholder="输入或选择创建人"
-            clearable
-            style="width: 160px"
-            @select="onCreateUserSelect"
-          />
-        </el-form-item>
-        <el-form-item label="业务人员">
-          <el-autocomplete
-            v-model="queryParams.salespersonName"
-            :fetch-suggestions="querySalesperson"
-            placeholder="输入或选择业务人员"
-            clearable
-            style="width: 160px"
-            @select="onSalespersonSelect"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="queryParams.status" placeholder="选择状态" clearable>
-            <el-option v-for="s in statusList" :key="s.code" :label="s.label" :value="s.code" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增采购单</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
-        <el-divider direction="vertical" />
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">采购订单</h2>
+      </div>
+      <div class="page-header-right">
         <el-button type="warning" icon="Upload" @click="triggerPoContractUpload">上传采购合同</el-button>
         <el-button type="warning" icon="Upload" @click="triggerPoDetailsUpload">上传采购明细</el-button>
         <el-button link type="primary" @click="handleDownloadPoContractTpl">[合同模板]</el-button>
         <el-button link type="primary" @click="handleDownloadPoDetailsTpl">[明细模板]</el-button>
         <input ref="poContractFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handlePoContractFile" />
         <input ref="poDetailsFileRef" type="file" accept=".xlsx,.xls" style="display:none" @change="handlePoDetailsFile" />
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增采购单</el-button>
       </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="采购单号" prop="poNo" width="140" />
-        <el-table-column label="订单日期" prop="orderDate" width="120" />
+    <!-- 状态标签页 -->
+    <div class="status-tabs">
+      <div
+        v-for="tab in statusTabs"
+        :key="String(tab.value)"
+        :class="['status-tab-item', { active: activeStatusTab === tab.value }]"
+        @click="handleTabChange(tab.value)"
+      >
+        {{ tab.label }}({{ tab.count }})
+      </div>
+    </div>
+
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.poNo" placeholder="采购单号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.salesOrderNo" placeholder="关联销售单号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-autocomplete v-model="queryParams.createUserName" :fetch-suggestions="queryCreateUser" placeholder="创建人" clearable class="filter-input" @select="onCreateUserSelect" @clear="handleQuery" />
+        <el-autocomplete v-model="queryParams.salespersonName" :fetch-suggestions="querySalesperson" placeholder="业务人员" clearable class="filter-input" @select="onSalespersonSelect" @clear="handleQuery" />
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: 500 }" row-class-name="table-row" style="width: 100%">
+        <el-table-column type="selection" width="40" align="center" />
+        <el-table-column label="采购单号" prop="poNo" width="140" sortable>
+          <template #default="{ row }">
+            <span class="link-text" @click="handleDetail(row)">{{ row.poNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="订单日期" prop="orderDate" width="120" sortable />
         <el-table-column label="供应商" prop="supplierName" width="140" />
         <el-table-column label="关联销售单号" prop="salesOrderNo" width="160" />
         <el-table-column label="币种" prop="currency" width="80" align="center" />
@@ -64,27 +60,25 @@
         <el-table-column label="合同总吨数" prop="contractTotalQty" width="120" align="right" />
         <el-table-column label="结算总金额" prop="settlementTotalAmount" width="120" align="right" />
         <el-table-column label="结算总数量" prop="settlementTotalQty" width="120" align="right" />
-        <!-- <el-table-column label="实际金额" prop="actualAmount" width="120" align="right" /> -->
-        <el-table-column label="定金比例(%)" prop="depositRate" width="120" align="right" />
+        <el-table-column label="定金比例(%)" prop="depositRate" width="110" align="right" />
         <el-table-column label="定金金额" prop="depositAmount" width="120" align="right" />
         <el-table-column label="状态" prop="status" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="getTagType(row.status)">{{ getLabel(row.status) }}</el-tag>
+            <el-tag :type="getTagType(row.status)" effect="light" round>{{ getLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" prop="createTime" width="160" />
-        <el-table-column label="操作" width="320" fixed="right">
+        <el-table-column label="创建时间" prop="createTime" width="160" sortable />
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="scope">
             <div class="action-btns">
-              <el-button size="small" type="info" @click="handleDetail(scope.row)">详情</el-button>
-              <el-button size="small" type="primary" @click="goToDetail(scope.row)">明细</el-button>
-              <!-- <el-button v-if="isAdmin" size="small" @click="handleEdit(scope.row)">编辑</el-button> -->
+              <el-button link type="primary" @click="handleDetail(scope.row)">详情</el-button>
+              <el-button link type="primary" @click="goToDetail(scope.row)">明细</el-button>
               <el-dropdown
                 v-if="getAllowedNextStatuses(scope.row.status).length > 0"
                 @command="(code: number) => changeStatus(scope.row.id, code, getList, scope.row)"
                 trigger="click"
               >
-                <el-button size="small" type="warning">变更状态</el-button>
+                <el-button link type="warning">变更状态</el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item
@@ -95,21 +89,36 @@
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
-              <el-button size="small" type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button link type="danger" v-if="isAdmin" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 汇总统计栏 -->
+    <div class="summary-bar">
+      <span class="summary-label">总计：</span>
+      <span class="summary-item">采购单 <b>{{ total }}</b> 笔</span>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
+        :page-sizes="[20, 50, 100]"
+        layout="total, prev, pager, next"
+        small
         @current-change="getList"
       />
-    </el-card>
+      <el-select v-model="queryParams.pageSize" class="page-size-select" @change="handleQuery">
+        <el-option :value="20" label="20 条/页" />
+        <el-option :value="50" label="50 条/页" />
+        <el-option :value="100" label="100 条/页" />
+      </el-select>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" @close="resetForm">
@@ -486,7 +495,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, UploadFile } from 'element-plus'
@@ -497,6 +506,38 @@ import { getUserListWithRoles } from '@/api/system'
 import { useOrderStatus } from '@/composables/useOrderStatus'
 
 const { statusList, getLabel, getTagType, getAllowedNextStatuses, changeStatus } = useOrderStatus('purchase')
+
+// Status tabs
+const activeStatusTab = ref<any>(undefined)
+const statusCounts = reactive<Record<string, number>>({})
+
+const statusTabs = computed(() => {
+  const tabs = [{ label: '全部', value: undefined as any, count: statusCounts['all'] || 0 }]
+  for (const s of statusList.value) {
+    tabs.push({ label: s.label, value: s.code, count: statusCounts[String(s.code)] || 0 })
+  }
+  return tabs
+})
+
+const getStatusCounts = async () => {
+  try {
+    const baseParams = { ...queryParams, pageNum: 1, pageSize: 1 }
+    const allRes = await getPurchaseOrderPage({ ...baseParams, status: undefined })
+    statusCounts['all'] = allRes.data.total || 0
+    const promises = statusList.value.map(async (s: any) => {
+      const res = await getPurchaseOrderPage({ ...baseParams, status: s.code })
+      statusCounts[String(s.code)] = res.data.total || 0
+    })
+    await Promise.all(promises)
+  } catch { /* ignore */ }
+}
+
+const handleTabChange = (val: any) => {
+  activeStatusTab.value = val
+  queryParams.status = val
+  queryParams.pageNum = 1
+  getList()
+}
 
 // Admin check
 const isAdmin = ref(false)
@@ -981,19 +1022,15 @@ onMounted(() => {
   checkAdmin()
   loadUserOptions()
   getList()
+  getStatusCounts()
 })
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 .file-upload-area { width: 100%; }
 .file-list { margin-top: 8px; }
 .file-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
 .file-link { margin-right: 12px; color: #409eff; text-decoration: none; }
 .file-link:hover { text-decoration: underline; }
 .group-divider { margin: 8px 0 16px; }
-.action-btns { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 </style>

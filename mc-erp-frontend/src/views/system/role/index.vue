@@ -1,51 +1,60 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="角色编码">
-          <el-input v-model="queryParams.roleCode" placeholder="输入角色编码" clearable />
-        </el-form-item>
-        <el-form-item label="角色名称">
-          <el-input v-model="queryParams.roleName" placeholder="输入角色名称" clearable />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增角色</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">角色管理</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增角色</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.roleCode" placeholder="角色编码" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.roleName" placeholder="角色名称" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" stripe>
+        <el-table-column type="index" label="#" width="50" align="center" />
         <el-table-column label="角色编码" prop="roleCode" width="150" />
         <el-table-column label="角色名称" prop="roleName" width="150" />
         <el-table-column label="描述" prop="description" min-width="200" show-overflow-tooltip />
         <el-table-column label="创建时间" prop="createTime" width="180" />
         <el-table-column label="操作" width="240" fixed="right" align="center">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="warning" @click="handleAssignMenus(scope.row)">分配权限</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button link type="warning" @click="handleAssignMenus(scope.row)">分配权限</el-button>
+              <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
+        :page-sizes="[20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
         @current-change="getList"
         @size-change="handleQuery"
       />
-    </el-card>
+    </div>
 
     <!-- 新增/编辑 Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px" @close="resetForm">
@@ -127,7 +136,7 @@ const formRef = ref<FormInstance>()
 
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   roleCode: '',
   roleName: ''
 })
@@ -316,10 +325,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 .perm-tree-wrap { max-height: 480px; overflow-y: auto; }
 .perm-tree-actions { margin-bottom: 8px; }
 .tree-node-label { display: flex; align-items: center; gap: 6px; }

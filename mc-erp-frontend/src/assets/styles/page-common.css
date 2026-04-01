@@ -1,0 +1,217 @@
+/* ============================================
+   MC ERP — 统一列表页面风格
+   ============================================ */
+
+/* ---- 页面容器 ---- */
+.mc-page {
+  padding: 0;
+  background: #fff;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- 页面头部 ---- */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+.page-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- 状态标签页 ---- */
+.status-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  overflow-x: auto;
+}
+.status-tab-item {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.status-tab-item:hover {
+  color: #4066e0;
+}
+.status-tab-item.active {
+  color: #4066e0;
+  font-weight: 500;
+  border-bottom-color: #4066e0;
+}
+
+/* ---- 过滤器区域 ---- */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  gap: 12px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.filter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.filter-input {
+  width: 160px;
+}
+.filter-input-sm {
+  width: 110px;
+}
+.filter-separator {
+  color: #ccc;
+  margin: 0 2px;
+}
+.filter-date {
+  width: 260px;
+}
+.filter-btn {
+  border: 1px solid #dcdfe6;
+  color: #666;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.advanced-filter {
+  padding: 8px 20px 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+/* ---- 表格 ---- */
+.table-container {
+  flex: 1;
+  padding: 0;
+  overflow: auto;
+}
+.table-container .el-table {
+  border: none;
+}
+.table-container .el-table th.el-table__cell {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 500;
+  color: #333;
+  font-size: 13px;
+  padding: 10px 0;
+}
+.table-container .el-table td.el-table__cell {
+  border-bottom: 1px solid #f5f5f5;
+  padding: 10px 0;
+  font-size: 13px;
+}
+.table-container .el-table--border .el-table__inner-wrapper::after,
+.table-container .el-table--border::before,
+.table-container .el-table--border::after {
+  display: none;
+}
+.table-container .el-table__border-left-patch {
+  display: none;
+}
+.table-container .el-table .table-row:hover > td {
+  background: #f8f9ff;
+}
+
+/* 可点击链接样式 */
+.link-text {
+  color: #4066e0;
+  cursor: pointer;
+  font-weight: 500;
+}
+.link-text:hover {
+  text-decoration: underline;
+}
+
+/* 币种与金额 */
+.currency-label {
+  color: #999;
+  font-size: 12px;
+  margin-right: 2px;
+}
+.amount-text {
+  font-weight: 500;
+  color: #333;
+}
+
+/* 空文本 */
+.empty-text {
+  color: #ccc;
+  font-size: 13px;
+}
+
+/* ---- 汇总栏 ---- */
+.summary-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: #f8f9ff;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #4066e0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.summary-label {
+  font-weight: 500;
+}
+.summary-item {
+  margin-right: 16px;
+}
+.summary-item b {
+  color: #333;
+  font-weight: 600;
+}
+
+/* ---- 分页 ---- */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 20px;
+  gap: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+.page-size-select {
+  width: 110px;
+}
+
+/* ---- 操作按钮行 ---- */
+.action-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}

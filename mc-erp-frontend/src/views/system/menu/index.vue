@@ -1,17 +1,24 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd(null)">新增菜单</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">菜单管理</h2>
+      </div>
+      <div class="page-header-right">
         <el-button icon="Sort" @click="toggleExpandAll">展开/折叠</el-button>
         <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd(null)">新增菜单</el-button>
       </div>
+    </div>
 
+    <!-- 表格 -->
+    <div class="table-container">
       <el-table
         v-loading="loading"
         :data="menuList"
         row-key="id"
-        border
+        stripe
         :default-expand-all="expandAll"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       >
@@ -34,13 +41,15 @@
         <el-table-column prop="sort" label="排序" width="70" align="center" />
         <el-table-column label="操作" width="220" align="center" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handleAdd(scope.row)">新增下级</el-button>
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleAdd(scope.row)">新增下级</el-button>
+              <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+              <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" @close="resetForm">
@@ -243,6 +252,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.table-toolbar { margin-bottom: 16px; }
 </style>

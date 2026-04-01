@@ -1,47 +1,49 @@
 <template>
-  <div class="app-container">
-    <!-- 搜索区域 -->
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="订单编号">
-          <el-input v-model="queryParams.orderCode" placeholder="输入订单编号" clearable style="width: 160px" />
-        </el-form-item>
-        <el-form-item label="销售订单号">
-          <el-input v-model="queryParams.saleOrderCode" placeholder="输入销售订单号" clearable style="width: 160px" />
-        </el-form-item>
-        <el-form-item label="货代">
-          <el-input v-model="queryParams.forwarderName" placeholder="输入货代名称" clearable style="width: 160px" />
-        </el-form-item>
-        <el-form-item label="运输类型">
-          <el-select v-model="queryParams.transportType" clearable placeholder="全部" style="width: 130px">
-            <el-option label="集装箱船" :value="1" />
-            <el-option label="散货船" :value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="订单状态">
-          <el-select v-model="queryParams.orderStatus" clearable placeholder="全部" style="width: 120px">
-            <el-option label="草稿" :value="0" />
-            <el-option label="已提交" :value="1" />
-            <el-option label="已结算" :value="2" />
-            <el-option label="已作废" :value="3" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 列表区域 -->
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新建海运订单</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">海运订单</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新建海运订单</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
+    <!-- 状态标签页 -->
+    <div class="status-tabs">
+      <div
+        v-for="tab in statusTabs"
+        :key="String(tab.value)"
+        :class="['status-tab-item', { active: activeStatusTab === tab.value }]"
+        @click="handleTabChange(tab.value)"
+      >
+        {{ tab.label }}({{ tab.count }})
+      </div>
+    </div>
+
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.orderCode" placeholder="订单编号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.saleOrderCode" placeholder="销售订单号" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.forwarderName" placeholder="货代名称" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-select v-model="queryParams.transportType" clearable placeholder="运输类型" class="filter-input-sm" @change="handleQuery">
+          <el-option label="集装箱船" :value="1" />
+          <el-option label="散货船" :value="2" />
+        </el-select>
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" stripe>
+        <el-table-column type="index" label="#" width="50" align="center" />
         <el-table-column label="订单编号" prop="orderCode" width="180" />
         <el-table-column label="销售订单号" prop="saleOrderCode" width="150" />
         <el-table-column label="货代" prop="forwarderName" min-width="140" show-overflow-tooltip />
@@ -67,12 +69,12 @@
         <el-table-column label="保费" width="100" align="right">
           <template #default="{ row }">
             <span v-if="row.needInsurance === 1">{{ formatMoney(row.premium) }}</span>
-            <span v-else class="text-muted">-</span>
+            <span v-else class="empty-text">-</span>
           </template>
         </el-table-column>
         <el-table-column label="总费用" prop="totalAmount" width="120" align="right">
           <template #default="{ row }">
-            <span style="font-weight: bold; color: #409EFF">{{ formatMoney(row.totalAmount) }}</span>
+            <span class="amount-text">{{ formatMoney(row.totalAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90" align="center">
@@ -83,26 +85,31 @@
         <el-table-column label="创建时间" prop="createTime" width="170" />
         <el-table-column label="操作" width="260" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleDetail(row)">详情</el-button>
-            <el-button link type="primary" v-if="row.orderStatus === 0" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="success" v-if="row.orderStatus === 0" @click="handleSubmit(row)">提交</el-button>
-            <el-button link type="success" v-if="row.orderStatus === 1" @click="handleSettle(row)">结算</el-button>
-            <el-button link type="danger" v-if="row.orderStatus !== 3" @click="handleCancel(row)">作废</el-button>
-            <el-button link type="danger" v-if="row.orderStatus === 0" @click="handleDelete(row)">删除</el-button>
+            <div class="action-btns">
+              <el-button link type="primary" @click="handleDetail(row)">详情</el-button>
+              <el-button link type="primary" v-if="row.orderStatus === 0" @click="handleEdit(row)">编辑</el-button>
+              <el-button link type="success" v-if="row.orderStatus === 0" @click="handleSubmit(row)">提交</el-button>
+              <el-button link type="success" v-if="row.orderStatus === 1" @click="handleSettle(row)">结算</el-button>
+              <el-button link type="danger" v-if="row.orderStatus !== 3" @click="handleCancel(row)">作废</el-button>
+              <el-button link type="danger" v-if="row.orderStatus === 0" @click="handleDelete(row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
+        :page-sizes="[20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
         @current-change="getList"
         @size-change="getList"
       />
-    </el-card>
+    </div>
 
     <!-- 新建/编辑 对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="900px" destroy-on-close @close="resetForm">
@@ -409,6 +416,38 @@ const statusMap: Record<number, { label: string; tagType: string }> = {
 const statusLabel = (s: number) => statusMap[s]?.label || '未知'
 const statusTagType = (s: number) => statusMap[s]?.tagType || 'info'
 
+// ============ 状态标签页 ============
+const activeStatusTab = ref<number | undefined>(undefined)
+const statusCounts = reactive<Record<string, number>>({})
+
+const statusTabs = computed(() => {
+  const tabs = [{ label: '全部', value: undefined as number | undefined, count: statusCounts['all'] || 0 }]
+  for (const [code, info] of Object.entries(statusMap)) {
+    tabs.push({ label: info.label, value: Number(code), count: statusCounts[code] || 0 })
+  }
+  return tabs
+})
+
+const getStatusCounts = async () => {
+  try {
+    const baseParams = { ...queryParams, pageNum: 1, pageSize: 1 }
+    const allRes = await getFreightOrderPage({ ...baseParams, orderStatus: undefined })
+    statusCounts['all'] = allRes.data.total || 0
+    const promises = Object.keys(statusMap).map(async (code) => {
+      const res = await getFreightOrderPage({ ...baseParams, orderStatus: Number(code) })
+      statusCounts[code] = res.data.total || 0
+    })
+    await Promise.all(promises)
+  } catch { /* ignore */ }
+}
+
+const handleTabChange = (val: number | undefined) => {
+  activeStatusTab.value = val
+  queryParams.orderStatus = val
+  queryParams.pageNum = 1
+  getList()
+}
+
 const formatMoney = (v: any) => {
   if (v === null || v === undefined) return '0.00'
   return Number(v).toFixed(2)
@@ -420,7 +459,7 @@ const dataList = ref<any[]>([])
 const total = ref(0)
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 20,
   orderCode: '',
   saleOrderCode: '',
   forwarderName: '',
@@ -727,17 +766,9 @@ const handleExport = async () => {
 onMounted(() => {
   getList()
   loadForwarders()
+  getStatusCounts()
 })
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
-.fee-section { margin-bottom: 8px; }
-.fee-table { margin-top: 8px; }
-.fee-total { text-align: right; margin-top: 8px; color: #606266; }
-.total-summary { text-align: right; margin-top: 16px; padding: 12px; background: #f5f7fa; border-radius: 4px; }
-.text-muted { color: #999; }
 </style>

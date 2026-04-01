@@ -1,42 +1,41 @@
 <template>
-  <div class="app-container">
-    <el-card shadow="never" class="search-wrap">
-      <el-form :inline="true" :model="queryParams">
-        <el-form-item label="客户名称">
-          <el-input v-model="queryParams.name" placeholder="输入名称" clearable />
-        </el-form-item>
-        <el-form-item label="洲别">
-          <el-select v-model="queryParams.continent" placeholder="选择洲别" clearable style="width: 180px">
-            <el-option
-              v-for="item in CONTINENT_OPTIONS"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
-          <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card shadow="never" class="table-wrap">
-      <div class="table-toolbar">
-        <el-button type="primary" icon="Plus" @click="handleAdd">新增客户</el-button>
-        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+  <div class="mc-page">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2 class="page-title">客户管理</h2>
       </div>
+      <div class="page-header-right">
+        <el-button type="success" icon="Download" @click="handleExport">导出</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增客户</el-button>
+      </div>
+    </div>
 
-      <el-table v-loading="loading" :data="dataList" border stripe>
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="名称" prop="name" min-width="150" />
+    <!-- 搜索过滤区域 -->
+    <div class="filter-bar">
+      <div class="filter-inputs">
+        <el-input v-model="queryParams.name" placeholder="客户名称" clearable class="filter-input" @clear="handleQuery" @keyup.enter="handleQuery" />
+        <el-select v-model="queryParams.continent" placeholder="洲别" clearable style="width: 160px" @change="handleQuery">
+          <el-option v-for="item in CONTINENT_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
+      </div>
+      <div class="filter-actions">
+        <el-button type="primary" icon="Search" @click="handleQuery">查询</el-button>
+        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+      <el-table v-loading="loading" :data="dataList" :header-cell-style="{ background: '#fafafa', color: '#333', fontWeight: 500 }" row-class-name="table-row" style="width: 100%">
+        <el-table-column type="selection" width="40" align="center" />
+        <el-table-column label="名称" prop="name" min-width="150" sortable />
         <el-table-column label="consignee" prop="consignee" width="120" />
         <el-table-column label="notify" prop="notify" width="120" />
         <el-table-column label="国家/地区" prop="country" width="120" />
         <el-table-column label="洲别" prop="continent" width="130">
           <template #default="{ row }">
-            <el-tag type="success">{{ formatContinentLabel(row.continent) }}</el-tag>
+            <el-tag type="success" effect="light" round>{{ formatContinentLabel(row.continent) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="业务员" prop="salesUserName" width="120" />
@@ -44,7 +43,7 @@
         <el-table-column label="电话" prop="phone" width="150" />
         <el-table-column label="级别" prop="level" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.level === 'VIP' ? 'danger' : 'info'">{{ row.level }}</el-tag>
+            <el-tag :type="row.level === 'VIP' ? 'danger' : 'info'" effect="light" round>{{ row.level }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right" align="center">
@@ -54,16 +53,25 @@
           </template>
         </el-table-column>
       </el-table>
+    </div>
 
+    <!-- 分页 -->
+    <div class="pagination-bar">
       <el-pagination
         v-model:current-page="queryParams.pageNum"
         v-model:page-size="queryParams.pageSize"
         :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        class="pagination-container"
+        :page-sizes="[20, 50, 100]"
+        layout="total, prev, pager, next"
+        small
         @current-change="getList"
       />
-    </el-card>
+      <el-select v-model="queryParams.pageSize" class="page-size-select" @change="handleQuery">
+        <el-option :value="20" label="20 条/页" />
+        <el-option :value="50" label="50 条/页" />
+        <el-option :value="100" label="100 条/页" />
+      </el-select>
+    </div>
 
     <!-- Add/Edit Dialog -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="560px" @close="resetForm">
@@ -313,8 +321,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.app-container { padding: 0; }
-.search-wrap { margin-bottom: 16px; }
-.table-toolbar { margin-bottom: 16px; }
-.pagination-container { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>
