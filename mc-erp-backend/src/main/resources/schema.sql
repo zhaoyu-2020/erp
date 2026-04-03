@@ -364,6 +364,36 @@ CREATE TABLE IF NOT EXISTS `biz_finance_receipt_detail` (
   KEY `idx_sales_order_id` (`sales_order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务收款明细表';
 
+-- 10c. 财务付款单表 (Finance Payment) —— 一条记录对应一笔付款
+CREATE TABLE IF NOT EXISTS `biz_finance_payment` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `payment_no` varchar(100) DEFAULT NULL COMMENT '付款单号',
+  `purchase_order_id` bigint(20) DEFAULT NULL COMMENT '采购订单ID',
+  `purchase_order_no` varchar(50) DEFAULT NULL COMMENT '采购订单号',
+  `amount` decimal(15,2) NOT NULL COMMENT '付款金额(人民币)',
+  `currency` varchar(10) NOT NULL DEFAULT 'CNY' COMMENT '币种(默认人民币)',
+  `bind_type` tinyint(2) DEFAULT NULL COMMENT '绑定类型:1定金 2尾款 3运费',
+  `payment_date` date NOT NULL COMMENT '付款日期',
+  `paying_bank` varchar(200) DEFAULT NULL COMMENT '付款银行',
+  `payee_account_name` varchar(200) DEFAULT NULL COMMENT '收款方账户名称',
+  `payee_account_no` varchar(100) DEFAULT NULL COMMENT '收款方账号',
+  `payee_bank_name` varchar(200) DEFAULT NULL COMMENT '收款方开户行',
+  `payee_bank_no` varchar(100) DEFAULT NULL COMMENT '收款方行号/SWIFT',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态:1待审核 2已审核 3已驳回',
+  `audit_by` bigint(20) DEFAULT NULL COMMENT '审核人ID',
+  `audit_time` datetime DEFAULT NULL COMMENT '审核时间',
+  `audit_remark` varchar(500) DEFAULT NULL COMMENT '审核备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `create_id` bigint(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_id` bigint(20) DEFAULT NULL COMMENT '更新人ID',
+  `is_deleted` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_purchase_order_id` (`purchase_order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='财务付款单表';
+
 -- 11. 角色表
 CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,

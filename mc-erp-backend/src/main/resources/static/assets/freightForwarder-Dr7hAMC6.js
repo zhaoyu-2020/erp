@@ -1,0 +1,1 @@
+import{r as e}from"./request-zAEuB3Xp.js";function o(r){return e({url:"/freight-forwarders/page",method:"get",params:r})}function a(r){return e({url:"/freight-forwarders",method:"post",data:r})}function d(r){return e({url:"/freight-forwarders",method:"put",data:r})}function u(r){return e({url:`/freight-forwarders/${r}`,method:"delete"})}export{u as d,o as g,a as s,d as u};

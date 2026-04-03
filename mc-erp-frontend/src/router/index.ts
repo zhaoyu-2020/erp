@@ -129,6 +129,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: '财务收据', icon: 'Money' }
             },
             {
+                path: 'finance-payment',
+                name: 'FinancePaymentList',
+                component: () => import('@/views/finance/payment.vue'),
+                meta: { title: '财务付款', icon: 'Wallet' }
+            },
+            {
                 path: 'system/user',
                 name: 'UserList',
                 component: () => import('@/views/system/user/index.vue'),

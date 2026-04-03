@@ -66,6 +66,10 @@
             <el-icon><Money /></el-icon>
             <template #title>财务收据</template>
           </el-menu-item>
+          <el-menu-item index="/finance-payment">
+            <el-icon><Wallet /></el-icon>
+            <template #title>财务付款</template>
+          </el-menu-item>
           <el-sub-menu index="/reports">
             <template #title>
               <el-icon><DataAnalysis /></el-icon>
