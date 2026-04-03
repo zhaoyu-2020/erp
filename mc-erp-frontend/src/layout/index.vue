@@ -62,14 +62,20 @@
           </el-menu-item>
         
           
-          <el-menu-item index="/finance">
-            <el-icon><Money /></el-icon>
-            <template #title>财务收据</template>
-          </el-menu-item>
-          <el-menu-item index="/finance-payment">
-            <el-icon><Wallet /></el-icon>
-            <template #title>财务付款</template>
-          </el-menu-item>
+          <el-sub-menu index="/finance-group">
+            <template #title>
+              <el-icon><Money /></el-icon>
+              <span>财务管理</span>
+            </template>
+            <el-menu-item index="/finance">
+              <el-icon><Money /></el-icon>
+              <template #title>财务收款</template>
+            </el-menu-item>
+            <el-menu-item index="/finance-payment">
+              <el-icon><Wallet /></el-icon>
+              <template #title>财务付款</template>
+            </el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="/reports">
             <template #title>
               <el-icon><DataAnalysis /></el-icon>
